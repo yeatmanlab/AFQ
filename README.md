@@ -1,4 +1,0 @@
-AFQ
-===
-
-Automated Fiber Quantification
