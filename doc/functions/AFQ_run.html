@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of AFQ_run</title>
+  <meta name="keywords" content="AFQ_run">
+  <meta name="description" content="Run AFQ analysis on a set of subjects.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">functions</a> &gt; AFQ_run.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for functions&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>AFQ_run
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Run AFQ analysis on a set of subjects.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Run AFQ analysis on a set of subjects.
+
+ [patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, [afq])
+
+ Input arguments:
+  sub_dirs  = 1 x N cell array where N is the number of subjects in the
+              study. Each cell should contain the full path to a subjects
+              data directory where there dt6.mat file is.
+
+  sub_group = Binary vector defining each subject's group. 0 for control
+              and 1 for patient.
+
+  afq       = This is a structure that sets up all the parameters for the
+              analysis.  If it is blank AFQ_run will use the default
+              parameters.  See AFQ_Create.
+
+ Outputs: 
+ patient_data = A 1X20 structured array of tract diffusion profiles where
+                data for each tract is in a cell of the structure (eg.
+                patient_data(1) is data for the left thalamic radiation).
+                Each diffusion properties is stored as a different field
+                (eg. patient_data(1).FA is a matrix of FA profiles for the
+                left thalamic radiation). Within the data matrix each
+                subject is a row and each location is a column.  This
+                output variable contains all the data for the patients
+                defined by sub_group ==1.
+
+ control_data = The same structure as for patient_data but this contains
+                data for the control subjects defined by sub_group==0.
+
+ norms        = Means and standard deviations for each tract diffusion
+                profile calculated based on the control_data.
+
+ abn          = A 1 x N vector where N is the number of patients.
+                Each patient that is abnormal on at least one tract is
+                marked with a 1 and each subject that is normal on every
+                tract is marked with a 0. The criteria for abnormal is
+                defined in afq.params.cutoff.  See AFQ create
+
+ abnTracts    = An M by N matrix where M is the number of subjects and N
+                is the number of tracts. Each row is a subject and each 
+                column is a tract.  1 means that tract was abnormal for
+                that subject and 0 means it was normal.
+
+  Web resources
+    http://white.stanford.edu/newlm/index.php/AFQ
+
+  Example:
+   
+   % Get the path to the AFQ directories
+   [AFQbase AFQdata] = AFQ_directories;
+   % Create a cell array where each cell is the path to a data directory
+   sub_dirs = {[AFQdata '/patient_01/dti30'], [AFQdata '/patient_02/dti30']...
+   [AFQdata '/patient_03/dti30'], [AFQdata '/control_01/dti30']...
+   [AFQdata '/control_02/dti30'], [AFQdata '/control_03/dti30']};
+   % Create a vector of 0s and 1s defining who is a patient and a control
+   sub_group = [1, 1, 1, 0, 0, 0]; 
+   % Run AFQ in test mode to save time. No inputs are needed to run AFQ 
+   % with the default settings 
+   afq = AFQ_Create('run_mode','test'); 
+   [patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)
+
+ Copyright Stanford Vista Team 2011 Written by Jason D. Yeatman, Brian A.
+ Wandell and Robert F. Dougherty</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="AFQ_ComparePatientsToNorms.html" class="code" title="function [abn abnTracts] = AFQ_ComparePatientsToNorms(patient_data, norms, cutoff, property, comp)">AFQ_ComparePatientsToNorms</a>	Determine which premies fall outside the defined percentile band for each</li><li><a href="AFQ_ComputeNorms.html" class="code" title="function [norms patient_data control_data] = AFQ_ComputeNorms(groupFA, groupMD, groupRD, groupAD, groupCL, sub_group)">AFQ_ComputeNorms</a>	Compute tract diffusion profile norms from control group data</li><li><a href="AFQ_ComputeTractProperties.html" class="code" title="function [fa md rd ad cl SuperFibersGroup] = AFQ_ComputeTractProperties(fg_classified,dt,numberOfNodes,clip2rois,subDir)">AFQ_ComputeTractProperties</a>	Compute diffusion properties along the trajectory of the fiber groups</li><li><a href="AFQ_Create.html" class="code" title="function afq = AFQ_Create(varargin)">AFQ_Create</a>	Create AFQ structure and set default parameters</li><li><a href="AFQ_LoadROIs.html" class="code" title="function [roi1 roi2] = AFQ_LoadROIs(fgNumber,sub_dir)">AFQ_LoadROIs</a>	Load the two ROIs used to define a fiber group</li><li><a href="AFQ_SegmentFiberGroups.html" class="code" title="function [fg_classified,fg_unclassified]=AFQ_SegmentFiberGroups(dt6File, fg, Atlas,useRoiBasedApproach, useInterhemisphericSplit)">AFQ_SegmentFiberGroups</a>	Categorizes each fiber in a group based on Mori white matter atlas.</li><li><a href="AFQ_WholebrainTractography.html" class="code" title="function fg = AFQ_WholebrainTractography(dt,run_mode)">AFQ_WholebrainTractography</a>	Use STT to track every fiber starting from a mask of FA>0.3.</li><li><a href="AFQ_plot.html" class="code" title="function AFQ_plot(varargin)">AFQ_plot</a>	This function will plot AFQ results in a variety of ways</li><li><a href="AFQ_removeFiberOutliers.html" class="code" title="function [fg keep]=AFQ_removeFiberOutliers(fg,maxDist,maxLen,numNodes,M,count,maxIter,show)">AFQ_removeFiberOutliers</a>	Remove fibers from a fiber group that are differ substantially from the</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+
+<hr><address>Generated on Fri 25-May-2012 11:45:02 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of AFQ_MultiCompCorrection</title>
+  <meta name="keywords" content="AFQ_MultiCompCorrection">
+  <meta name="description" content="Compute a multiple comparison correction for an AFQ data structure">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">functions</a> &gt; AFQ_MultiCompCorrection.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for functions&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>AFQ_MultiCompCorrection
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Compute a multiple comparison correction for an AFQ data structure</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [numcomp alpha numcompT alphaT] = AFQ_MultiCompCorrection(data, method) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Compute a multiple comparison correction for an AFQ data structure
+
+   [numcomp alpha numcompT alphaT] = AFQ_MultiCompCorrection(data)
+
+ This is an implementation of the multiple comparison correction proposed
+ in Cheverud, J. M. (2001). A simple correction for multiple comparisons
+ in interval mapping genome scans. Heredity (Edinb), 87(Pt 1), 52-58.  It
+ calculates the number of independent variables in a dataset based on the
+ varience in the eigenvalues of the correlation matrix for the data.  For
+ Tract Diffusionp Profiles, values at nearby nodes are highly correlated
+ and should not be treated as independent variables.  By taking into
+ account the correlation between values at multiple points and on multiple
+ tracts this alogorithm will determine a much more reasonable multiple
+ comparison correction than the typical, overly conservative bonferroni
+ correction
+
+ Inputs:
+ data     = Either a matrix of data for a single tract, a matrix of data
+            for all the tracts combined, or a cell array of data where
+            each cell is the data for a single tract.
+
+ Outputs:
+ numcomp = This is the total number of independent comparisons for the
+           full dataset.  If the data is a cell array of data for
+           different fiber groups then numcomp represents the number of
+           comparisons for all the data concatinated together
+ alpha   = This is the alpha (p value) that corresponds to a alpha of 0.05
+           after the correction for the number of independent comparisons.
+           If the data is a cell array of data for different fiber groups
+           then alpha represents the proper alpha if comparisons are done
+           for every location on every tract
+ numcompT= The same as numcomp but done independently for each tract.
+           This is apropriate to use if statistics are only being done
+           for a single tract.
+ alphaT  = This is the same as alpha but done independently for each tract</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+
+<hr><address>Generated on Fri 25-May-2012 11:45:02 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

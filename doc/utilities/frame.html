@@ -1,0 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of frame</title>
+  <meta name="keywords" content="frame">
+  <meta name="description" content="FRAME Calculate a Frenet-like frame for a polygonal space curve">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">utilities</a> &gt; frame.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for utilities&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>frame
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>FRAME Calculate a Frenet-like frame for a polygonal space curve</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [t,n,b]=frame(x,y,z,vec) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> FRAME Calculate a Frenet-like frame for a polygonal space curve
+ [t,n,b]=frame(x,y,z,v) returns the tangent unit vector, a normal
+ and a binormal of the space curve x,y,z. The curve may be a row or
+ column vector, the frame vectors are each row vectors. 
+
+ This function calculates the normal by taking the cross product
+ of the tangent with the vector v; if v is chosen so that it is
+ always far from t the frame will not twist unduly.
+ 
+ If two points coincide, the previous tangent and normal will be used.
+
+ Written by Anders Sandberg, asa@nada.kth.se, 2005</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+
+<hr><address>Generated on Fri 25-May-2012 11:45:02 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>
