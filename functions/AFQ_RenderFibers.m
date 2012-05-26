@@ -69,6 +69,10 @@ function lightH = AFQ_RenderFibers(fg,varargin)
 % section of the fiber is hexagonal.  Increase Nsubdivs to make the fibers
 % look like tubes. Default is Nsubdivs = 25
 %
+% AFQ_RenderFibers(fg,'tubes', [1]) - Whether fibers should be rendered as
+% tubes [1] or lines [0]. Lines are faster tubes are prettier. Tubes are
+% default
+%
 % Example:
 %
 % fg = dtiReadFibers('Left_CST.mat');
