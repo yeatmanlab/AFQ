@@ -73,6 +73,14 @@ function lightH = AFQ_RenderFibers(fg,varargin)
 % tubes [1] or lines [0]. Lines are faster tubes are prettier. Tubes are
 % default
 %
+% AFQ_RenderFibers(fg,'newfig', [1]) - Check if rendering should be in new
+% window [1] or added to an old window [0]. Default is new figure.
+% 
+% AFQ_RenderFibers(fg,'numfibers', numfibers) - Only render as many fibers
+% as are defined in numfibers. This many fibers will randomly be chosen
+% from the fiber group.  This is useful to save time when rendering large
+% groups.
+%
 % Example:
 %
 % fg = dtiReadFibers('Left_CST.mat');
@@ -241,6 +249,16 @@ else
     % default is to render in a new figure window
     newfig = 1;
 end
+
+% Randomly choose the desired number of fibers to be rendered.
+if sum(strcmpi('numfibers',varargin)) > 0
+    numfib = varargin{find(strcmpi('numfibers',varargin))+1};
+    % generate a random index of fibers
+    fibindx = randsample(length(fg.fibers),numfib);
+    % retain only these fibers for the rendering
+    fg.fibers = fg.fibers(fibindx);
+end
+
 %% Loop over fibers and render them in 3-D
 
 % Only render in a new figure window if desired (default)
