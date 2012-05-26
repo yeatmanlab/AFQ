@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of AFQ_plot</title>
+  <meta name="keywords" content="AFQ_plot">
+  <meta name="description" content="This function will plot AFQ results in a variety of ways">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">functions</a> &gt; AFQ_plot.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for functions&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>AFQ_plot
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>This function will plot AFQ results in a variety of ways</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function AFQ_plot(varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> This function will plot AFQ results in a variety of ways
+
+ AFQ_plot(varargin)
+
+ Plotting options are described below:
+
+ --Group Plots--
+
+ AFQ_plot('group1 name', data1, 'group2 name', data2, 'group')
+ 
+ Tract diffusion profiles can be plotted for multiple groups of subjects.
+ For each of the 20 tracts the group mean +/- 1 standard error of the mean
+ is plotted.  Each group is on the same plot in a different color. The
+ propper input to the function is 'group name' as a string followed
+ by data which is the structured array of tract diffusion profiles output from
+ AFQ_run.  The string 'group' at the end defines that you would like
+ a group plot as oppose to one of the other plotting options.
+ 
+ Examples:
+ [patient_data control_data]=AFQ_run(sub_dirs, sub_group);
+ AFQ_plot('patient',patient_data,'control',control_data, 'group');
+ Options:
+ To plot the data only for a subset of the tracts pass in the 'tracts'
+ argument followed by a vector of tract numbers to plot
+ AFQ_plot('patient',patient_data,'control',control_data,'tracts',[1,2,6],'group');
+
+ --Individual Subject Plots--
+
+ AFQ_plot(norms, patient_data, 'ci',[10 90], 'legend',subnames, 'individual')
+
+ Tract diffusion profiles will be plotted for each patient with respect to
+ the control group norms. The 'ci' argument is optional.  This will define
+ the width of the outer confidence interval in percentiles to plot for the
+ nomrs.  If this argument is not passed in default values of 10th and 90th
+ percentiles will be used. The 'legend' argument is also optional and will
+ allow a cell array of subject names to be passed in and these will be
+ added to a legend on each plot. 
+
+ Examples:
+ [patient_data control_data]=AFQ_run(sub_dirs, sub_group);
+ subnames = {'Sub 1' 'Sub 2' 'Sub 3' 'Sub 4'};
+ AFQ_plot(norms,patient_data,'ci',[10 90], 'legend',subnames,'individual');
+
+ Copyright Jason D. Yeatman Stanford Vista Team 2011</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="AFQ_run.html" class="code" title="function [patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)">AFQ_run</a>	Run AFQ analysis on a set of subjects.</li></ul>
+<!-- crossreference -->
+
+
+
+
+<hr><address>Generated on Fri 25-May-2012 11:45:02 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>
