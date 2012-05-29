@@ -1,4 +1,4 @@
-AFQ version 1.0
+AFQ version v1.0
 
 ===
 
