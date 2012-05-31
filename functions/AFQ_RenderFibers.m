@@ -75,7 +75,7 @@ function lightH = AFQ_RenderFibers(fg,varargin)
 %
 % AFQ_RenderFibers(fg,'newfig', [1]) - Check if rendering should be in new
 % window [1] or added to an old window [0]. Default is new figure.
-% 
+%
 % AFQ_RenderFibers(fg,'numfibers', numfibers) - Only render as many fibers
 % as are defined in numfibers. This many fibers will randomly be chosen
 % from the fiber group.  This is useful to save time when rendering large
@@ -147,11 +147,11 @@ if sum(strcmpi('camera',varargin)) > 0
         % default light position
         lightPosition = [-60 0 0];
     end
-%     if length(camera) ~= 2
-%         camera = [270 0];
-%         lightPosition = [-60 0 0];
-%         warning('Camera angle needs 2 numbers. Set to default')
-%     end
+    %     if length(camera) ~= 2
+    %         camera = [270 0];
+    %         lightPosition = [-60 0 0];
+    %         warning('Camera angle needs 2 numbers. Set to default')
+    %     end
 else
     camera = [270 0]; %default camera angle is looking at the sagital plane
     lightPosition = [-60 0 0];
@@ -358,20 +358,21 @@ if exist('TP','var') && ~isempty(TP)
     AFQ_RenderTractProfile(TP.coords,rTP,TP.vals.fa,30,cmap,crange);
 end
 %% Set the lighting, axes, etc.
-coordsAll = horzcat(fg.fibers{:});
-mx = minmax(coordsAll(1,:));
-my = minmax(coordsAll(2,:));
-mz = minmax(coordsAll(3,:));
-axis([mx(1)-3 mx(2)+3 my(1)-3 my(2)+3 mz(1)-3 mz(2)+3],'equal');
+
+shading('interp');
 % Only set window properties if the fibers were rendered in a new figure
 % window
 if newfig ==1
+    coordsAll = horzcat(fg.fibers{:});
+    mx = minmax(coordsAll(1,:));
+    my = minmax(coordsAll(2,:));
+    mz = minmax(coordsAll(3,:));
+    axis([mx(1)-3 mx(2)+3 my(1)-3 my(2)+3 mz(1)-3 mz(2)+3],'equal');
     xlabel('X mm','fontname','times','fontsize',14);
     ylabel('Y mm','fontname','times','fontsize',14);
     zlabel('Z mm','fontname','times','fontsize',14);
     set(gca,'fontname','times','fontsize',14);
     set(gcf,'color',[1 1 1]);
-    shading('interp');
     grid('on');
     if size(camera,2) == 2
         view(camera(1), camera(2));
