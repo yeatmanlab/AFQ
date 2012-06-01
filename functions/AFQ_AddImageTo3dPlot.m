@@ -79,7 +79,7 @@ if find(plane) == 1
     image = squeeze(nifti.data(imIndx,:,:));
     % Define the minimum and maximum coordinates of the image in each
     % dimension in acpc mm space.
-    min_x = max(slice); max_x = min_x;
+    min_x = slice(1); max_x = min_x;
     [y z] = size(image);
     max_corner = inv(imgXform) * [imIndx y z 1]';
     max_y = max_corner(2); max_z = max_corner(3);
@@ -89,7 +89,7 @@ elseif find(plane) == 2
     image = squeeze(nifti.data(:,imIndx,:));
     % Define the minimum and maximum coordinates of the image in each
     % dimension in acpc mm space.
-    min_y = max(slice); max_y = min_y;
+    min_y = slice(2); max_y = min_y;
     [x z] = size(image);
     max_corner = inv(imgXform) * [x imIndx z 1]';
     max_x = max_corner(1); max_z = max_corner(3);
@@ -99,7 +99,7 @@ else
     image = squeeze(nifti.data(:,:,imIndx));
     % Define the minimum and maximum coordinates of the image in each
     % dimension in acpc mm space.
-    min_z = max(slice); max_z = min_z;
+    min_z = slice(3); max_z = min_z;
     [x y] = size(image);
     max_corner = inv(imgXform) * [x y imIndx 1]';
     max_x = max_corner(1); max_y = max_corner(2);
