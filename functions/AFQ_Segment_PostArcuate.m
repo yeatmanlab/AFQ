@@ -78,6 +78,25 @@ dtiWriteRoi(R_roi_3,fullfile(sub_dir,'ROIs',R_roi_3.name));
 % Intersect the wholebrain fiber group with the ROIs to retain only fibers
 % that correspond to the posterior segment of the arcuate
 L_FG = dtiIntersectFibersWithRoi([],'and',[],L_roi_1,wholebrainFG);
+
+% We want fibers that are traveling superior to inferior as they pass
+% through the first ROI.  To do this we will restrict the ROI to voxels
+% with superior-inferior orientation and repeate this process for planes
+% directly above and below the ROI
+for ii = -3:3
+    roi_tmp = L_roi_1;
+    % Shift the roi
+    roi_tmp.coords =(:,3) roi_tmp.coords(:,3) + ii;
+    % Compute the PDD at each point in each ROI
+    roi_pdd = dtiGetValFromTensors(dt.dt6, roi_tmp.coords, inv(dt.xformToAcpc), 'pdd');
+    % Find every coordinate in each VOF ROI where the PDD is in the Z direction
+    [~, roi_pddZ] = max(abs(roi_pdd),[],2);
+    roi_pddZ = roi_pddZ == 3;
+    % Retain VOF ROI coordinates that have a PDD in the Z direction
+    roi_tmp.coords = roi_tmp.coords(roi_pddZ,:);
+    L_FG = dtiIntersectFibersWithRoi([],'and',[],roi_tmp,L_FG);
+end
+
 %L_FG = dtiIntersectFibersWithRoi([],'and',[],L_roi_2,L_FG);
 L_FG = dtiIntersectFibersWithRoi([],'and',[],L_roi_3,L_FG);
 L_FG = dtiIntersectFibersWithRoi([],'not',[],L_roi_not,L_FG);
