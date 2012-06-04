@@ -3,6 +3,8 @@ function [L_FG R_FG L_roi_2 L_roi_3 R_roi_2 R_roi_3] = AFQ_Segment_PostArcuate(d
 %
 % [L_FG R_FG L_roi_2 L_roi_3 R_roi_2 R_roi_3] = AFQ_Segment_PostArcuate(dt, wholebrainFG, sub_dir, varargin)
 %
+
+%% Argument checking
 if ~exist('dt','var') || isempty(dt)
     error('dt6 file is needed');
 elseif ischar(dt)
@@ -11,8 +13,11 @@ end
 if ~exist('wholebrainFG','var') || isempty(wholebrainFG)
     fprintf('Wholebrain fiber group was not supplied. Tracking fibers');
     wholebrainFG = AFQ_WholebrainTractography(dt);
-elseif ischar(wholebrainFG)
+elseif ischar(wholebrainFG) && exist(wholebrainFG,'file')
     wholebrainFG = dtiReadFibers(wholebrainFG);
+elseif ischar(wholebrainFG) && ~exist(wholebrainFG,'file')
+    fprintf('Wholebrain fiber group was not found. Tracking fibers');
+    wholebrainFG = AFQ_WholebrainTractography(dt);
 end
 if ~exist('sub_dir','var') || isempty(sub_dir)
     sub_dir = fileparts(dt.dataFile);
@@ -28,6 +33,7 @@ if ~isempty(varargin)
     end
 end
 
+%% Create ROIs and segment the posterior segment of the arcuate
 % Path to the templates directory
 tdir = fullfile(fileparts(which('mrDiffusion.m')), 'templates');
 template = fullfile(tdir,'MNI_EPI.nii.gz');
