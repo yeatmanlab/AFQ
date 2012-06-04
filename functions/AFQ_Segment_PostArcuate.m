@@ -75,6 +75,12 @@ dtiWriteRoi(R_roi_3,fullfile(sub_dir,'ROIs',R_roi_3.name));
 [L_roi_not, L_roi_1] = AFQ_LoadROIs(19,sub_dir);
 [R_roi_not, R_roi_1] = AFQ_LoadROIs(20,sub_dir);
 
+% To eliminate fibers that head too far anterior we will create a full
+% plane at the y coordinate of the anterior slf roi (around the central
+% sulcus) and remove fibers that intersect this ROI
+L_roi_not = dtiRoiMakePlane([-60,mean(L_roi_not.coords(:,2)),-60; 60,mean(L_roi_not.coords(:,2)),80]);
+R_roi_not = dtiRoiMakePlane([-60,mean(R_roi_not.coords(:,2)),-60; 60,mean(R_roi_not.coords(:,2)),80]);
+
 % Intersect the wholebrain fiber group with the ROIs to retain only fibers
 % that correspond to the posterior segment of the arcuate
 L_FG = dtiIntersectFibersWithRoi([],'and',[],L_roi_1,wholebrainFG);
@@ -96,11 +102,25 @@ for ii = -3:3
     roi_tmp.coords = roi_tmp.coords(roi_pddZ,:);
     L_FG = dtiIntersectFibersWithRoi([],'and',[],roi_tmp,L_FG);
 end
-
 %L_FG = dtiIntersectFibersWithRoi([],'and',[],L_roi_2,L_FG);
 L_FG = dtiIntersectFibersWithRoi([],'and',[],L_roi_3,L_FG);
 L_FG = dtiIntersectFibersWithRoi([],'not',[],L_roi_not,L_FG);
+
+% Same for the right hemisphere fiber group
 R_FG = dtiIntersectFibersWithRoi([],'and',[],R_roi_1,wholebrainFG);
+for ii = -3:3
+    roi_tmp = R_roi_1;
+    % Shift the roi
+    roi_tmp.coords(:,3) = roi_tmp.coords(:,3) + ii;
+    % Compute the PDD at each point in each ROI
+    roi_pdd = dtiGetValFromTensors(dt.dt6, roi_tmp.coords, inv(dt.xformToAcpc), 'pdd');
+    % Find every coordinate in each VOF ROI where the PDD is in the Z direction
+    [~, roi_pddZ] = max(abs(roi_pdd),[],2);
+    roi_pddZ = roi_pddZ == 3;
+    % Retain VOF ROI coordinates that have a PDD in the Z direction
+    roi_tmp.coords = roi_tmp.coords(roi_pddZ,:);
+    R_FG = dtiIntersectFibersWithRoi([],'and',[],roi_tmp,R_FG);
+end
 %R_FG = dtiIntersectFibersWithRoi([],'and',[],R_roi_2,R_FG);
 R_FG = dtiIntersectFibersWithRoi([],'and',[],R_roi_3,R_FG);
 R_FG = dtiIntersectFibersWithRoi([],'not',[],R_roi_not,R_FG);
