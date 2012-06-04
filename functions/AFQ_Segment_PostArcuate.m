@@ -60,6 +60,11 @@ L_roi_2.coords = mrAnatXformCoords(invDef,L_roi_2.coords);
 R_roi_2.coords = mrAnatXformCoords(invDef,R_roi_2.coords);
 L_roi_3.coords = mrAnatXformCoords(invDef,L_roi_3.coords);
 R_roi_3.coords = mrAnatXformCoords(invDef,R_roi_3.coords);
+% Clean the shape of the ROIs to fill holes due to the normalization
+L_roi_2 = dtiRoiClean(L_roi_2,3,{'fillHoles' 'dilate'});
+L_roi_3 = dtiRoiClean(L_roi_3,3,{'fillHoles' 'dilate'});
+R_roi_2 = dtiRoiClean(R_roi_2,3,{'fillHoles' 'dilate'});
+R_roi_3 = dtiRoiClean(R_roi_3,3,{'fillHoles' 'dilate'});
 % Save the rois
 dtiWriteRoi(L_roi_2,fullfile(sub_dir,'ROIs',L_roi_2.name));
 dtiWriteRoi(R_roi_2,fullfile(sub_dir,'ROIs',R_roi_2.name));
@@ -73,11 +78,11 @@ dtiWriteRoi(R_roi_3,fullfile(sub_dir,'ROIs',R_roi_3.name));
 % Intersect the wholebrain fiber group with the ROIs to retain only fibers
 % that correspond to the posterior segment of the arcuate
 L_FG = dtiIntersectFibersWithRoi([],'and',[],L_roi_1,wholebrainFG);
-L_FG = dtiIntersectFibersWithRoi([],'and',[],L_roi_2,L_FG);
+%L_FG = dtiIntersectFibersWithRoi([],'and',[],L_roi_2,L_FG);
 L_FG = dtiIntersectFibersWithRoi([],'and',[],L_roi_3,L_FG);
 L_FG = dtiIntersectFibersWithRoi([],'not',[],L_roi_not,L_FG);
 R_FG = dtiIntersectFibersWithRoi([],'and',[],R_roi_1,wholebrainFG);
-R_FG = dtiIntersectFibersWithRoi([],'and',[],R_roi_2,R_FG);
+%R_FG = dtiIntersectFibersWithRoi([],'and',[],R_roi_2,R_FG);
 R_FG = dtiIntersectFibersWithRoi([],'and',[],R_roi_3,R_FG);
 R_FG = dtiIntersectFibersWithRoi([],'not',[],R_roi_not,R_FG);
 
