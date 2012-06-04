@@ -86,7 +86,7 @@ L_FG = dtiIntersectFibersWithRoi([],'and',[],L_roi_1,wholebrainFG);
 for ii = -3:3
     roi_tmp = L_roi_1;
     % Shift the roi
-    roi_tmp.coords =(:,3) roi_tmp.coords(:,3) + ii;
+    roi_tmp.coords(:,3) = roi_tmp.coords(:,3) + ii;
     % Compute the PDD at each point in each ROI
     roi_pdd = dtiGetValFromTensors(dt.dt6, roi_tmp.coords, inv(dt.xformToAcpc), 'pdd');
     % Find every coordinate in each VOF ROI where the PDD is in the Z direction
