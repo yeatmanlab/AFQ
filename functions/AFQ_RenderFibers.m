@@ -253,10 +253,13 @@ end
 % Randomly choose the desired number of fibers to be rendered.
 if sum(strcmpi('numfibers',varargin)) > 0
     numfib = varargin{find(strcmpi('numfibers',varargin))+1};
-    % generate a random index of fibers
-    fibindx = randsample(length(fg.fibers),numfib);
-    % retain only these fibers for the rendering
-    fg.fibers = fg.fibers(fibindx);
+    % check if there are more fibers than the number specified
+    if length(fg.fibers) > numfib
+        % generate a random index of fibers
+        fibindx = randsample(length(fg.fibers),numfib);
+        % retain only these fibers for the rendering
+        fg.fibers = fg.fibers(fibindx);
+    end
 end
 
 %% Loop over fibers and render them in 3-D
