@@ -40,10 +40,10 @@ template = fullfile(tdir,'MNI_EPI.nii.gz');
 
 % Path to the VOF ROIs in MNI space
 AFQbase = AFQ_directories;
-L_roi_2 = fullfile(AFQbase,'templates', 'L_Arcuate_PostSegment.mat');
-R_roi_2 = fullfile(AFQbase,'templates', 'R_Arcuate_PostSegment.mat');
-L_roi_3 = fullfile(AFQbase,'templates', 'L_LateralParietal.mat');
-R_roi_3 = fullfile(AFQbase,'templates', 'R_LateralParietal.mat');
+L_roi_2 = fullfile(AFQbase,'templates', 'L_Arcuate_PostSegment.nii.gz');
+R_roi_2 = fullfile(AFQbase,'templates', 'R_Arcuate_PostSegment.nii.gz');
+L_roi_3 = fullfile(AFQbase,'templates', 'L_LateralParietal.nii.gz');
+R_roi_3 = fullfile(AFQbase,'templates', 'R_LateralParietal.nii.gz');
 
 % Compute spatial normalization
 if ~exist('invDef','var') || isempty(invDef)
