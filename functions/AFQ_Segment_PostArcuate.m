@@ -122,7 +122,7 @@ dtiWriteFiberGroup(R_FG,fullfile(sub_dir,'fibers',R_FG.name))
 
 % Show the fiber group if desired
 if sum(strcmpi('showfibers', varargin)) > 0
-    AFQ_RenderFibers(L_FG,'color',[1 0 0],'numfibers',300);
+    AFQ_RenderFibers(L_FG,'color',[0 0 1],'numfibers',300);
     b0 = readFileNifti(dt.files.b0);
     AFQ_AddImageTo3dPlot(b0,[-30 0 0]);
     AFQ_RenderRoi(L_roi_1)
