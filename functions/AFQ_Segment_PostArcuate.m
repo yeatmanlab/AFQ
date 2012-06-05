@@ -50,26 +50,13 @@ if ~exist('invDef','var') || isempty(invDef)
     [sn, Vtemplate, invDef] = mrAnatComputeSpmSpatialNorm(dt.b0, dt.xformToAcpc, template);
 end
 
-% Load up template ROIs in MNI space
-L_roi_2 = dtiReadRoi(L_roi_2);
-R_roi_2 = dtiReadRoi(R_roi_2);
-L_roi_3 = dtiReadRoi(L_roi_3);
-R_roi_3 = dtiReadRoi(R_roi_3);
-% Transform ROI coords to the subjects native space
-L_roi_2.coords = mrAnatXformCoords(invDef,L_roi_2.coords);
-R_roi_2.coords = mrAnatXformCoords(invDef,R_roi_2.coords);
-L_roi_3.coords = mrAnatXformCoords(invDef,L_roi_3.coords);
-R_roi_3.coords = mrAnatXformCoords(invDef,R_roi_3.coords);
-% Clean the shape of the ROIs to fill holes due to the normalization
-L_roi_2 = dtiRoiClean(L_roi_2,3,{'fillHoles' 'dilate'});
-L_roi_3 = dtiRoiClean(L_roi_3,3,{'fillHoles' 'dilate'});
-R_roi_2 = dtiRoiClean(R_roi_2,3,{'fillHoles' 'dilate'});
-R_roi_3 = dtiRoiClean(R_roi_3,3,{'fillHoles' 'dilate'});
-% Save the rois
-dtiWriteRoi(L_roi_2,fullfile(sub_dir,'ROIs',L_roi_2.name));
-dtiWriteRoi(R_roi_2,fullfile(sub_dir,'ROIs',R_roi_2.name));
-dtiWriteRoi(L_roi_3,fullfile(sub_dir,'ROIs',L_roi_3.name));
-dtiWriteRoi(R_roi_3,fullfile(sub_dir,'ROIs',R_roi_3.name));
+% Load up template ROIs in MNI space and transform them to the subjects
+% native space.  dtiCreateRoiFromMniNifti also saves the ROIs
+[~, ~, L_roi_2]=dtiCreateRoiFromMniNifti(dt.dataFile, L_roi_2, invDef, 1);
+[~, ~, L_roi_3]=dtiCreateRoiFromMniNifti(dt.dataFile, L_roi_3, invDef, 1);
+[~, ~, R_roi_2]=dtiCreateRoiFromMniNifti(dt.dataFile, R_roi_2, invDef, 1);
+[~, ~, R_roi_3]=dtiCreateRoiFromMniNifti(dt.dataFile, R_roi_3, invDef, 1);
+
 % Load up predefined ROIs for the Arcuate fasciculus. These are computed in
 % AFQ_SegmentFiberGroups
 [L_roi_not, L_roi_1] = AFQ_LoadROIs(19,sub_dir);
@@ -138,5 +125,6 @@ if sum(strcmpi('showfibers', varargin)) > 0
     AFQ_RenderFibers(L_FG,'color',[1 0 0],'numfibers',300);
     b0 = readFileNifti(dt.files.b0);
     AFQ_AddImageTo3dPlot(b0,[-30 0 0]);
+    AFQ_RenderRoi(L_roi_1)
 end
 return
