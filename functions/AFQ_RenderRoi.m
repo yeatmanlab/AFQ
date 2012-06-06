@@ -30,7 +30,7 @@ if ~exist('color','var') || isempty(color)
     color = [1 0 0];
 end
 if ~exist('method', 'var') || isempty(method)
-    method = 'isosurface';
+    method = 'trimesh';
 end
 %% Render the ROI
 
