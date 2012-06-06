@@ -93,6 +93,11 @@ function lightH = AFQ_RenderFibers(fg,varargin)
 
 %% Argument checking
 
+% Check to make sure the fiber group isn't empty
+if isempty(fg.fibers) || length(fg.fibers) == 0
+    fprintf('Fiber group is empty\n');
+    return
+end
 % Check if a dt6 file was input
 if sum(strcmpi('dt',varargin)) > 0
     dt = varargin{find(strcmpi('dt',varargin))+1};
