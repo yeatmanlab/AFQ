@@ -34,6 +34,9 @@ if ~exist('method', 'var') || isempty(method)
 end
 %% Render the ROI
 
+% Get the current figure window handle
+f = gcf;
+
 % Compute the range of the coordinates in the roi
 roi_min = min(coords);
 roi_max = max(coords);
@@ -63,6 +66,10 @@ end
 
 % Old axis limits
 ax = axis;
+% If the axis only has X and Y limits set add Z limits
+if length(ax) == 4
+    ax(5) = roi_min(3); ax(6) = roi_max(3);
+end
 % New axis scaling
 ax2 = [roi_min(1) roi_max(1) roi_min(2) roi_max(2) roi_min(3) roi_max(3)];
 % Check if any part of the ROI will not be visible in the current axis and
