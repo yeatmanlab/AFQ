@@ -167,4 +167,7 @@ if rescale == 1
     axis(ax2);
 end
 
+% Turn hold on in case other features are added to the rendering
+hold on;
+
 return
