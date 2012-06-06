@@ -1,12 +1,17 @@
-function h = AFQ_RenderRoi(roi, color)
+function h = AFQ_RenderRoi(roi, color, method)
 % Render an ROI as a 3D surface
 %
-% h = AFQ_RenderRoi(roi, color)
+% h = AFQ_RenderRoi(roi, color , [method = 'surf'])
 %
 % Inputs:
 %
 % roi    = Roi structure or an Nx3 matrix of X,Y,Z coordinates
 % color  = The color to render the roi. Default is red: color = [1 0 0]
+% metnod = There are many ways to build a surface mesh from coordinates.
+%          method = 'isosurface' converts the coordinates to an image than
+%          uses isosurface to build a mesh. method = 'trimesh' builds a
+%          triangle mesh out of the coordinates and redners that as a
+%          surface mesh.
 %
 % Example:
 % fg = dtiReadFibers('L_Arcuate.mat'); roi = dtiReadRoi('roi1.mat');
@@ -24,20 +29,47 @@ end
 if ~exist('color','var') || isempty(color)
     color = [1 0 0];
 end
-
+if ~exist('method', 'var') || isempty(method)
+    method = 'isosurface';
+end
 %% Render the ROI
+
 % Compute the range of the coordinates in the roi
 roi_min = min(coords);
 roi_max = max(coords);
-% Create a binary image from the ROI
-im = CoordsToImg(coords);
-% Specify the corresponding X,Y,Z coordinate of each image index
-[X Y Z] = meshgrid(roi_min(1)-1:roi_max(1)+1,roi_min(2)-1:roi_max(2)+1,roi_min(3)-1:roi_max(3)+1);
-% Meshgrid outputs the dimensions in a different order so they must be
-% permuted
-X = permute(X,[2 1 3]);Y = permute(Y,[2 1 3]);Z = permute(Z,[2 1 3]);
-% Build a surface mesh of the image
-m = isosurface(X,Y,Z,im);
-% Render the surface.
-h = patch(m,'FaceColor',color,'EdgeColor','none');
-% h = isonormals(im,h);
+
+% Choose which method to use for rendering
+switch(method)
+    case {'isosurface', 'isosurf'}
+        % Create a binary image from the ROI
+        im = CoordsToImg(coords);
+        % Specify the corresponding X,Y,Z coordinate of each image index
+        [X Y Z] = meshgrid(roi_min(1)-1:roi_max(1)+1,roi_min(2)-1:roi_max(2)+1,roi_min(3)-1:roi_max(3)+1);
+        % Meshgrid outputs the dimensions in a different order so they must be
+        % permuted
+        X = permute(X,[2 1 3]);Y = permute(Y,[2 1 3]);Z = permute(Z,[2 1 3]);
+        % Build a surface mesh of the image
+        m = isosurface(X,Y,Z,im);
+        % Render the surface.
+        h = patch(m,'FaceColor',color,'EdgeColor','none');
+        % h = isonormals(im,h);
+    case {'trimesh' 'triangle' 'delaunay' 'trianglemesh'}
+        % Build the triangle mesh from the coordinates
+        Tri = delaunay(coords);
+        % Render the mesh as a surface
+        trisurf(Tri, coords(:,1), coords(:,2), coords(:,3),...
+            'facecolor',color,'edgecolor','none');
+end
+
+% Old axis limits
+ax = axis;
+% New axis scaling
+ax2 = [roi_min(1) roi_max(1) roi_min(2) roi_max(2) roi_min(3) roi_max(3)];
+% Check if any part of the ROI will not be visible in the current axis and
+% rescale the axis if needed.
+axnew(1:2:6) = min(vertcat(ax(1:2:6), ax2(1:2:6)));
+axnew(2:2:6) = max(vertcat(ax(2:2:6), ax2(2:2:6)));
+axis(axnew);
+
+% Turn hold on in case other features are added to the rendering
+hold on;
