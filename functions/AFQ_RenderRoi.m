@@ -57,8 +57,14 @@ switch(method)
         h = patch(m,'FaceColor',color,'EdgeColor','none');
         % h = isonormals(im,h);
     case {'trimesh' 'triangle' 'delaunay' 'trianglemesh'}
-        % Build the triangle mesh from the coordinates
-        Tri = delaunay(coords);
+        % Build the triangle mesh from the coordinates. Matlab changed the
+        % delaunay function at some point so first check whether it is the
+        % new or old version of the function
+        if exist('delaunay','builtin')
+            Tri = delaunay(coords);
+        else
+            Tri = delaunay3(coords(:,1),coords(:,2),coords(:,3))
+        end
         % Render the mesh as a surface
         trisurf(Tri, coords(:,1), coords(:,2), coords(:,3),...
             'facecolor',color,'edgecolor','none');
