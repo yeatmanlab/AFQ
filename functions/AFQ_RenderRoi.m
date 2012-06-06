@@ -32,7 +32,7 @@ roi_max = max(coords);
 % Create a binary image from the ROI
 im = CoordsToImg(coords);
 % Specify the corresponding X,Y,Z coordinate of each image index
-[X Y Z] = meshgrid(roi_min(1):roi_max(1),roi_min(2):roi_max(2),roi_min(3):roi_max(3));
+[X Y Z] = meshgrid(roi_min(1)-1:roi_max(1)+1,roi_min(2)-1:roi_max(2)+1,roi_min(3)-1:roi_max(3)+1);
 % Meshgrid outputs the dimensions in a different order so they must be
 % permuted
 X = permute(X,[2 1 3]);Y = permute(Y,[2 1 3]);Z = permute(Z,[2 1 3]);
