@@ -22,7 +22,7 @@ if(isstruct(coords))
 end
 
 if(~exist('bb','var')||isempty(bb))
-    bb = [min(coords); max(coords)];
+    bb = [min(coords)-1; max(coords)+1];
     if(~exist('imgXform','var')||isempty(imgXform))
         imgXform = eye(4);
         imgXform(1:3,4) = bb(1,:)'-1;
