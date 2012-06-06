@@ -37,3 +37,8 @@ z_y = repmat(coord(2), size(x_x,1), size(x_x,1));
 h(1) = surf(AFQ_TubeFromCoords([x_x x_y x_z],R,[1 0 0],subdivs));
 h(2) = surf(AFQ_TubeFromCoords([y_x y_y y_z],R,[0 1 0],subdivs));
 h(3) = surf(AFQ_TubeFromCoords([z_x z_y z_z],R,[0 0 1],subdivs));
+
+% Turn hold on in case other features are added to the rendering
+hold on;
+
+return
