@@ -202,7 +202,7 @@ end
 if sum(strcmpi('subdivs',varargin)) > 0
     subdivs = varargin{find(strcmpi('subdivs',varargin))+1};
 else
-    subdivs = 25;
+    subdivs = 20;
 end
 
 % color range for tract profile
@@ -275,6 +275,13 @@ if sum(strcmpi('numfibers',varargin)) > 0
         fibindx = randsample(length(fg.fibers),numfib);
         % retain only these fibers for the rendering
         fg.fibers = fg.fibers(fibindx);
+        % if there fiber specific coloring was defined make sure to retain
+        % the correct color values
+        if iscell(color)
+            color = color(fibindx);
+        elseif size(color,1) > 1
+            color = color(fibindx,:);
+        end
     end
 end
 
@@ -392,6 +399,12 @@ if computeTP
 end
 if exist('TP','var') && ~isempty(TP)
     AFQ_RenderTractProfile(TP.coords,rTP,TP.vals.fa,30,cmap,crange);
+end
+
+% Render the ROIs if they were passed in
+if exist('roi1','var')&&exist('roi2','var')&&~isempty(roi1)&&~isempty(roi2)
+    AFQ_RenderRoi(roi1,[1 0 0]);
+    AFQ_RenderRoi(roi2,[1 0 0]);
 end
 %% Set the lighting, axes, etc.
 

@@ -12,11 +12,11 @@ function h = AFQ_RenderRoi(roi, color, method, render)
 %          uses isosurface to build a mesh. method = 'trimesh' builds a
 %          triangle mesh out of the coordinates and redners that as a
 %          surface mesh.
-% render = What to render in the ender. Either the roi surface: render =
-%          'surface' or a wire frame: render = 'wire'
-% Example:
-% fg = dtiReadFibers('L_Arcuate.mat'); roi = dtiReadRoi('roi1.mat');
-% AFQ_RenderFiber(fg); % Render the fibers
+% render = What to render. Either the roi surface: render = 'surface' or a
+% wire frame: render = 'wire' 
+%
+% Example: fg = dtiReadFibers('L_Arcuate.mat');
+% roi = dtiReadRoi('roi1.mat'); AFQ_RenderFiber(fg); % Render the fibers
 % AFQ_RenderRoi(roi, [1 .5 0]); % Render the roi in orange
 %
 % Copyright Jason D Yeatman June 2012
