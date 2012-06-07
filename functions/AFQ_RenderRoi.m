@@ -68,6 +68,9 @@ switch(method)
         % Render the mesh as a surface
         trisurf(Tri, coords(:,1), coords(:,2), coords(:,3),...
             'facecolor',color,'edgecolor','none');
+        
+        % NOTE in the future we should probably use DelaunayTri
+        % convhull(coords, 'simplify',true)
 end
 
 % Old axis limits

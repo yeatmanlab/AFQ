@@ -1,6 +1,8 @@
 function [roi1 roi2] = AFQ_LoadROIs(fgNumber,sub_dir)
 % Load the two ROIs used to define a fiber group
 %
+% [roi1 roi2] = AFQ_LoadROIs(fgNumber,sub_dir)
+%
 % Inputs:
 % fgNumber = The number of the fiber group. For example 1 is left ATR and
 %            20 is right arcuate.
