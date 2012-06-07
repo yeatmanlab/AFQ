@@ -43,16 +43,32 @@ function lightH = AFQ_RenderFibers(fg,varargin)
 % fields TP.vals and TP.coords that define the values to be plotted and the
 % coordinates of the tract profile.  See AFQ_CreateTractProfile.
 %
+% AFQ_RenderFibers(fg,'color', rgbValues) - Render the fiber group in a
+% specific color.  rgbValues can be defined in 3 ways to do (1) uniform
+% coloring for the fiber group, (2) fiberwise coloring or (3) pointwise
+% coloring. 
+% (1) If rgbValues is a 1 by 3 vector of rgb values than each fiber is
+% colored that same color. The default color is gray [0.7 0.7 0.7]. To do
+% cyan for example rgbValues = [0 1 1].
+% (2) If rgbValues is a N by 3 vector where N is the number of fibers in
+% the fiber group, then each fiber in the group is rendered in its own
+% color. Each fiber's color is defined by the coresponding row of
+% rgbValues. For example to color each fiber a random color:
+% rgbValues=rand(length(fg.fibers),3)
+% (3) If rgbValues is a 1 by N cell array where N is the number of fibers
+% in the fiber group, then each node on fiber n is colored based on the
+% corresponding row of rgbValues{n}. This means that each cell must have
+% the same number of rows as the corresponding fiber in the fiber group.
+% For example to color each point on each fiber a color from the jet
+% colormap: 
+% for ii=1:length(fg.fibers), rgbValues{ii}=jet(size(fg.fibers{ii},2)), end
+%
 % AFQ_RenderFibers(fg,'camera', view) - Render the fiber group and view
 % from a specific plane.  The options for view are 'sagittal', 'coronal' or
 % 'axial'. The default is sagittal. View can also be defined with a 1 by 2
 % vector denoting the azimuth (horizontal rotation) and elevation (vertical
 % rotation) in degrees of the camera with respect to the fibers. See the
 % matlab view function
-%
-% AFQ_RenderFibers(fg,'color', rgbValues) - Render the fiber group in a
-% specific color.  Color is a 1 by 3 vector of rgb values. The default is
-% gray [0.7 0.7 0.7]. To do cyan for example rgbValues = [0 1 1].
 %
 % AFQ_RenderFibers(fg,'jittershading', jitter) - The darkness of each fiber
 % can be randomized slightly to make the fiber group take on more of a 3d
@@ -152,11 +168,6 @@ if sum(strcmpi('camera',varargin)) > 0
         % default light position
         lightPosition = [-60 0 0];
     end
-    %     if length(camera) ~= 2
-    %         camera = [270 0];
-    %         lightPosition = [-60 0 0];
-    %         warning('Camera angle needs 2 numbers. Set to default')
-    %     end
 else
     camera = [270 0]; %default camera angle is looking at the sagital plane
     lightPosition = [-60 0 0];
@@ -303,11 +314,28 @@ if tubes == 1
             Z(i,:)=z(i) + r(i)*(n(i,3)*cos(theta) + b(i,3)*sin(theta));
         end
         
-        % Set the color for each point on the mesh
-        C = ones(size(Z,1),size(Z,2),3);
-        C(:,:,1) = C(:,:,1).*color(1);
-        C(:,:,2) = C(:,:,2).*color(2);
-        C(:,:,3) = C(:,:,3).*color(3);
+        % Set the color for each point on the mesh        
+        if size(color,1) == 1 && size(color,2) == 3
+            % If 1 color was defined than use that color for each fiber
+            C = ones(size(Z,1),size(Z,2),3);
+            C(:,:,1) = C(:,:,1).*color(1);
+            C(:,:,2) = C(:,:,2).*color(2);
+            C(:,:,3) = C(:,:,3).*color(3);
+        elseif size(color,1) == length(fg.fibers) && size(color,2) == 3
+            % If color is a N x 3 array with a different color defined for
+            % each fiber than color fg.fibers{ii} the color defined by
+            % color(ii,:)
+            C = ones(size(Z,1),size(Z,2),3);
+            C(:,:,1) = C(:,:,1).*color(ii,1);
+            C(:,:,2) = C(:,:,2).*color(ii,2);
+            C(:,:,3) = C(:,:,3).*color(ii,3);
+        elseif iscell(color) && length(color) == length(fg.fibers)
+            % If color is a cell array where each cell contains a color for
+            % each point on the fiber than color each node fg.fibers{ii} 
+            % the colors defined in color{ii}
+            fcolor = reshape(color{ii},[N 1 3]);
+            C = repmat(fcolor,[1 subdivs 1]);
+        end
         
         % Add some random jitter to the shading so some fibers are slightly
         % lighter or darker
