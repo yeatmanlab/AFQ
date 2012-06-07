@@ -1,7 +1,7 @@
-function h = AFQ_RenderRoi(roi, color, method)
+function h = AFQ_RenderRoi(roi, color, method, render)
 % Render an ROI as a 3D surface
 %
-% h = AFQ_RenderRoi(roi, color , [method = 'surf'])
+% h = AFQ_RenderRoi(roi, color , [method = 'trimesh'], [render = 'surface'])
 %
 % Inputs:
 %
@@ -12,7 +12,8 @@ function h = AFQ_RenderRoi(roi, color, method)
 %          uses isosurface to build a mesh. method = 'trimesh' builds a
 %          triangle mesh out of the coordinates and redners that as a
 %          surface mesh.
-%
+% render = What to render in the ender. Either the roi surface: render =
+%          'surface' or a wire frame: render = 'wire'
 % Example:
 % fg = dtiReadFibers('L_Arcuate.mat'); roi = dtiReadRoi('roi1.mat');
 % AFQ_RenderFiber(fg); % Render the fibers
@@ -32,6 +33,20 @@ end
 if ~exist('method', 'var') || isempty(method)
     method = 'trimesh';
 end
+if ~exist('render','var') || isempty(render)
+    render = 'surface';
+end
+
+% Remove internal coordinates from the ROI so that all that are
+% left are the surface coordinates.
+% Convert coordinates to an image
+[roiImg, imgXform, bb] = dtiRoiToImg(coords);
+% Define the perimeter of the image
+roiImg = bwperim(roiImg);
+% Convert the image back to x,y,z coordinates
+roi = dtiRoiFromImg(roiImg, imgXform, bb);
+coords = roi.coords;
+
 %% Render the ROI
 
 % Get the current figure window handle
@@ -65,10 +80,15 @@ switch(method)
         else
             Tri = delaunay3(coords(:,1),coords(:,2),coords(:,3))
         end
-        % Render the mesh as a surface
-        trisurf(Tri, coords(:,1), coords(:,2), coords(:,3),...
-            'facecolor',color,'edgecolor','none');
-        
+        switch(render)
+            case {'surface' 'surf'}
+                % Render the mesh as a surface
+                trisurf(Tri, coords(:,1), coords(:,2), coords(:,3),...
+                    'facecolor',color,'edgecolor','none');
+            case {'wire'}
+                trimesh(Tri, coords(:,1), coords(:,2), coords(:,3),...
+                    'edgecolor',color);
+        end
         % NOTE in the future we should probably use DelaunayTri
         % convhull(coords, 'simplify',true)
 end
