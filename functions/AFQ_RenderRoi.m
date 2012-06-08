@@ -78,7 +78,7 @@ switch(method)
         if exist('delaunay','builtin')
             Tri = delaunay(coords);
         else
-            Tri = delaunay3(coords(:,1),coords(:,2),coords(:,3))
+            Tri = delaunay3(coords(:,1),coords(:,2),coords(:,3));
         end
         switch(render)
             case {'surface' 'surf'}
@@ -95,7 +95,7 @@ end
 
 % Old axis limits
 ax = axis;
-% If the axis only has X and Y limits set add Z limits
+% If the axis only has X and Y limits set, then add Z limits
 if length(ax) == 4
     ax(5) = roi_min(3); ax(6) = roi_max(3);
 end
