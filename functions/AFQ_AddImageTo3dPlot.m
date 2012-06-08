@@ -150,7 +150,7 @@ elseif find(plane) == 3
 end
 
 % Rescale the axis to fit the image
-if rescale == 1 && length(axis) ==6
+if rescale == 1
     % Old axis values
     ax = axis;
     % New axis scaling
@@ -161,7 +161,10 @@ if rescale == 1 && length(axis) ==6
     elseif find(plane) == 2
         ax2(3:4) = ax(3:4);
     elseif find(plane) == 3;
-        ax2(5:6) = ax(5:6);
+            a = get(gca);
+            if isfield(a,'ZLim')
+                ax2(5:6) = a.ZLim;
+            end
     end
     % Rescale axis
     axis(ax2);
