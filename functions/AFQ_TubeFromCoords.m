@@ -29,6 +29,10 @@ function [X Y Z C] = AFQ_TubeFromCoords(coords, r, color, subdivs)
 %
 % Copyright Jason D Yeatman
 
+if size(coords,1) == 3
+    coords = coords';
+end
+% X, Y and Z coordinates for the tube
 x = coords(:,1);
 y = coords(:,2);
 z = coords(:,3);
@@ -63,6 +67,6 @@ if size(color,1) == 1 && size(color,2) == 3
 elseif size(color,1) == size(coords,1)
     % If color has a row for each fiber than each fiber node will have its
     % own color
-    fcolor = reshape(color{ii},[N 1 3]);
+    fcolor = reshape(color,[N 1 3]);
     C = repmat(fcolor,[1 subdivs 1]);
 end

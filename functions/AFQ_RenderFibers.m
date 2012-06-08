@@ -295,53 +295,28 @@ end
 % Render each fiber as a tube (slow) if the parameter tubes == 1
 if tubes == 1
     for ii = 1:length(fg.fibers)
+        
         % X, Y and Z coordinates for the fiber
-        x = fg.fibers{ii}(1,:)';
-        y = fg.fibers{ii}(2,:)';
-        z = fg.fibers{ii}(3,:)';
+        coords = fg.fibers{ii};
         
-        % Initialize the variables for the mesh
-        N = length(x);
-        X=zeros(N,subdivs);
-        Y=zeros(N,subdivs);
-        Z=zeros(N,subdivs);
-        theta=0:(2*pi/(subdivs-1)):(2*pi);
-        
-        % frame seems to work better than frenet
-        [t,n,b]=frame(x,y,z,randn(1,3));
-        %[t,n,b]=frenet(x,y,z);
-        
-        % set the radius of the tubes
-        r=rFib*ones(N,1);
-        
-        % Build a mesh for the fibers
-        for i=1:N
-            X(i,:)=x(i) + r(i)*(n(i,1)*cos(theta) + b(i,1)*sin(theta));
-            Y(i,:)=y(i) + r(i)*(n(i,2)*cos(theta) + b(i,2)*sin(theta));
-            Z(i,:)=z(i) + r(i)*(n(i,3)*cos(theta) + b(i,3)*sin(theta));
-        end
-        
-        % Set the color for each point on the mesh        
+        % Build the mesh of the fiber. The coloring of the mesh will depend
+        % on whether color was defined for the full fiber group, for each
+        % fiber, or for each point on each fiber
         if size(color,1) == 1 && size(color,2) == 3
             % If 1 color was defined than use that color for each fiber
-            C = ones(size(Z,1),size(Z,2),3);
-            C(:,:,1) = C(:,:,1).*color(1);
-            C(:,:,2) = C(:,:,2).*color(2);
-            C(:,:,3) = C(:,:,3).*color(3);
+            [X Y Z C] = AFQ_TubeFromCoords(coords, rFib, color, subdivs);
         elseif size(color,1) == length(fg.fibers) && size(color,2) == 3
             % If color is a N x 3 array with a different color defined for
             % each fiber than color fg.fibers{ii} the color defined by
             % color(ii,:)
-            C = ones(size(Z,1),size(Z,2),3);
-            C(:,:,1) = C(:,:,1).*color(ii,1);
-            C(:,:,2) = C(:,:,2).*color(ii,2);
-            C(:,:,3) = C(:,:,3).*color(ii,3);
+            fColor = color(ii,:);
+            [X Y Z C] = AFQ_TubeFromCoords(coords, rFib, fColor, subdivs);
         elseif iscell(color) && length(color) == length(fg.fibers)
             % If color is a cell array where each cell contains a color for
-            % each point on the fiber than color each node fg.fibers{ii} 
+            % each point on the fiber than color each node fg.fibers{ii}
             % the colors defined in color{ii}
-            fcolor = reshape(color{ii},[N 1 3]);
-            C = repmat(fcolor,[1 subdivs 1]);
+            fColor = color{ii};
+            [X Y Z C] = AFQ_TubeFromCoords(coords, rFib, fColor, subdivs);
         end
         
         % Add some random jitter to the shading so some fibers are slightly
