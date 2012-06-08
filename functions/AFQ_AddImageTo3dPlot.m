@@ -150,7 +150,7 @@ elseif find(plane) == 3
 end
 
 % Rescale the axis to fit the image
-if rescale == 1
+if rescale == 1 && length(axis) ==6
     % Old axis values
     ax = axis;
     % New axis scaling
