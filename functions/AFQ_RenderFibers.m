@@ -133,7 +133,7 @@ if sum(strcmpi('camera',varargin)) > 0
                 camera = [270 0];
                 lightPosition = [-60 0 0];
             case 'axial'
-                camera = [0 91];
+                camera = [1 90];
                 lightPosition = [-60 0 0];
             case 'coronal'
                 camera = [0 0];
