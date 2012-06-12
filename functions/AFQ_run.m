@@ -179,36 +179,50 @@ end
 
 %% Generate Control Group Norms
 
-%  If no control subjects were input then use the norms published in
-%  Yeatman et al 2012
-if sum(sub_group)==length(sub_group)
-    control_norms=load('    ')
-else
-    [norms patient_data control_data]=AFQ_ComputeNorms(groupFA, groupMD, groupRD, groupAD, groupCL, sub_group);
-end
+% If no control group was entered then norms will only contain nans.
+[norms patient_data control_data] = AFQ_ComputeNorms(groupFA, groupMD, groupRD, groupAD, groupCL, sub_group);
 
 %% Identify Patients With Abnormal Diffusion Measurements
 
-property='FA';
-[abn abnTracts] = AFQ_ComparePatientsToNorms(patient_data, norms, afq.params.cutoff, property);
-
+property = 'FA';
+% Only run AFQ_ComparePatientsToNorms if norms were computed for the
+% property of interest for each tract
+if sum(isnan(eval(['norms.mean' property '(1,:)']))) == 20
+    fprintf('\nnorms are empty. skipping AFQ_ComparePatientsToNorms\n')
+    % If there are no norms than we can not identify which subjects are
+    % abnormal.  Hence these variables will be set to nan.
+    abn       = nan(length(sub_dirs,1));
+    abnTracts = nan(length(sub_dirs),20);
+else
+    [abn abnTracts] = AFQ_ComparePatientsToNorms(patient_data, norms, afq.params.cutoff, property);
+end
 %% Plot Abnormal Patients Against Control Population
 
-% percentiles to define normal range
-ci = afq.params.cutoff; 
-% loop over tracts and plot abnormal subjects
-for jj = 1:20
-    % Find subjects that show an abnormality on tract jj
-    sub_nums = find(abnTracts(:,jj));
-    % Generate a structure for a legend
-    L = {};
-    for ii = 1:length(sub_nums)
-        L{ii} = num2str(sub_nums(ii));
+% Only plot if norms were computed for each tract
+if sum(isnan(eval(['norms.mean' property '(1,:)']))) == 20
+    fprintf('\nnorms are empty. Skipping AFQ_plot\n')
+else
+    % percentiles to define normal range
+    ci = afq.params.cutoff;
+    % loop over tracts and plot abnormal subjects
+    for jj = 1:20
+        % Find subjects that show an abnormality on tract jj
+        sub_nums = find(abnTracts(:,jj));
+        % Generate a structure for a legend
+        L = {};
+        for ii = 1:length(sub_nums)
+            L{ii} = num2str(sub_nums(ii));
+        end
+        AFQ_plot(norms, patient_data,'individual','ci',ci,'subjects',sub_nums,'tracts',jj,'legend',L)
+        % AFQ_PlotResults(patient_data, norms, abn, afq.params.cutoff,property, afq.params.numberOfNodes, afq.params.outdir, afq.params.savefigs);
     end
-    AFQ_plot(norms, patient_data,'individual','ci',ci,'subjects',sub_nums,'tracts',jj,'legend',L)
-    % AFQ_PlotResults(patient_data, norms, abn, afq.params.cutoff,property, afq.params.numberOfNodes, afq.params.outdir, afq.params.savefigs);
 end
 
 %% Plot group means for the patients and the controls
 
-AFQ_plot('Patients', patient_data, 'Controls', control_data, 'group');
+% Only plot if there is data for patients and controls
+if sum(sub_group == 1) > 2 && sum(sub_group == 0) > 2
+    AFQ_plot('Patients', patient_data, 'Controls', control_data, 'group');
+else
+    fprintf('\nNot enough subjects for a group comparison\n')
+end
