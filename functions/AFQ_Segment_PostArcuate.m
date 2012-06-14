@@ -55,8 +55,8 @@ end
 % Load up template ROIs in MNI space and transform them to the subjects
 % native space.  dtiCreateRoiFromMniNifti also saves the ROIs
 %[~, ~, L_roi_2]=dtiCreateRoiFromMniNifti(dt.dataFile, L_roi_2, invDef, 1);
-%[~, ~, L_roi_3]=dtiCreateRoiFromMniNifti(dt.dataFile, L_roi_3, invDef, 1);
-[~, ~, R_roi_2]=dtiCreateRoiFromMniNifti(dt.dataFile, R_roi_2, invDef, 1);
+[~, ~, L_roi_3]=dtiCreateRoiFromMniNifti(dt.dataFile, L_roi_3, invDef, 1);
+%[~, ~, R_roi_2]=dtiCreateRoiFromMniNifti(dt.dataFile, R_roi_2, invDef, 1);
 [~, ~, R_roi_3]=dtiCreateRoiFromMniNifti(dt.dataFile, R_roi_3, invDef, 1);
 
 % Load up predefined ROIs for the Arcuate fasciculus. These are computed in
