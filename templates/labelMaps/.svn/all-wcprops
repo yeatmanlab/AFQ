@@ -1,0 +1,71 @@
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/repos/vistasoft/!svn/ver/3099/trunk/mrDiffusion/data/labelMaps
+END
+MNI_Brodmann.nii.gz
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/repos/vistasoft/!svn/ver/3099/trunk/mrDiffusion/data/labelMaps/MNI_Brodmann.nii.gz
+END
+MNI_Brodmann.txt
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vistasoft/!svn/ver/3099/trunk/mrDiffusion/data/labelMaps/MNI_Brodmann.txt
+END
+MNI_AAL.lut
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vistasoft/!svn/ver/3099/trunk/mrDiffusion/data/labelMaps/MNI_AAL.lut
+END
+dtiGetMoriLabels.m
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vistasoft/!svn/ver/3099/trunk/mrDiffusion/data/labelMaps/dtiGetMoriLabels.m
+END
+MNI_Brodmann.lut
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/repos/vistasoft/!svn/ver/3099/trunk/mrDiffusion/data/labelMaps/MNI_Brodmann.lut
+END
+dtiGetBrainLabel.m
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/repos/vistasoft/!svn/ver/3099/trunk/mrDiffusion/data/labelMaps/dtiGetBrainLabel.m
+END
+MNI_JHU_WM.nii.gz
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/repos/vistasoft/!svn/ver/3099/trunk/mrDiffusion/data/labelMaps/MNI_JHU_WM.nii.gz
+END
+MNI_JHU_WM.txt
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vistasoft/!svn/ver/3099/trunk/mrDiffusion/data/labelMaps/MNI_JHU_WM.txt
+END
+MNI_AAL.ref
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vistasoft/!svn/ver/3099/trunk/mrDiffusion/data/labelMaps/MNI_AAL.ref
+END
+MNI_AAL.nii.gz
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/repos/vistasoft/!svn/ver/3099/trunk/mrDiffusion/data/labelMaps/MNI_AAL.nii.gz
+END
+MNI_AAL.txt
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/repos/vistasoft/!svn/ver/3099/trunk/mrDiffusion/data/labelMaps/MNI_AAL.txt
+END
