@@ -40,10 +40,12 @@ template = fullfile(tdir,'MNI_EPI.nii.gz');
 
 % Path to the VOF ROIs in MNI space
 AFQbase = AFQ_directories;
-L_roi_2 = fullfile(AFQbase,'templates', 'L_Arcuate_PostSegment.nii.gz');
-R_roi_2 = fullfile(AFQbase,'templates', 'R_Arcuate_PostSegment.nii.gz');
-L_roi_3 = fullfile(AFQbase,'templates', 'L_LateralParietal.nii.gz');
-R_roi_3 = fullfile(AFQbase,'templates', 'R_LateralParietal.nii.gz');
+% L_roi_2 = fullfile(AFQbase,'templates', 'L_Arcuate_PostSegment.nii.gz');
+% R_roi_2 = fullfile(AFQbase,'templates', 'R_Arcuate_PostSegment.nii.gz');
+L_roi_3 = fullfile(AFQbase,'templates', 'L_Parietal.nii.gz');
+R_roi_3 = fullfile(AFQbase,'templates', 'R_Parietal.nii.gz');
+% L_roi_3 = fullfile(AFQbase,'templates', 'L_LateralParietal.nii.gz');
+% R_roi_3 = fullfile(AFQbase,'templates', 'R_LateralParietal.nii.gz');
 
 % Compute spatial normalization
 if ~exist('invDef','var') || isempty(invDef)
@@ -90,7 +92,9 @@ for ii = -3:3
     L_FG = dtiIntersectFibersWithRoi([],'and',[],roi_tmp,L_FG);
 end
 %L_FG = dtiIntersectFibersWithRoi([],'and',[],L_roi_2,L_FG);
-L_FG = dtiIntersectFibersWithRoi([],'and',[],L_roi_3,L_FG);
+% Make sure endpoints are in the parietal lobe
+L_FG = dtiIntersectFibersWithRoi([],'endpoints',4,L_roi_3,L_FG);
+% And that fibers do not head to far anterior
 L_FG = dtiIntersectFibersWithRoi([],'not',[],L_roi_not,L_FG);
 
 % Same for the right hemisphere fiber group
@@ -109,7 +113,9 @@ for ii = -3:3
     R_FG = dtiIntersectFibersWithRoi([],'and',[],roi_tmp,R_FG);
 end
 %R_FG = dtiIntersectFibersWithRoi([],'and',[],R_roi_2,R_FG);
-R_FG = dtiIntersectFibersWithRoi([],'and',[],R_roi_3,R_FG);
+% Make sure endpoints are in the parietal lobe
+R_FG = dtiIntersectFibersWithRoi([],'endpoints',4,R_roi_3,R_FG);
+% And that fibers do not head to far anterior
 R_FG = dtiIntersectFibersWithRoi([],'not',[],R_roi_not,R_FG);
 
 % Name the fiber groups
@@ -127,4 +133,5 @@ if sum(strcmpi('showfibers', varargin)) > 0
     AFQ_AddImageTo3dPlot(b0,[-30 0 0]);
     AFQ_RenderRoi(L_roi_1);
 end
+
 return
