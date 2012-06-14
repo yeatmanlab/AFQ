@@ -47,21 +47,22 @@ function lightH = AFQ_RenderFibers(fg,varargin)
 % specific color.  rgbValues can be defined in 3 ways to do (1) uniform
 % coloring for the fiber group, (2) fiberwise coloring or (3) pointwise
 % coloring. 
-% (1) If rgbValues is a 1 by 3 vector of rgb values than each fiber is
+% (1) If rgbValues is a 1 x 3 vector of rgb values than each fiber is
 % colored that same color. The default color is gray [0.7 0.7 0.7]. To do
 % cyan for example rgbValues = [0 1 1].
-% (2) If rgbValues is a N by 3 vector where N is the number of fibers in
+% (2) If rgbValues is a N x 3 vector where N is the number of fibers in
 % the fiber group, then each fiber in the group is rendered in its own
 % color. Each fiber's color is defined by the coresponding row of
 % rgbValues. For example to color each fiber a random color:
 % rgbValues=rand(length(fg.fibers),3)
-% (3) If rgbValues is a 1 by N cell array where N is the number of fibers
+% (3) If rgbValues is a 1 x N cell array where N is the number of fibers
 % in the fiber group, then each node on fiber n is colored based on the
 % corresponding row of rgbValues{n}. This means that each cell must have
 % the same number of rows as the corresponding fiber in the fiber group.
-% For example to color each point on each fiber a color from the jet
-% colormap: 
-% for ii=1:length(fg.fibers), rgbValues{ii}=jet(size(fg.fibers{ii},2)), end
+% For example to color each point on each fiber based on its FA value: 
+% vals = dtiGetValFromFibers(dt.dt6,fg,inv(dt.xformToAcpc),'fa');
+% rgb = vals2colormap(vals);
+% AFQ_RenderFibers(fg,'color',rgb);
 %
 % AFQ_RenderFibers(fg,'camera', view) - Render the fiber group and view
 % from a specific plane.  The options for view are 'sagittal', 'coronal' or
