@@ -1,7 +1,7 @@
 function [fa md rd ad cl SuperFibersGroup] = AFQ_ComputeTractProperties(fg_classified,dt,numberOfNodes,clip2rois,subDir)
 % Compute diffusion properties along the trajectory of the fiber groups
 %
-% [fa md rd ad cl SuperFibersGroup] = AFQ_ComputeTractProperties(fg_classified,dt,[numberOfNodes=30],[clip2rois=1],subDir)
+% [fa md rd ad cl SuperFibersGroup] = AFQ_ComputeTractProperties(fg_classified,dt,[numberOfNodes=30],[clip2rois=1],[subDir])
 % 
 % Input arguments:
 %  fg_classified  = Fiber group classified into 20 subgroups that
@@ -18,7 +18,9 @@ function [fa md rd ad cl SuperFibersGroup] = AFQ_ComputeTractProperties(fg_class
 %                   Otherwise the full trajectory is analyzed.
 %  
 %  subDir         = The directory containing the subjects dt6 file. This is
-%                   needed to find the subject's ROIs if clip2rois==1
+%                   needed to find the subject's ROIs if clip2rois==1. By
+%                   defualt the subject's directory will be searched for
+%                   based on the path given in the dt6 file (dt.dataFile).
 %
 % Outputs:
 % fa               = vector of Fractional anisotropy along fiber core.             
@@ -57,6 +59,11 @@ if isfield(dt,'qto_xyz')
 else
     valname = 'dt';
 end
+% if no subject directory was defined then define based on the dt6 file
+if ~exist('subDir','var') || isempty(subDir) && strcmp(valname, 'dt')
+    subDir = fileparts(dt.dataFile);
+end
+
 % loop over the fiber groups
 for jj=1:length(fg_classified.subgroupNames)
     % There are 20 fiber groups saved with the same structure. We will loop
