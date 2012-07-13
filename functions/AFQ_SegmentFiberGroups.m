@@ -1,4 +1,4 @@
-function [fg_classified,fg_unclassified]= ...
+function [fg_classified,fg_unclassified,classification,fg] = ...
     AFQ_SegmentFiberGroups(dt6File, fg, Atlas, ...
     useRoiBasedApproach, useInterhemisphericSplit)
 % Categorizes each fiber in a group based on Mori white matter atlas. 
@@ -69,7 +69,22 @@ function [fg_classified,fg_unclassified]= ...
 %                   one of Mori Groups. Respective group labeles are stored
 %                   in fg.subgroups field.
 % fg_unclassified - fiber structure containing the rest of the (not Mori) fibers.
-%
+% classification  - This variable gives the fiber group names and the group
+%                   fiber group number for each fiber in the input group
+%                   fg.  classification is a structure with two fields.
+%                   classification.names is a cell array where each cell is
+%                   the name of that fiber group. For example
+%                   classification.names{3} = 'Corticospinal tract L'.
+%                   classification.index is a vector that defines which
+%                   group number each fiber in the origional fiber group
+%                   was assigned to. For example
+%                   classification.index(150)=3 means that fg.fibers(150)
+%                   is part of the corticospinal tract fiber group.
+% fg              - This is the origional pre-segmented fiber group.  It
+%                   may differ slightly from the input due to preprocessing
+%                   (eg splitting fibers that cross at the pons, removing 
+%                   fibers that a too short)
+%                    
 % Example:
 %    AFQdata = '/home/jyeatman/matlab/svn/vistadata/AFQ';
 %    dt6File = fullfile(AFQdata, 'subj2', 'dt6.mat');
@@ -80,7 +95,8 @@ function [fg_classified,fg_unclassified]= ...
 % (c) Vistalab
 
 %% Check arguments
-if ~exist('useInterhemisphericSplit', 'var')|| isempty(useInterhemisphericSplit)
+
+if ~exist('useInterhemisphericSplit', 'var') || isempty(useInterhemisphericSplit)
     useInterhemisphericSplit=true;
 end
 
@@ -100,7 +116,7 @@ if isnumeric(useRoiBasedApproach)
     minDist=useRoiBasedApproach(1);
     useRoiBasedApproach='true';
 else
-    minDist=2; %.89;
+    minDist=2; %defualt is .89;
 end
 display(['Fibers that get as close to the ROIs as ' num2str(minDist) 'mm will become candidates for the Mori Groups']);
 % This is left as an option in case an updated atlas is released
@@ -108,7 +124,6 @@ if(~exist('Atlas','var') || isempty(Atlas))
     %Default scenario: use original Mori Atlas
     Atlas='MNI_JHU_tracts_prob.nii.gz';
 end
-
 
 %% Read the data
 % Load the dt6 file
@@ -120,8 +135,15 @@ else
     baseDir = fileparts(dt.dataFile);
     dt6File = dt.dataFile;
 end
+% Track wholebrain fiber group if one was not passed in
+if ~exist('fg','var') || isempty(fg)
+    fg = AFQ_WholebrainTractography(dt);
+end
 % Load fiber group - Can be filename or the data
 if ischar(fg), fg = dtiLoadFiberGroup(fg); end
+% Create an array that will denote which fiber group each of these fibers
+% was assigned to.
+fiberIndex = zeros(length(fg.fibers),1);
 % Set the directory where templates can be found
 tdir = fullfile(fileparts(which('mrDiffusion.m')), 'templates');
 % Initialize spm defualts for normalization
@@ -168,7 +190,7 @@ labels = labels(1:20,2);
 % at the level of the pons
 if useInterhemisphericSplit
     fgname  = fg.name;
-    [fg]    = dtiSplitInterhemisphericFibers(fg, dt, -10);
+    fg      = dtiSplitInterhemisphericFibers(fg, dt, -10);
     fg.name = fgname;
 end
 % Throw out fibers that are too short to span between two ROIs
@@ -180,7 +202,6 @@ if sum(cellfun(@length, fg.fibers)<5)~=0
         fg.seeds(cellfun(@length, fg.fibers)<5, :)=[];
     end
     fg.fibers(cellfun(@length, fg.fibers)<5)=[];
-    fprintf('Removing %s fibers with 5 points or less \n', num2str(sum(cellfun(@length, fg.fibers)<5)));
 end
 
 % Warp the fibers to the MNI standard space so they can be compared to the
@@ -198,6 +219,7 @@ sz = size(moriTracts.data);
 fgCoords = mrAnatXformCoords(moriTracts.qto_ijk, horzcat(fg_sn.fibers{:}));
 clear fg_sn;   % what we need from fg_sn is now stored in fgCoords
 fgLen = cellfun('size',fg.fibers,2);
+
 % Now loop over the 20 atlases and get the atlas probability score for each
 % fiber point. We collapse the scores across all points in a fiber by taking
 % the mean. Below, we will use these 20 mean scores to categorize the fibers.
@@ -217,19 +239,21 @@ for(ii=1:sz(4))
     end
 end
 clear p fgCoords;
+
 %% Find fibers that pass through both waypoint ROIs eg. Wakana 2007
 %Warp Mori ROIs to individual space; collect candidates for each fiber
-%group based on protocol of 2 or > ROIs a fiber should travel through.
-%The following ROIs are saved within
-%trunk/mrDiffusion/templates/MNI_JHU_tracts_ROIs folder and are created using MNI template as
-%described in Wakana et al.(2007) Neuroimage 36 with a single modification:
-%For SLFt Roi2, they recommend drawing the ROI at the AC level, whereas we
-%use a slice just inferior of CC splenium. The reason for this modification
-%is that Wakana et al. ACPC aligned images appear different from MNI images
-%(the latter we use for defininng ROIs). If defining SLFt-Roi2 on a slice
-%actually at the AC level (althought highly consistently across human
-%raters), many SLFt fibers were not correctly labeled as they extend
-%laterally into temporal lobe just above the aforementioned ROI plane.
+%group based on protocol of 2 or > ROIs a fiber should travel through. The
+%following ROIs are saved within
+%trunk/mrDiffusion/templates/MNI_JHU_tracts_ROIs folder and are created
+%using MNI template as described in Wakana et al.(2007) Neuroimage 36 with
+%a single modification: For SLFt Roi2, they recommend drawing the ROI at
+%the AC level, whereas we use a slice just inferior of CC splenium. The
+%reason for this modification is that Wakana et al. ACPC aligned images
+%appear different from MNI images (the latter we use for defininng ROIs).
+%If defining SLFt-Roi2 on a slice actually at the AC level (althought
+%highly consistently across human raters), many SLFt fibers were not
+%correctly labeled as they extend laterally into temporal lobe just above
+%the aforementioned ROI plane.
 if useRoiBasedApproach 
     % A 20x2 cell array containing the names of both waypoint ROIs for each
     % of 20 fiber groups
@@ -285,6 +309,9 @@ if useRoiBasedApproach
     %Note: forceps major and minor should NOT have interhemipsheric fibers
     % excluded
     keep3(:, 9:10)=keep3(:, 9:10).*0;
+    % fp is the variable containing each fibers score for matching the
+    % atlas. We will set each fibers score to 0 if it does not pass through
+    % the necessary ROIs
     fp(~(keep1'&keep2'&~keep3'))=0;
     %Also note: Tracts that cross through slf_t rois should be automatically
     %classified as slf_t, without considering their probs.
@@ -303,6 +330,7 @@ curAtlasFibers = cell(1,sz(4));
 for ii=1:sz(4)
     curAtlasFibers{ii} = find(atlasInd(1,:)==ii & goodEnough);
 end
+
 % We now have a cell array (curAtlasFibers) that contains 20 arrays, each
 % listing the fiber indices for the corresponding atlas group. E.g.,
 % curAtlasFibers{3} is a list of indices into fg.fibers that specify the
@@ -317,30 +345,43 @@ if ~isempty(fg.seeds)
 end
 fg_unclassified.subgroup=zeros(size(fg.fibers(unclassified)))'+(1+sz(4));
 fg_unclassified.subgroupNames(1)=struct('subgroupIndex', 1+sz(4), 'subgroupName', 'NotMori');
+
+% Create a fiber group for classified fibers
+fg_classified = fg;
 % Modify fg.fibers to discard the fibers that didn't make it into any of
 % the atlas groups:
-fg.name=[fg.name ' Mori Groups'];
-fg.fibers = fg.fibers([curAtlasFibers{:}]);
+fg_classified.name=[fg.name ' Mori Groups'];
+fg_classified.fibers = fg.fibers([curAtlasFibers{:}]);
 if ~isempty(fg.seeds)
-    fg.seeds = fg.seeds([curAtlasFibers{:}],:);
+    fg_classified.seeds = fg.seeds([curAtlasFibers{:}],:);
 end
-% We changed the size of fg.fibers by discarding the uncategorized fibers,
-% so we need to create a new array to categorize the fibers. This time we
-% make an array with one entry corresponding to each fiber, with integer
-% values indicating to which atlas group the corresponding fiber belongs.
-fg.subgroup = zeros(1,numel(fg.fibers));
+
+% We changed the size of fg_classified.fibers by discarding the
+% uncategorized fibers, so we need to create a new array to categorize the
+% fibers. This time we make an array with one entry corresponding to each
+% fiber, with integer values indicating to which atlas group the
+% corresponding fiber belongs.
+fg_classified.subgroup = zeros(1,numel(fg_classified.fibers));
 curInd = 1;
 for(ii=1:numel(curAtlasFibers))
-    fg.subgroup(curInd:curInd+numel(curAtlasFibers{ii})-1) = ii;
+    fg_classified.subgroup(curInd:curInd+numel(curAtlasFibers{ii})-1) = ii;
     %fghandle.subgroup(curInd:curInd+numel(curAtlasFibers{ii})-1) = ii;
     curInd = curInd+numel(curAtlasFibers{ii});
     %Save labels for the fiber subgroups within the file
-    fg.subgroupNames(ii)=struct('subgroupIndex', ii, 'subgroupName', labels(ii));
+    fg_classified.subgroupNames(ii)=struct('subgroupIndex', ii, 'subgroupName', labels(ii));
     %fghandle.subgroupNames(ii)=struct('subgroupIndex', ii, 'subgroupName', labels(ii));
 end
-% assign this segmented fiber group to the output variable fg_classified
-fg_classified=fg;
-clear fg
+
+% Create a structure denoting the fiber group number that each fiber in
+% the origional wholebrain group was assigned to
+for ii = 1 : length(curAtlasFibers)
+    fiberIndex(curAtlasFibers{ii}) = ii;
+    names{ii} = fg_classified.subgroupNames(ii).subgroupName;
+end
+
+% Create a structure with fiber indices and group names.
+classification.index = fiberIndex;
+classification.names = names;
 
 return;
 
