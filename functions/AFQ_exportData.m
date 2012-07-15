@@ -27,7 +27,7 @@ function AFQ_exportData(data, filename, property, sub_ids)
 if ~exist('property','var') || isempty(property)
     property = 'FA';
     
-    % Check the the property was defined in the right case
+    % Check that the property was defined in the right case
 elseif isfield(data,lower(property))
     property = lower(property); 
 elseif isfield(data,upper(property))
