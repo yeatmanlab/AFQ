@@ -67,7 +67,7 @@ function [patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub
 
 %% Check Inputs
 if notDefined('sub_dirs'), error('No subject directories');  end
-if size(sub_dirs,1) == 1, sub_dirs = cellstr(sub_dirs); end
+if ischar(sub_dirs,1), sub_dirs = cellstr(sub_dirs); end
 if ~exist('sub_group', 'var') || isempty(sub_group), error('Must define subject group'); end
 if length(sub_group) ~= size(sub_dirs,1)
     error('Mis-match between subject group description and subject data directories');
