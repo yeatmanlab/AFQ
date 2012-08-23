@@ -20,10 +20,12 @@ switch(param)
     case 'images'
         afq.files.images(end+1).path = varargin{1};
         if length(varargin) > 1
-            afq.files.images(end+1).name = varargin{2};
+            afq.files.images(end).name = varargin{2};
         else
-            [path, name, ext] = fileparts(varargin{1});
-            afq.files.images(end+1).name = name;
+            s = strfind(varargin{1}{1},'/');
+            p = strfind(varargin{1}{1},'.');
+            name = varargin{1}{1}(s(end)+1:p(end)-1);
+            afq.files.images(end).name = name;
         end
         
     case 'vals'
