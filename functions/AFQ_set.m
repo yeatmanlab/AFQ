@@ -24,7 +24,8 @@ switch(param)
         else
             s = strfind(varargin{1}{1},'/');
             p = strfind(varargin{1}{1},'.');
-            name = varargin{1}{1}(s(end)+1:p(end)-1);
+            p = p(p > s(end));
+            name = varargin{1}{1}(s(end)+1:p(1)-1);
             afq.files.images(end).name = name;
         end
         
