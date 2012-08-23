@@ -67,16 +67,21 @@ function [patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub
 
 %% Check Inputs
 if notDefined('sub_dirs'), error('No subject directories');  end
+if size(sub_dirs,1) == 1, sub_dirs = cellstr(sub_dirs); end
 if ~exist('sub_group', 'var') || isempty(sub_group), error('Must define subject group'); end
-if length(sub_group) ~= length(sub_dirs)
+if length(sub_group) ~= size(sub_dirs,1)
     error('Mis-match between subject group description and subject data directories');
 end
 if ~exist('afq','var') || isempty(afq)
     afq = AFQ_Create; %if no parameters are defined use the defualts
 end
-
+if isempty(afq.sub_group)
+    afq = AFQ_set(afq,'sub_group',sub_group);
+end
 %%  Loop over every subject
 for ii=1:length(sub_dirs)
+    % Define the current subject to process
+    afq = AFQ_set(afq,'current subject',ii);
     %% Preprocess Data
     
     if ~exist(fullfile(sub_dirs{ii},'dt6.mat'),'file')
@@ -160,13 +165,17 @@ for ii=1:length(sub_dirs)
         fg_classified = dtiFgArrayToFiberGroup(fg_clean, 'MoriGroups');
     end
     
-    %% Calculate Fiber Tract Core and Extract FA for 30 Nodes
+    %% Compute Tract Profiles
     
+    % By default Tract Profiles of diffusion properties will always be
+    % calculated
     [fa md rd ad cl] = AFQ_ComputeTractProperties(fg_classified, dt, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii});
+    
     % Take the stats that were calculated in the previous function and add
     % them to a sructure for the full sample of subjects.  Each fiber group
-    % has its own cell. With each cell there is a row for each subject with
+    % has its own cell. Within each cell there is a row for each subject with
     % numberofnodes columns
+    % TODO: make object oriented and get rid of this
     for jj = 1:20
         groupFA{jj}(ii,:) = fa(:, jj);
         groupMD{jj}(ii,:) = md(:, jj);
@@ -174,13 +183,27 @@ for ii=1:length(sub_dirs)
         groupAD{jj}(ii,:) = ad(:, jj);
         groupCL{jj}(ii,:) = cl(:, jj);
     end
-    clear fa md rd ad cl
+    % Add values to the afq structure
+    afq = AFQ_set(afq,'vals','subnum',ii,'fa',fa,'md',md,'rd',rd,'ad',ad,'cl',cl);
+    
+    % If any other images were supplied calculate a Tract Profile for that
+    % parameter
+    numimages = AFQ_get(afq, 'numimages');
+    if numimages > 0;
+        for jj = 1:numimages
+            image = readFileNifti(afq.files.images(jj).path{ii});
+            imagevals = AFQ_ComputeTractProperties(fg_classified, image, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii});
+            afq = AFQ_set(afq,'vals', afq.files.images(jj).name, imagevals);
+            clear imagevals
+        end
+    end
+    
 end
 
 %% Generate Control Group Norms
 
 % If no control group was entered then norms will only contain nans.
-[norms patient_data control_data] = AFQ_ComputeNorms(groupFA, groupMD, groupRD, groupAD, groupCL, sub_group);
+[norms patient_data control_data afq] = AFQ_ComputeNorms(afq);
 
 %% Identify Patients With Abnormal Diffusion Measurements
 
@@ -191,16 +214,21 @@ if sum(isnan(eval(['norms.mean' property '(1,:)']))) == 20
     fprintf('\nnorms are empty. skipping AFQ_ComparePatientsToNorms\n')
     % If there are no norms than we can not identify which subjects are
     % abnormal.  Hence these variables will be set to nan.
-    abn       = nan(length(sub_dirs,1));
+    abn       = nan(length(sub_dirs),1);
     abnTracts = nan(length(sub_dirs),20);
-else
+elseif AFQ_get(afq,'number of patients') >=1
     [abn abnTracts] = AFQ_ComparePatientsToNorms(patient_data, norms, afq.params.cutoff, property);
+else
+    abn = nan;
+    abnTracts = nan;
 end
 %% Plot Abnormal Patients Against Control Population
 
 % Only plot if norms were computed for each tract
 if sum(isnan(eval(['norms.mean' property '(1,:)']))) == 20
     fprintf('\nnorms are empty. Skipping AFQ_plot\n')
+elseif ~exist('abn','var') || isnan(abn)
+    fprintf('\nNo patients. Skipping AFQ_plot\n')
 else
     % percentiles to define normal range
     ci = afq.params.cutoff;

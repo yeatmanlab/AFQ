@@ -86,8 +86,13 @@ switch(method)
                 trisurf(Tri, coords(:,1), coords(:,2), coords(:,3),...
                     'facecolor',color,'edgecolor','none');
             case {'wire'}
+                % Render a wire mesh
                 trimesh(Tri, coords(:,1), coords(:,2), coords(:,3),...
                     'edgecolor',color);
+            case {'tetramesh'}
+                % Render as a surface with tetramesh
+                tetramesh(Tri, coords(:,1), coords(:,2), coords(:,3),...
+                    'facecolor',color,'edgecolor','none');
         end
         % NOTE in the future we should probably use DelaunayTri
         % convhull(coords, 'simplify',true)

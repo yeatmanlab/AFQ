@@ -22,16 +22,24 @@ function afq = AFQ_Create(varargin)
 % (c) Jason D. Yeatman December 2011
 %
 
+%% Names of all the fiber groups
+afq.fgnames = {'Left Thalmic Radiation','Right Thalmic Radiation','Left Corticospinal','Right Corticospinal', 'Left Cingulum Cingulate', 'Right Cingulum Cingulate'...
+    'Left Cingulum Hippocampus','Right Cingulum Hippocampus', 'Callosum Forceps Major', 'Callosum Forceps Minor'...
+    'Left IFOF','Right IFOF','Left ILF','Right ILF','Left SLF','Right SLF','Left Uncinate','Right Uncinate','Left Arcuate','Right Arcuate'};
+
 %% Attach a structure of values to the afq structure
-vals.fa = [];
-vals.md = [];
-vals.rd = [];
-vals.ad = [];
-vals.cl = [];
+vals.fa = {};
+vals.md = {};
+vals.rd = {};
+vals.ad = {};
+vals.cl = {};
 afq.vals = vals;
 
 %% Attach a cell array of subject names to the afq structure
 afq.sub_names = {};
+
+%% Attach a vector of subject groups to afq structure
+afq.sub_group = [];
 
 %% Attach a vector of subject id numbers to the afq structure
 afq.sub_nums = [];
@@ -54,6 +62,12 @@ TractProfiles = struct;
 for ii = 1:length(fgNames)
     afq.TractProfiles.(fgNames{ii}) = AFQ_CreateTractProfile('name',fgNames{ii});
 end
+
+%% Attach a structure pointing to each subjects data files
+
+afq.files.dt6 = {};
+afq.files.images = struct('name',{},'path',{});
+
 
 %% Set the afq.params structure with default parameters
 %  cutoff: The percentile cutoff to be used to determine what is "abnormal"
