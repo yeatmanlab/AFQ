@@ -1,24 +1,35 @@
 function afq = AFQ_set(afq,param,varargin)
 % Set properties of afq object
 %
-% afq = AFQ_set(afq, param, varargin)
+% afq = AFQ_set(afq, param, vargrgin)
 %
-% Parameter list and associated values:
+% The afq structure stores all the AFQ computations.  AFQ_set is the main
+% function to add values, images, computations etc. to this structure.  As
+% inputs AFQ_set takes in an afq structure, a parameter defined as a
+% 'string' which is to be set, and a number of aditional arguments and
+% values that are specific to that parameter.  The arguments for each
+% parameter are described below.  AFQ_set always returns the modified afq
+% structure.  The structure can be queried and values can be accessed with
+% AFQ_get.  The structure is created with AFQ_Create.
+%
+% See also: AFQ_get AFQ_Create
+%
+% Parameter list and associated arguments:
 %
 %  param     - varargin
 %
-% 'images'         - Add images to compute tract profiles on. 
+% 'images'         - Add images to compute tract profiles on.
 %                    varargin = 1xN cell array (N is number of subjects) of
 %                    paths to nifti images.
-% 'vals'           - Add Tract Profile values to afq structure. 
+% 'vals'           - Add Tract Profile values to afq structure.
 %                    varargin = ('subnum', subnum, 'valnam', vals 'norms')         -
-% 'sub_group'      - Define subject group (patient=1 control=0) to afq 
-%                    structure.  
-%                    varargin = [1 1 1 0 0 0.....,] 
-% 'currentsubject' - Define current subject for afq computations
-%                    varargin = subjectnumber (eg. 10)
 % 'norms'          - Compute and assign control group norms to afq.norms
 %                    varargin = no argument needed
+% 'sub_group'      - Define subject group (patient=1 control=0) to afq
+%                    structure.
+%                    varargin = [1 1 1 0 0 0.....,]
+% 'currentsubject' - Define current subject for afq computations
+%                    varargin = subjectnumber (eg. 10)
 %
 % Written by Jason D. Yeatman August 2012
 
@@ -75,11 +86,14 @@ switch(param)
             end
         end
         
-    case 'sub_group' % Add subject grouping to afq.sub_group
+    case 'sub_group' % Define subject groups in afq.sub_group
         afq.sub_group = varargin{1};
         
     case 'currentsubject' % Define the current subject being analyzed
         afq.currentsub = varargin{1};
+        
+    otherwise
+        error('Uknown afq parameter');
 end
 
 
