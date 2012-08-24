@@ -67,9 +67,9 @@ function [patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub
 
 %% Check Inputs
 if notDefined('sub_dirs'), error('No subject directories');  end
-if ~iscell(sub_dirs,1), sub_dirs = cellstr(sub_dirs); end
+if ~iscell(sub_dirs), sub_dirs = cellstr(sub_dirs); end
 if ~exist('sub_group', 'var') || isempty(sub_group), error('Must define subject group'); end
-if length(sub_group) ~= size(sub_dirs,1)
+if length(sub_group) ~= size(sub_dirs,1) && length(sub_group) ~= size(sub_dirs,2)
     error('Mis-match between subject group description and subject data directories');
 end
 if ~exist('afq','var') || isempty(afq)
@@ -193,7 +193,7 @@ for ii=1:length(sub_dirs)
         for jj = 1:numimages
             image = readFileNifti(afq.files.images(jj).path{ii});
             imagevals = AFQ_ComputeTractProperties(fg_classified, image, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii});
-            afq = AFQ_set(afq,'vals', afq.files.images(jj).name, imagevals);
+            afq = AFQ_set(afq,'vals','subnum',ii,afq.files.images(jj).name, imagevals);
             clear imagevals
         end
     end

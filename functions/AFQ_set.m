@@ -31,7 +31,10 @@ switch(param)
         
     case 'vals'
         if length(varargin) >= 4
-            subnum = varargin{2};
+            if strcmp('subnum',varargin{1})
+                subnum = varargin{2};
+            else 
+                subnum = afq.currentsub;
             for ii = 3:2:length(varargin)
                 for jj = 1:20
                     % Take the stats that were calculated in
