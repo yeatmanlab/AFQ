@@ -35,6 +35,7 @@ switch(param)
                 subnum = varargin{2};
             else 
                 subnum = afq.currentsub;
+            end
             for ii = 3:2:length(varargin)
                 for jj = 1:20
                     % Take the stats that were calculated in
