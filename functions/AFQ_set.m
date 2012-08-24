@@ -7,17 +7,27 @@ function afq = AFQ_set(afq,param,varargin)
 %
 %  param     - varargin
 %
-% 'images'   - 1xN cell array (N is number of subjects) of paths to images
-%              to perform AFQ computations on
-% 'vals'     - 'subnum', subnum, 'valnam', vals
-% 'norms'    -
-% 'sub_group'- sub_group
+% 'images'         - Add images to compute tract profiles on. 
+%                    varargin = 1xN cell array (N is number of subjects) of
+%                    paths to nifti images.
+% 'vals'           - Add Tract Profile values to afq structure. 
+%                    varargin = ('subnum', subnum, 'valnam', vals 'norms')         -
+% 'sub_group'      - Define subject group (patient=1 control=0) to afq 
+%                    structure.  
+%                    varargin = [1 1 1 0 0 0.....,] 
+% 'currentsubject' - Define current subject for afq computations
+%                    varargin = subjectnumber (eg. 10)
+% 'norms'          - Compute and assign control group norms to afq.norms
+%                    varargin = no argument needed
+%
+% Written by Jason D. Yeatman August 2012
 
 % remove spaces and upper case
 param = mrvParamFormat(param);
 
 switch(param)
-    case 'images'
+    
+    case 'images' % Add images to afq.files.images
         afq.files.images(end+1).path = varargin{1};
         if length(varargin) > 1
             afq.files.images(end).name = varargin{2};
@@ -29,14 +39,20 @@ switch(param)
             afq.files.images(end).name = name;
         end
         
-    case 'vals'
+    case 'vals' % Add values to the afq.values field
         if length(varargin) >= 4
+            % Add the values to the correct row of the data matrix
             if strcmp('subnum',varargin{1})
+                % If the subject number was defined use that row
                 subnum = varargin{2};
-            else 
+            else
+                % Otherwise add to the row of the current subject that is
+                % being processed
                 subnum = afq.currentsub;
             end
+            % Loop over the values that wer input
             for ii = 3:2:length(varargin)
+                % Loop over the fiber tracts
                 for jj = 1:20
                     % Take the stats that were calculated in
                     % AFQ_ComputeTractProperties and add them to a sructure
@@ -48,7 +64,7 @@ switch(param)
             end
         end
         
-    case 'norms'
+    case 'norms' % Compute and assign control group norms to afq.norms
         valnames = fieldnames(afq.vals);
         for ii = 1:length(valnames)
             for jj = 1:length(afq.fgnames)
@@ -59,10 +75,10 @@ switch(param)
             end
         end
         
-    case 'sub_group'
+    case 'sub_group' % Add subject grouping to afq.sub_group
         afq.sub_group = varargin{1};
         
-    case 'currentsubject'
+    case 'currentsubject' % Define the current subject being analyzed
         afq.currentsub = varargin{1};
 end
 
