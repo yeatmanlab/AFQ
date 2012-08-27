@@ -29,7 +29,11 @@ function afq = AFQ_set(afq,param,varargin)
 %                    structure.
 %                    varargin = [1 1 1 0 0 0.....,]
 % 'currentsubject' - Define current subject for afq computations
-%                    varargin = subjectnumber (eg. 10)
+%                    varargin = [subject number]
+% 'overwritefibers'- Recompute fibers for a subject
+%                    varargin = [subject number]
+% 'overwritevals'  - Recompute Tract Profile values for a subject
+%                    varargin = [subject number]
 %
 % Written by Jason D. Yeatman August 2012
 
@@ -91,6 +95,14 @@ switch(param)
         
     case 'currentsubject' % Define the current subject being analyzed
         afq.currentsub = varargin{1};
+        
+    case 'overwritefibers' % Recompute fiber groups for subject # varargin
+        afq.overwrite.fibers.wholebrain(varargin{1}) = 1;
+        afq.overwrite.fibers.segmented(varargin{1})  = 1;
+        afq.overwrite.fibers.clean(varargin{1})      = 1;
+        
+    case 'overwritevals' % Recompute values for subject # varargin
+        afq.overwrite.vals(varargin{1}) = 1;
         
     otherwise
         error('Uknown afq parameter');

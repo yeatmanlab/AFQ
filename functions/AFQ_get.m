@@ -3,7 +3,7 @@ function val = AFQ_get(afq, param, varargin)
 %
 % val = AFQ_get(afq, param, varargin)
 %
-% param list:
+% param list:              - arguments:
 %
 % 'number of images'
 % 'subject group'
@@ -14,6 +14,11 @@ function val = AFQ_get(afq, param, varargin)
 % 'number of controls'
 % 'number of subjects'
 % 'number of fibergroups'
+% 'track whole brain'     - [subject number]
+% 'segmentfibers'         - [subject number]
+% 'cleanfibers'           - [subject number]
+% 'computevals'           - [subject number]
+%
 %
 % Written by Jason D. Yeatman August 2012
 
@@ -39,6 +44,26 @@ switch(param)
         val = length(afq.sub_group);
     case({'numberoffibergroups' 'numfg' 'numfibergroups' 'nfg' 'numberfibergroups'});
         val = length(afq.fgNames);
+    case{'trackwholebrain' 'trackfibers' 'track'}
+        val = logical(afq.overwrite.fibers.wholebrain(varargin{1})) || ...
+            isempty(afq.files.fibers.wholebrain{varargin{1}}) || ...
+            ~ischar(afq.files.fibers.wholebrain{varargin{1}});
+    case{'segmentfibers' 'segmentwholebrain'}
+        val = logical(afq.overwrite.fibers.segmented(varargin{1})) || ...
+            isempty(afq.files.fibers.segmented{varargin{1}}) || ...
+            ~ischar(afq.files.fibers.segmented{varargin{1}});
+    case{'cleanfibers' 'cleanfibergroups' 'cleanfg'}
+        val = logical(afq.overwrite.fibers.clean(varargin{1})) || ...
+            isempty(afq.files.fibers.clean{varargin{1}}) || ...
+            ~ischar(afq.files.fibers.clean{varargin{1}});
+    case{'computevals' 'computeprofiles' 'computetractprofiles' 'compute'}
+        % User wants to overwrite values for this subject
+        val = logical(afq.overwrite.vals(varargin{1})) || ...
+            % No values have been computed yet
+            isempty(afq.vals.fa) || ...
+            % Values have not yet been computed for this subject
+            size(afq.vals.fa{1},1) < varargin{1};
+            
     otherwise
         error('Uknown afq parameter');
 end

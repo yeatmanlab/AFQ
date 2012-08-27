@@ -1,7 +1,12 @@
-function [patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)
+function [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)
 % Run AFQ analysis on a set of subjects.
 %
-% [patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, [afq])
+% [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, [afq])
+%
+% AFQ_run is the main function to run the AFQ analysis pipeline.  Each AFQ
+% function is an independent module that can be run on its own.  However
+% when AFQ_run is used to analyze data all the proceeding analyses are
+% organized into the afq data structure.
 %
 % Input arguments:
 %  sub_dirs  = 1 x N cell array where N is the number of subjects in the
@@ -16,6 +21,7 @@ function [patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub
 %              parameters.  See AFQ_Create.
 %
 % Outputs: 
+% afq          = afq structure containing all the results
 % patient_data = A 1X20 structured array of tract diffusion profiles where
 %                data for each tract is in a cell of the structure (eg.
 %                patient_data(1) is data for the left thalamic radiation).

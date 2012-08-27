@@ -9,7 +9,7 @@ function afq = AFQ_Create(varargin)
 % example, if you call the function with
 %
 %    AFQ_Create('cutoff',[5 95]);  
-%
+%    AFQ_Create('sub_group',[1 1 1 0 0 0]); 
 % The afq.params.cutoff parameter will be set to [5 95].
 %
 % See Also: AFQ_Set AFQ_Get
@@ -63,12 +63,6 @@ for ii = 1:length(fgNames)
     afq.TractProfiles.(fgNames{ii}) = AFQ_CreateTractProfile('name',fgNames{ii});
 end
 
-%% Attach a structure pointing to each subjects data files
-
-afq.files.dt6 = {};
-afq.files.images = struct('name',{},'path',{});
-
-
 %% Set the afq.params structure with default parameters
 %  cutoff: The percentile cutoff to be used to determine what is "abnormal"
 %  The default is cutoff = [10 90] meaning that subjects who fall below the
@@ -115,10 +109,23 @@ afq.params.savefigs = 0;
 %  This will translate all of the parameters into the right format for the
 %  afq parameters structure.
 
-%% Modify default parameters based on user input
-afq.params = mrVarargin(afq.params, varargin);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Modify default parameters based on user input                          %
+afq.params = mrVarargin(afq.params, varargin);                            %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%% Attach a structure pointing to each subjects data files
+afq.files.dt6 = {};
+afq.files.images            = struct('name',{},'path',{});
+afq.files.fibers.wholebrain = cell(AFQ_get('num subs'),1);
+afq.files.fibers.segmented  = cell(AFQ_get('num subs'),1);
+afq.files.fibers.clean      = cell(AFQ_get('num subs'),1);
 
+%% Allow previous analyses to be overwritten
+afq.overwrite.fibers.wholebrain = zeros(AFQ_get('num subs'),1);
+afq.overwrite.fibers.segmented = zeros(AFQ_get('num subs'),1);
+afq.overwrite.fibers.clean = zeros(AFQ_get('num subs'),1);
+afq.overwrite.vals = zeros(AFQ_get('num subs',1));
 
 
 return
