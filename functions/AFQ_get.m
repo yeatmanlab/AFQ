@@ -18,7 +18,7 @@ function val = AFQ_get(afq, param, varargin)
 % 'segmentfibers'         - [subject number]
 % 'cleanfibers'           - [subject number]
 % 'computevals'           - [subject number]
-%
+% 'all vals'              - 'valname' eg ('fa')
 %
 % Written by Jason D. Yeatman August 2012
 
@@ -57,13 +57,50 @@ switch(param)
             isempty(afq.files.fibers.clean{varargin{1}}) || ...
             ~ischar(afq.files.fibers.clean{varargin{1}});
     case{'computevals' 'computeprofiles' 'computetractprofiles' 'compute'}
-        % User wants to overwrite values for this subject
+        % Check if user wants to overwrite values for this subject or
+        % No values have been computed yet or
+        % Values have not yet been computed for this subject
         val = logical(afq.overwrite.vals(varargin{1})) || ...
-            % No values have been computed yet
             isempty(afq.vals.fa) || ...
-            % Values have not yet been computed for this subject
             size(afq.vals.fa{1},1) < varargin{1};
-            
+    case{'vals' 'allvals' 'valsall'}
+        if ~exist('varargin' ,'var') || isempty(varargin)
+            error('Need to define which value: AFQ_get(afq,''vals'',''fa'')');
+        elseif(nargin == 3)
+            % First argument is the value name
+            valnames = fieldnames(afq.vals);
+            v = find(strcmpi(varargin{1},valnames));
+            if ~isempty(v)
+                valname = valnames{v};
+                val = horzcat(afq.vals.(valname){:});
+            else
+                error('%s values do not exist',varargin{1})
+            end
+        elseif(nargin == 4)
+            % Second argument is the subject group
+            switch(varargin{2})
+                case{'patient', 1}
+                    valnames = fieldnames(afq.patient_data);
+                    v = find(strcmpi(varargin{1},valnames));
+                    if ~isempty(v)
+                        valname = valnames{v};
+                        val = horzcat(afq.patient_data(:).(valname));
+                    else
+                        error('%s values do not exist',varargin{1})
+                    end
+                case{'control', 0}
+                    valnames = fieldnames(afq.control_data);
+                    v = find(strcmpi(varargin{1},valnames));
+                    if ~isempty(v)
+                        valname = valnames{strcmpi(varargin{1},valnames)};
+                        val = horzcat(afq.control_data(:).(valname));
+                    else
+                        error('%s values do not exist',varargin{1})
+                    end
+                otherwise
+                    error('Do you want vals for patients or controls?')
+            end
+        end
     otherwise
         error('Uknown afq parameter');
 end

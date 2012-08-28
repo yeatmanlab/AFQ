@@ -40,17 +40,15 @@ switch(method)
         % If the data is a single matrix of data then there is only one correction
         % to be done
         if size(data,1) > 2
-            for jj = 1:size(data,2)
-                for ii = 1:1000
+
+                for ii = 1:100
                     x = randn(size(data,1),1);
                     [c(ii,:) p(ii,:)] = corr(x, data, 'rows', 'pairwise');
                 end
-                pcut = p < 0.05 ./ jj;
-                num(:,jj) = sum(pcut,2);
-            end
-            keyboard
-            
 
+                cMax = max(c');
+                pMin = min(p');
+                
         elseif isstruct(data)
             
             % Compute the number of independent comparisons for each tract
@@ -97,7 +95,11 @@ switch(method)
         if size(data,1) > 2
             
             % Compute the correlation matrix between the columns of the data
-            c = corr(data,'rows','pairwise');
+            if sum(isnan(data(:))) == 0
+                c = corr(data);
+            else
+                c = corr(data,'rows','pairwise');
+            end
             % Compute the eigenvalues of the correlation matrix
             s = eig(c);
             % Calculate the variance in the eigenvalues

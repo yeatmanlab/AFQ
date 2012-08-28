@@ -22,6 +22,8 @@ function afq = AFQ_Create(varargin)
 % (c) Jason D. Yeatman December 2011
 %
 
+%% Define the type of structure
+afq.type = 'afq version 1';
 %% Names of all the fiber groups
 afq.fgnames = {'Left Thalmic Radiation','Right Thalmic Radiation','Left Corticospinal','Right Corticospinal', 'Left Cingulum Cingulate', 'Right Cingulum Cingulate'...
     'Left Cingulum Hippocampus','Right Cingulum Hippocampus', 'Callosum Forceps Major', 'Callosum Forceps Minor'...
@@ -111,21 +113,21 @@ afq.params.savefigs = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Modify default parameters based on user input                          %
-afq.params = mrVarargin(afq.params, varargin);                            %
+afq.params = afqVarargin(afq.params, varargin);                           %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Attach a structure pointing to each subjects data files
 afq.files.dt6 = {};
 afq.files.images            = struct('name',{},'path',{});
-afq.files.fibers.wholebrain = cell(AFQ_get('num subs'),1);
-afq.files.fibers.segmented  = cell(AFQ_get('num subs'),1);
-afq.files.fibers.clean      = cell(AFQ_get('num subs'),1);
+afq.files.fibers.wholebrain = cell(AFQ_get(afq,'num subs'),1);
+afq.files.fibers.segmented  = cell(AFQ_get(afq,'num subs'),1);
+afq.files.fibers.clean      = cell(AFQ_get(afq,'num subs'),1);
 
 %% Allow previous analyses to be overwritten
-afq.overwrite.fibers.wholebrain = zeros(AFQ_get('num subs'),1);
-afq.overwrite.fibers.segmented = zeros(AFQ_get('num subs'),1);
-afq.overwrite.fibers.clean = zeros(AFQ_get('num subs'),1);
-afq.overwrite.vals = zeros(AFQ_get('num subs',1));
+afq.overwrite.fibers.wholebrain = zeros(AFQ_get(afq,'num subs'),1);
+afq.overwrite.fibers.segmented = zeros(AFQ_get(afq,'num subs'),1);
+afq.overwrite.fibers.clean = zeros(AFQ_get(afq,'num subs'),1);
+afq.overwrite.vals = zeros(AFQ_get(afq,'num subs',1));
 
 
 return
