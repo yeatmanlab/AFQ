@@ -30,27 +30,35 @@ function [alphaFWE statFWE clusterFWE stats] = AFQ_MultiCompCorrection(data,y,al
 % correction
 %
 % Inputs:
-% data     = Either a matrix of data for a single tract, a matrix of data
-%            for all the tracts combined, or a cell array of data where
-%            each cell is the data for a single tract.
-% y        =
-% alpha    =
-% method   =
+% data     = Either a matrix of data for a single tract, or a matrix of data
+%            for all the tracts combined.
+% y        = A vector of either behavioral measurements or a binary 
+%            grouping variable for which pointwise statistics will be
+%            computed on the Tract Profile and the p-value adjusted for
+%            mulltiple comparisons will be determined.  If y is a
+%            continuous variable the correlations will be computed. If y is
+%            a binary vector then T-tests will be computed.
+% alpha    = The desired alpha (pvalue) to adjust
+% method   = 'permutation' or 'chevrud'. We strongly recomend 'permutation'
 %
 % Outputs:
-% numcomp = This is the total number of independent comparisons for the
-%           full dataset.  If the data is a cell array of data for
-%           different fiber groups then numcomp represents the number of
-%           comparisons for all the data concatinated together
-% alpha   = This is the alpha (p value) that corresponds to a alpha of 0.05
-%           after the correction for the number of independent comparisons.
-%           If the data is a cell array of data for different fiber groups
-%           then alpha represents the proper alpha if comparisons are done
-%           for every location on every tract
-% numcompT= The same as numcomp but done independently for each tract.
-%           This is apropriate to use if statistics are only being done
-%           for a single tract.
-% alphaT  = This is the same as alpha but done independently for each tract
+% alphaFWE   = This is the alpha (p value) that corresponds after adjustment 
+%              for multiple comparisons
+% statFWE    = This is the value of the statistic corresponding to alphaFWE.
+%              statFWE will either be a correlation coeficient or T-statistic
+% clusterFWE = Clusters of points on a Tract Profile that are larger than
+%              clusterFWE are significant at pvalue = alpha.
+% stats      = A structure containing the results of each permutation
+%
+% Example:
+%
+% % Get a matrix of Tract FA Profile values for all the tracts
+% data = AFQ_get(afq,'all vals', 'fa');
+% % Compute the corrected p-value for ttests along the tract
+% [alphaFWE statFWE] = AFQ_MultiCompCorrection(data,sub_group,0.05)
+% 
+% Written by Jason D. Yeatman, August 2012
+
 
 if ~exist('method','var') || isempty(method)
     method = 'permutation';
