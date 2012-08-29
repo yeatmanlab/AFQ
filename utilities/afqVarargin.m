@@ -53,7 +53,7 @@ if ~isempty(varArgIn)
         if isfield(yourStruct,varArgIn{ii})
             yourStruct = setfield(yourStruct, varArgIn{ii}, varArgIn{ii+1}); %#ok<*SFLD>
         else
-            warning('"%s" is not a valid field name.\n',varArgIn{ii}); %#ok<WNTAG>
+            %warning('"%s" is not a valid field name.\n',varArgIn{ii}); %#ok<WNTAG>
         end
     end
 end

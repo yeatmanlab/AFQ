@@ -113,6 +113,7 @@ afq.params.savefigs = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Modify default parameters based on user input                          %
+afq = afqVarargin(afq, varargin);                                         %
 afq.params = afqVarargin(afq.params, varargin);                           %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -123,6 +124,22 @@ afq.files.fibers.wholebrain = cell(AFQ_get(afq,'num subs'),1);
 afq.files.fibers.segmented  = cell(AFQ_get(afq,'num subs'),1);
 afq.files.fibers.clean      = cell(AFQ_get(afq,'num subs'),1);
 
+%% Add files from previous AFQ runs to afq structure
+for ii = 1:AFQ_get(afq,'num subs')
+    fibDir = fullfile(afq.sub_dirs{ii},'fibers');
+    wholebrainFG = fullfile(fibDir,'WholeBrainFG.mat');
+    segmentedFG = fullfile(fibDir,'MoriGroups.mat');
+    cleanFG = fullfile(fibDir,['MoriGroups_clean_D' num2str(afq.params.maxDist) '_L'  num2str(afq.params.maxLen) '.mat']);
+    if exist(wholebrainFG,'file')
+        afq.files.fibers.wholebrain{ii} = wholebrainFG;
+    end
+    if exist(segmentedFG,'file')
+        afq.files.fibers.segmented{ii} = segmentedFG;
+    end
+    if exist(cleanFG,'file')
+        afq.files.fibers.clean{ii} = cleanFG;
+    end
+end
 %% Allow previous analyses to be overwritten
 afq.overwrite.fibers.wholebrain = zeros(AFQ_get(afq,'num subs'),1);
 afq.overwrite.fibers.segmented = zeros(AFQ_get(afq,'num subs'),1);

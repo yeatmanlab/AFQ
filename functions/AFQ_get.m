@@ -44,18 +44,30 @@ switch(param)
         val = length(afq.sub_group);
     case({'numberoffibergroups' 'numfg' 'numfibergroups' 'nfg' 'numberfibergroups'});
         val = length(afq.fgNames);
-    case{'trackwholebrain' 'trackfibers' 'track'}
+    case{'dotracking' 'trackfibers' 'track'}
+        % Check if user wants to overwrite wholebrain tractography or
+        % Wholebrain fiber group has not been tracked
         val = logical(afq.overwrite.fibers.wholebrain(varargin{1})) || ...
             isempty(afq.files.fibers.wholebrain{varargin{1}}) || ...
             ~ischar(afq.files.fibers.wholebrain{varargin{1}});
-    case{'segmentfibers' 'segmentwholebrain'}
+    case{'wholebrainfibergroup' 'wholebrain' 'wholebrainfg'}
+            val = dtiReadFibers(afq.files.fibers.wholebrain{varargin{1}});
+    case{'dosegmentation'}
+        % Check if user wants to overwrite segmented fibers or
+        % Fibers have not yet been segmented
         val = logical(afq.overwrite.fibers.segmented(varargin{1})) || ...
             isempty(afq.files.fibers.segmented{varargin{1}}) || ...
             ~ischar(afq.files.fibers.segmented{varargin{1}});
-    case{'cleanfibers' 'cleanfibergroups' 'cleanfg'}
+    case{'segmentedfibers' 'morigroups'}
+            val = dtiReadFibers(afq.files.fibers.segmented{varargin{1}});
+    case{'docleaning'}
+        % Check if user wants to overwrite cleaned fibers for this subject or
+        % Fibers have not yet been cleaned 
         val = logical(afq.overwrite.fibers.clean(varargin{1})) || ...
             isempty(afq.files.fibers.clean{varargin{1}}) || ...
             ~ischar(afq.files.fibers.clean{varargin{1}});
+    case{'cleanfibers' 'cleanedfibers' 'cleanfg'}
+            val = dtiReadFibers(afq.files.fibers.clean{varargin{1}});
     case{'computevals' 'computeprofiles' 'computetractprofiles' 'compute'}
         % Check if user wants to overwrite values for this subject or
         % No values have been computed yet or

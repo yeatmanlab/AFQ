@@ -60,13 +60,17 @@ switch(param)
             if strcmp('subnum',varargin{1})
                 % If the subject number was defined use that row
                 subnum = varargin{2};
+                % The first value will be in varargin{3}
+                val1 = 3;
             else
                 % Otherwise add to the row of the current subject that is
                 % being processed
                 subnum = afq.currentsub;
+                % The first value will be in varargin{1}
+                val1 = 1;
             end
-            % Loop over the values that wer input
-            for ii = 3:2:length(varargin)
+            % Loop over the values that were input
+            for ii = val1:2:length(varargin)
                 % Loop over the fiber tracts
                 for jj = 1:20
                     % Take the stats that were calculated in
@@ -104,6 +108,51 @@ switch(param)
     case 'overwritevals' % Recompute values for subject # varargin
         afq.overwrite.vals(varargin{1}) = 1;
         
+    case {'wholebrainfgpath' 'wholebrainpath' 'wholebrainfg' 'wholebrainfibergroup'}
+        % Add the values to the correct row of the data matrix
+        if strcmp('subnum',varargin{1})
+            % If the subject number was defined use that row
+            subnum = varargin{2};
+            % The first value will be in varargin{3}
+            val1 = 3;
+        else
+            % Otherwise add to the row of the current subject that is
+            % being processed
+            subnum = afq.currentsub;
+            % The first value will be in varargin{1}
+            val1 = 1;
+        end
+        afq.files.fibers.wholebrain{subnum} = varargin{val1};
+    case {'segmentedfgpath' 'segmentedpath' 'segmentedfg' 'segmentedfibergroup'}
+        % Add the values to the correct row of the data matrix
+        if strcmp('subnum',varargin{1})
+            % If the subject number was defined use that row
+            subnum = varargin{2};
+            % The first value will be in varargin{3}
+            val1 = 3;
+        else
+            % Otherwise add to the row of the current subject that is
+            % being processed
+            subnum = afq.currentsub;
+            % The first value will be in varargin{1}
+            val1 = 1;
+        end
+        afq.files.fibers.segmented{subnum} = varargin{val1};
+    case {'cleanfgpath' 'cleanpath' 'cleanfg' 'cleanfibergroup'}
+        % Add the values to the correct row of the data matrix
+        if strcmp('subnum',varargin{1})
+            % If the subject number was defined use that row
+            subnum = varargin{2};
+            % The first value will be in varargin{3}
+            val1 = 3;
+        else
+            % Otherwise add to the row of the current subject that is
+            % being processed
+            subnum = afq.currentsub;
+            % The first value will be in varargin{1}
+            val1 = 1;
+        end
+        afq.files.fibers.clean{subnum} = varargin{val1};
     otherwise
         error('Uknown afq parameter');
 end

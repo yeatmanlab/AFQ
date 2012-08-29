@@ -22,6 +22,7 @@ function [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs,
 %
 % Outputs: 
 % afq          = afq structure containing all the results
+%
 % patient_data = A 1X20 structured array of tract diffusion profiles where
 %                data for each tract is in a cell of the structure (eg.
 %                patient_data(1) is data for the left thalamic radiation).
@@ -63,13 +64,14 @@ function [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs,
 %   % Create a vector of 0s and 1s defining who is a patient and a control
 %   sub_group = [1, 1, 1, 0, 0, 0]; 
 %   % Run AFQ in test mode to save time. No inputs are needed to run AFQ 
-%   % with the default settings 
-%   afq = AFQ_Create('run_mode','test'); 
-%   [patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)
+%   % with the default settings. AFQ_Create builds the afq structure. This
+%   % will also be done automatically by AFQ_run if the user does not wish 
+%   % to modify any parameters
+%   afq = AFQ_Create('run_mode','test', 'sub_dirs', sub_dirs, 'sub_group', sub_group); 
+%   [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)
 %
-% Copyright Stanford Vista Team 2011 Written by Jason D. Yeatman, Brian A.
-% Wandell and Robert F. Dougherty
-%
+% Copyright Stanford Vista Team, 2011. Written by Jason D. Yeatman,
+% Brian A. Wandell and Robert F. Dougherty
 
 %% Check Inputs
 if notDefined('sub_dirs'), error('No subject directories');  end
@@ -79,65 +81,88 @@ if length(sub_group) ~= size(sub_dirs,1) && length(sub_group) ~= size(sub_dirs,2
     error('Mis-match between subject group description and subject data directories');
 end
 if ~exist('afq','var') || isempty(afq)
-    afq = AFQ_Create; %if no parameters are defined use the defualts
+    %if no parameters are defined use the defualts
+    afq = AFQ_Create('sub_dirs',sub_dirs,'sub_group',sub_group); 
 end
 if isempty(afq.sub_group)
     afq = AFQ_set(afq,'sub_group',sub_group);
+end
+if isempty(afq.sub_dirs)
+    afq = AFQ_set(afq,'sub_dirs',sub_dirs);
 end
 %%  Loop over every subject
 for ii=1:length(sub_dirs)
     % Define the current subject to process
     afq = AFQ_set(afq,'current subject',ii);
+    
     %% Preprocess Data
     
     if ~exist(fullfile(sub_dirs{ii},'dt6.mat'),'file')
         error('AFQ preprocessing has not yet been implemented')
     end
-    
-    %% Perform Whole Brain Streamlines Tractography
     % Load Dt6 File
     dtFile = fullfile(sub_dirs{ii},'dt6.mat');
     dt     = dtiLoadDt6(dtFile);
-    %Check if whole=brain tractography has already been done
+    
+    %% Perform Whole Brain Streamlines Tractography
+    
+    %Check if there is a fibers directory, otherwise make one.
     fibDir = fullfile(sub_dirs{ii},'fibers');
     if ~exist(fibDir,'dir')
         mkdir(fibDir);
-    end   
-    % If some of the steps have already been done, there will be a
-    % WholeBrainFG.mat file.  So use that one.
-    if exist(fullfile(fibDir,'MoriGroups.mat'),'file')
-        fprintf('\nFound segmented fiber groups for subject %s',sub_dirs{ii});
-    elseif exist(fullfile(fibDir,'WholeBrainFG.mat'),'file')
-        fg = dtiLoadFiberGroup(fullfile(fibDir,'WholeBrainFG.mat'));
-    else
+    end 
+    % Check if wholebrain tractography should be done
+    if AFQ_get(afq, 'do tracking',ii) == 1
         % Perform whole-brain tractography
         fprintf('\nPerforming whole-brain tractograpy for subject %s\n',sub_dirs{ii});
         fg = AFQ_WholebrainTractography(dt, afq.params.run_mode);
         % Save fiber group to fibers directory
         dtiWriteFiberGroup(fg,fullfile(fibDir,'WholeBrainFG.mat'));
+        % Set the path to the fibers in the afq structure
+        afq = AFQ_set(afq,'wholebrain fg path','subnum',ii,fullfile(fibDir,'WholeBrainFG.mat'));
+        % Wholebrain fiber group is already in memory and does not need to
+        % be loaded
+        loadWholebrain = 0;
+    else
+        fprintf('\nWhole-brain tractography was already done for subject %s',sub_dirs{ii});
+        % Wholebrain fiber group needs to be loaded
+        loadWholebrain = 1;
     end
     
     %% Segment 20 Fiber Groups
     
-    if afq.params.cleanFibers == 1 && exist(fullfile(fibDir,['MoriGroups_clean_D' num2str(afq.params.maxDist) '_L'  num2str(afq.params.maxLen) '.mat']),'file')
-        fprintf('\nFound cleaned groups for subject %s',sub_dirs{ii});
-    elseif exist(fullfile(fibDir,'MoriGroups.mat'),'file')
-        fg_classified = dtiLoadFiberGroup(fullfile(fibDir,'MoriGroups.mat'));
-    else
+    % Check if fiber group segmentation was already done
+    if AFQ_get(afq, 'do segmentation',ii) == 1
+        % Load the wholebrain fiber group if necessary
+        if loadWholebrain == 1
+            fg = AFQ_get(afq,'wholebrain fiber group',ii);
+        end
         % Segment fiber file
         fg_classified = AFQ_SegmentFiberGroups(dtFile, fg);
         % Save segmented fiber group
         dtiWriteFiberGroup(fg_classified, fullfile(fibDir,'MoriGroups.mat'));
+        % Set the path to the fibers in the afq structure
+        afq = AFQ_set(afq, 'segmented fg path', 'subnum', ii, fullfile(fibDir,'MoriGroups.mat'));
+        % Segemented fiber group is already in memory and does not need to
+        % be loaded
+        loadSegmentation = 0;
         clear fg
+    else
+        fprintf('\nFiber tract segmentation was already done for subject %s',sub_dirs{ii});
+        % Segmentation needs to be loaded
+        loadSegmentation = 1;
     end
     clear dtFile fgFile
     
-    %% Remove outliers from each fiber tract so it is a compact bundle
+    %% Remove fiber outliers from each fiber tract so it is a compact bundle    
     
-    if afq.params.cleanFibers == 1 && exist(fullfile(fibDir,['MoriGroups_clean_D' num2str(afq.params.maxDist) '_L'  num2str(afq.params.maxLen) '.mat']),'file')
-        fg_classified = dtiLoadFiberGroup(fullfile(fibDir,['MoriGroups_clean_D' num2str(afq.params.maxDist) '_L'  num2str(afq.params.maxLen) '.mat']));
-        fg_classified = dtiFgArrayToFiberGroup(fg_classified, 'MoriGroups');
-    elseif afq.params.cleanFibers == 1
+    % Run AFQ cleaning proceedure if it is called for in
+    % afq.params.cleanFibers and if has not yet been done
+    if afq.params.cleanFibers == 1 && AFQ_get(afq, 'do cleaning', ii) == 1
+        % Load segmented fiber group if necessary
+        if loadSegmentation == 1
+            fg_classified = dtiLoadFiberGroup(fullfile(fibDir,'MoriGroups.mat'));
+        end
         % Remove all fibers that are too long and too far from the core of
         % the group.  This algorithm will constrain the fiber group to
         % something that can be reasonable represented as a 3d gaussian
@@ -167,43 +192,58 @@ for ii=1:length(sub_dirs)
             end
         end
         % Save cleaned fibers
-        dtiWriteFiberGroup(fg_clean, fullfile(fibDir,['MoriGroups_clean_D' num2str(afq.params.maxDist) '_L'  num2str(afq.params.maxLen) '.mat']));
+        cleanFgName = fullfile(fibDir,['MoriGroups_clean_D' num2str(afq.params.maxDist) '_L'  num2str(afq.params.maxLen) '.mat']);
+        dtiWriteFiberGroup(fg_clean, cleanFgName);
+        % Set the path to the fibers in the afq structure
+        afq = AFQ_set(afq, 'clean fg path', 'subnum', ii, cleanFgName);
+        % Convert fiber group back to a 1 cell structure for future
+        % computations
         fg_classified = dtiFgArrayToFiberGroup(fg_clean, 'MoriGroups');
+        
+    elseif afq.params.cleanFibers == 1
+        % If cleaning was already done then load the cleaned fiber group
+        fprintf('\nFiber tract cleaning was already done for subject %s',sub_dirs{ii});
+        fg_classified = AFQ_get(afq, 'cleaned fibers',ii);
+        fg_classified = dtiFgArrayToFiberGroup(fg_classified, 'MoriGroups');  
     end
     
     %% Compute Tract Profiles
     
-    % By default Tract Profiles of diffusion properties will always be
-    % calculated
-    [fa md rd ad cl] = AFQ_ComputeTractProperties(fg_classified, dt, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii});
-    
-    % Take the stats that were calculated in the previous function and add
-    % them to a sructure for the full sample of subjects.  Each fiber group
-    % has its own cell. Within each cell there is a row for each subject with
-    % numberofnodes columns
-    % TODO: make object oriented and get rid of this
-    for jj = 1:20
-        groupFA{jj}(ii,:) = fa(:, jj);
-        groupMD{jj}(ii,:) = md(:, jj);
-        groupRD{jj}(ii,:) = rd(:, jj);
-        groupAD{jj}(ii,:) = ad(:, jj);
-        groupCL{jj}(ii,:) = cl(:, jj);
-    end
-    % Add values to the afq structure
-    afq = AFQ_set(afq,'vals','subnum',ii,'fa',fa,'md',md,'rd',rd,'ad',ad,'cl',cl);
-    
-    % If any other images were supplied calculate a Tract Profile for that
-    % parameter
-    numimages = AFQ_get(afq, 'numimages');
-    if numimages > 0;
-        for jj = 1:numimages
-            image = readFileNifti(afq.files.images(jj).path{ii});
-            imagevals = AFQ_ComputeTractProperties(fg_classified, image, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii});
-            afq = AFQ_set(afq,'vals','subnum',ii,afq.files.images(jj).name, imagevals);
-            clear imagevals
+    if AFQ_get(afq,'compute profiles',ii)
+        fprintf('\nComputing Tract Profiles for subject %s',sub_dirs{ii});
+        % By default Tract Profiles of diffusion properties will always be
+        % calculated
+        [fa md rd ad cl] = AFQ_ComputeTractProperties(fg_classified, dt, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii});
+        
+        % Take the stats that were calculated in the previous function and add
+        % them to a sructure for the full sample of subjects.  Each fiber group
+        % has its own cell. Within each cell there is a row for each subject with
+        % numberofnodes columns
+        % TODO: make object oriented and get rid of this
+        for jj = 1:20
+            groupFA{jj}(ii,:) = fa(:, jj);
+            groupMD{jj}(ii,:) = md(:, jj);
+            groupRD{jj}(ii,:) = rd(:, jj);
+            groupAD{jj}(ii,:) = ad(:, jj);
+            groupCL{jj}(ii,:) = cl(:, jj);
         end
+        % Add values to the afq structure
+        afq = AFQ_set(afq,'vals','subnum',ii,'fa',fa,'md',md,'rd',rd,'ad',ad,'cl',cl);
+        
+        % If any other images were supplied calculate a Tract Profile for that
+        % parameter
+        numimages = AFQ_get(afq, 'numimages');
+        if numimages > 0;
+            for jj = 1:numimages
+                image = readFileNifti(afq.files.images(jj).path{ii});
+                imagevals = AFQ_ComputeTractProperties(fg_classified, image, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii});
+                afq = AFQ_set(afq,'vals','subnum',ii,afq.files.images(jj).name, imagevals);
+                clear imagevals
+            end
+        end
+    else
+        fprintf('\nTract Profiles already computed for subject %s',sub_dirs{ii});
     end
-    
 end
 
 %% Generate Control Group Norms
@@ -233,7 +273,7 @@ end
 % Only plot if norms were computed for each tract
 if sum(isnan(eval(['norms.mean' property '(1,:)']))) == 20
     fprintf('\nnorms are empty. Skipping AFQ_plot\n')
-elseif ~exist('abn','var') || isnan(abn)
+elseif ~exist('abn','var') || sum(isnan(abn))==1
     fprintf('\nNo patients. Skipping AFQ_plot\n')
 else
     % percentiles to define normal range

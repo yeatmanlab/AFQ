@@ -1,4 +1,4 @@
-function [alphaFWE statFWE clusterFWE stats] = AFQ_MultiCompCorrection(data,y,alpha, method, cluster)
+function [alphaFWE statFWE clusterFWE stats] = AFQ_MultiCompCorrection(data,y,alpha, method)
 % Compute a multiple comparison correction for Tract Profile data
 %
 %   [alphaFWE statFWE clusterFWE] = AFQ_MultiCompCorrection(data,y,alpha, method)
@@ -13,7 +13,8 @@ function [alphaFWE statFWE clusterFWE stats] = AFQ_MultiCompCorrection(data,y,al
 % return the faily wise error (FWE) corrected alpha value for pointwise
 % comparisons.  It will also compute the FWE corrected cluster size at the
 % user defined alpha.  This means that significant clusters of this size or
-% greater are significant at alpha with p-value adjustment.
+% greater are pass the multiple comparison threshold and do not need 
+% further p-value adjustment.
 %
 % method = 'chevrud'
 % This is an implementation of the multiple comparison correction proposed
@@ -57,26 +58,24 @@ end
 if ~exist('alpha','var') || isempty(alpha)
     alpha = 0.05;
 end
-if ~exist('cluster','var') || isempty(cluster)
-    cluster = 1;
-end
+
 % If y is continues perform a correlation if binary perform a ttest
 if ~exist('y','var') || isempty(y)
     y = randn(size(data,1),1);
     fprintf('No behavioral data provided so randn will be used');
-    stat = 'corr';
+    stattest = 'corr';
 elseif length(y)==sum(y==0 | y==1) || length(y)==sum(y==1 | y==2)
-    y = logical(y)
-    stat = 'ttest'
+    y = logical(y);
+    stattest = 'ttest';
 end
 
 switch(method)
     %% Permutation method
-    case 'permuatation'
+    case 'permutation'
         % number of permutations
         nperm = 1000;
         
-        switch(stat)
+        switch(stattest)
             case('corr')
                 for ii = 1:nperm
                     % Shuffle the rows of the data
@@ -86,19 +85,17 @@ switch(method)
             case('ttest')
                 for ii = 1:nperm
                     rows = Shuffle(y);
-                    for jj = 1:size(data,2)
-                        [~,p(ii,jj),~,tstats] = ttest2(data(rows,jj),data(~rows,jj));
-                        stat(ii,jj) = tstats.tstat;
-                    end
+                    [~,p(ii,:),~,tstats] = ttest2(data(rows,:),data(~rows,:));
+                    stat(ii,:) = tstats.tstat;
                 end
         end
         % Sort the pvals and associated statistics such that the first
         % entry is the most significant
-        stat.pMin = sort(min(p,[],2),'ascend');
-        stat.statMax = sort(max(stat,[],2),'descend');
+        stats.pMin = sort(min(p,[],2),'ascend');
+        stats.statMax = sort(max(stat,[],2),'descend');
         % Find the corrected alpha and statistic
-        alphaFWE = stat.pMin(round(alpha.*nperm));
-        statFWE = stat.statMax(round(alpha.*nperm));
+        alphaFWE = stats.pMin(round(alpha.*nperm));
+        statFWE = stats.statMax(round(alpha.*nperm));
         
         %% Cluster threshold
         % If a cluster size is defined, also determine the significant
@@ -116,9 +113,9 @@ switch(method)
             clusMax(ii) = max(clusSiz);
         end
         % Sort the clusters in descending order of significance
-        stat.clusMax = sort(clusMax,'descend');
+        stats.clusMax = sort(clusMax,'descend');
         % Find the corrected cluster size corresponding to alpha
-        clusterFWE = clusMax(round(alpha.*nperm))
+        clusterFWE = stats.clusMax(round(alpha.*nperm))
         
     case 'chevrud'
         %% PCA method (Chevrud et al.)
