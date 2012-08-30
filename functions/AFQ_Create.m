@@ -85,6 +85,8 @@ afq.params.run_mode = [];
 % standard deviations from the core of the tract will be removed.  this
 % means that fibers groups will be forced to be a compact bundle
 afq.params.cleanFibers = 1;
+% Maximum number of iteration of the cleaning algorithm
+afq.params.cleanIter = 5;
 % Remove fibers that are more than maxDist standard deviations from the
 % core of the tract
 afq.params.maxDist = 5;

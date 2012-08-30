@@ -187,7 +187,7 @@ for ii=1:length(sub_dirs)
                     end
                 else
                     % clean un-clipped fiber group
-                    fg_clean(jj) = AFQ_removeFiberOutliers(fg_clean(jj),afq.params.maxDist,afq.params.maxLen,afq.params.numberOfNodes,'mean',0);
+                    fg_clean(jj) = AFQ_removeFiberOutliers(fg_clean(jj),afq.params.maxDist,afq.params.maxLen,afq.params.numberOfNodes,'mean',0,afq.params.cleanIter);
                 end
             end
         end
