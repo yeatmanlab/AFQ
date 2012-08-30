@@ -34,18 +34,18 @@ if ~exist('method', 'var') || isempty(method)
     method = 'trimesh';
 end
 if ~exist('render','var') || isempty(render)
-    render = 'surface';
+    render = 'surf';
 end
 
-% Remove internal coordinates from the ROI so that all that are
-% left are the surface coordinates.
-% Convert coordinates to an image
-[roiImg, imgXform, bb] = dtiRoiToImg(coords);
-% Define the perimeter of the image
-roiImg = bwperim(roiImg);
-% Convert the image back to x,y,z coordinates
-roi = dtiRoiFromImg(roiImg, imgXform, bb);
-coords = roi.coords;
+% % Remove internal coordinates from the ROI so that all that are
+% % left are the surface coordinates.
+% % Convert coordinates to an image
+% [roiImg, imgXform, bb] = dtiRoiToImg(coords);
+% % Define the perimeter of the image
+% roiImg = bwperim(roiImg);
+% % Convert the image back to x,y,z coordinates
+% roi = dtiRoiFromImg(roiImg, inv(imgXform), bb);
+% coords = roi.coords;
 
 %% Render the ROI
 
@@ -84,18 +84,14 @@ switch(method)
             case {'surface' 'surf'}
                 % Render the mesh as a surface
                 trisurf(Tri, coords(:,1), coords(:,2), coords(:,3),...
-                    'facecolor',color,'edgecolor','none');
+                    'facecolor',color,'edgecolor','none',...
+                        'FaceAlpha',1,'FaceLighting','gouraud', ...
+                        'SpecularColorReflectance',.2,'ambientstrength',.7);
             case {'wire'}
                 % Render a wire mesh
                 trimesh(Tri, coords(:,1), coords(:,2), coords(:,3),...
                     'edgecolor',color);
-            case {'tetramesh'}
-                % Render as a surface with tetramesh
-                tetramesh(Tri, coords(:,1), coords(:,2), coords(:,3),...
-                    'facecolor',color,'edgecolor','none');
         end
-        % NOTE in the future we should probably use DelaunayTri
-        % convhull(coords, 'simplify',true)
 end
 
 % Old axis limits
