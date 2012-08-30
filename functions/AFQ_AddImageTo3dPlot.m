@@ -1,7 +1,7 @@
-function h = AFQ_AddImageTo3dPlot(nifti, slice, cmap, rescale)
+function h = AFQ_AddImageTo3dPlot(nifti, slice, cmap, rescale, alpha)
 % Add a slice from a nifti image to a 3D plot
 %
-% h = AFQ_AddImageTo3dPlot(nifti, slice, [cmap], [rescale])
+% h = AFQ_AddImageTo3dPlot(nifti, slice, [cmap], [rescale], alpha)
 %
 % Inputs:
 %
@@ -26,6 +26,9 @@ function h = AFQ_AddImageTo3dPlot(nifti, slice, cmap, rescale)
 %           to rescale the axis so the full image can be seen 
 %           [rescale = 1]. To preserve the current axis properties: 
 %           rescale = 0
+% 
+% alpha   = Alpha of the image. Value from 0 to 1 that sets how 
+%           transparent the image is.
 %
 % Output:
 %
@@ -51,6 +54,9 @@ if ~exist('cmap','var') || isempty(cmap)
 end
 if ~exist('rescale','var') || isempty(rescale)
     rescale = 1;
+end
+if ~exist('alpha','var') || isempty(alpha)
+    alpha = 1;
 end
 % Make sure only one plane was designated for plotting
 plane = ~isnan(slice);
@@ -131,7 +137,7 @@ if find(plane) == 1
     % Add the image to the current 3D plot
     z_dims = [min_z max_z; min_z max_z];
     h = surf([min_x max_x],[min_y max_y],z_dims,...
-        colorimg,'facecolor','texture');
+        colorimg,'facecolor','texture','ambientstrength',1,'facealpha',alpha);
 elseif find(plane) == 2
     % The image dimensions must be permuted to match what is expected in
     % surf
@@ -139,14 +145,14 @@ elseif find(plane) == 2
     % Add the image to the current 3D plot
     z_dims = [min_z min_z;   max_z max_z];
     h = surf([min_x max_x],[min_y max_y],z_dims,...
-        colorimg,'facecolor','texture');
+        colorimg,'facecolor','texture','ambientstrength',1,'facealpha',alpha);
 elseif find(plane) == 3
     % The image dimensions must be permuted to match what is expected in
     % surf
     colorimg=permute(colorimg,[2 1 3]);
     % Add the image to the current 3D plot
     h =surf([min_x max_x],[min_y max_y],repmat(min_z, [2 2]),...
-        colorimg,'facecolor','texture');
+        colorimg,'facecolor','texture','ambientstrength',1,'facealpha',alpha);
 end
 
 % Rescale the axis to fit the image
