@@ -213,7 +213,7 @@ for ii=1:length(sub_dirs)
         fprintf('\nComputing Tract Profiles for subject %s',sub_dirs{ii});
         % By default Tract Profiles of diffusion properties will always be
         % calculated
-        [fa md rd ad cl TractProfile{ii}] = AFQ_ComputeTractProperties(fg_classified, dt, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii});
+        [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified, dt, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii});
         
         % Take the stats that were calculated in the previous function and add
         % them to a sructure for the full sample of subjects.  Each fiber group
