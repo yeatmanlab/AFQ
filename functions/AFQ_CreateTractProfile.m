@@ -16,5 +16,6 @@ TractProfile.name = 'name';
 TractProfile.vals   = struct('fa',[],'md',[],'rd',[],'ad',[],'cl',[]);
 TractProfile.xform  = struct('acpc2mni',[],'mni2acpc',[],'acpc2dt6',[],'dt62acpc',[]);
 TractProfile.coords = struct('acpc',[],'mni',[],'dt6',[]);
+TractProfile.cov = [];
 
 
