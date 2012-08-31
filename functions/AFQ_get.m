@@ -19,7 +19,10 @@ function val = AFQ_get(afq, param, varargin)
 % 'cleanfibers'           - [subject number]
 % 'computevals'           - [subject number]
 % 'all vals'              - 'valname' eg ('fa')
-%
+% 'use mrtrix'
+% 'dt6path'               - [subject number]
+% 'tracking parameters'
+% 'mrtrixpaths'           - [subject number]
 % Written by Jason D. Yeatman August 2012
 
 % remove spaces and upper case
@@ -113,6 +116,21 @@ switch(param)
                     error('Do you want vals for patients or controls?')
             end
         end
+    case{'usemrtrix'}
+        if afq.software.mrtrix == 1 && ...
+                strcmp('mrtrix',afq.params.track.software)...
+                && afq.computeCSD == 1;
+            val = true;
+        else
+            val = false;
+        end
+    case{'dt6path'}
+        val = afq.files.dt6{varargin{1}};
+    case{'tracking parameters'}
+        val = afq.params.track;
+    case{'mrtrixpath' 'mrtrixpaths'}
+        val.csd = AFQ.files.mrtrix.csd{varargin{1}};
+        val.wm  = AFQ.files.mrtrix.wm{varargin{1}};
     otherwise
         error('Uknown afq parameter');
 end

@@ -8,8 +8,8 @@ function afq = AFQ_Create(varargin)
 % arguments to the function are in the form 'parameter','value'.  For
 % example, if you call the function with
 %
-%    AFQ_Create('cutoff',[5 95]);  
-%    AFQ_Create('sub_group',[1 1 1 0 0 0]); 
+%    AFQ_Create('cutoff',[5 95]);
+%    AFQ_Create('sub_group',[1 1 1 0 0 0]);
 % The afq.params.cutoff parameter will be set to [5 95].
 %
 % See Also: AFQ_Set AFQ_Get
@@ -56,14 +56,19 @@ afq.sub_group = {};
 
 % The names of each tract
 fgNames = {'L_ATR' 'R_ATR' 'L_CST' 'R_CST' 'L_Cingulum_C' 'R_Cingulum_C'...
-'L_Cingulum_H' 'R_Cingulum_H' 'Callosum_Post' 'Callosum_Ant' 'L_IFOF'...
-'R_IFOF' 'L_ILF' 'R_ILF' 'L_SLF' 'R_SLF' 'L_Uncinate' 'R_Uncinate'...
-'L_Arcuate' 'R_Arcuate'};
+    'L_Cingulum_H' 'R_Cingulum_H' 'Callosum_Post' 'Callosum_Ant' 'L_IFOF'...
+    'R_IFOF' 'L_ILF' 'R_ILF' 'L_SLF' 'R_SLF' 'L_Uncinate' 'R_Uncinate'...
+    'L_Arcuate' 'R_Arcuate'};
 TractProfiles = struct;
 % Add a field to afq.TractProfiles for each tract defined above
 for ii = 1:length(fgNames)
     afq.TractProfiles.(fgNames{ii}) = AFQ_CreateTractProfile('name',fgNames{ii});
 end
+
+%% Check which software packages are installed
+afq.software.mrvista = check_mrvista;
+afq.software.mrtrix = check_mrTrix;
+afq.software.spm = check_spm;
 
 %% Set the afq.params structure with default parameters
 %  cutoff: The percentile cutoff to be used to determine what is "abnormal"
@@ -107,6 +112,40 @@ afq.params.cleanClippedFibers = 0;
 afq.params.outdir = [];
 % Save figures? yes or no
 afq.params.savefigs = 0;
+% Whether or not to compute constrained spherical deconvolution using
+% mrtrix
+afq.params.computeCSD = 0;
+%% AFQ Fiber Tracking parameters
+% Do fiber tracking with mrdiffusion by default. The other option is
+% 'mrtrix' if it is installed and the data is HARDI
+afq.params.track.software = 'mrdiffusion';
+% Distance between steps in the tractography algoithm
+afq.params.track.stepSizeMm = 1;
+% Stopping criteria FA<0.2
+afq.params.track.faThresh = 0.2;
+% Discard Fibers shorter than 50mm or longer than 250mm
+afq.params.track.lengthThreshMm = [50 250];
+% Stopping criteria angle between steps >30 degrees
+afq.params.track.angleThresh = 30;
+% Unknown.....
+afq.params.track.wPuncture = 0.2;
+% There are multip.e algorithms that can be used.  We prefer STT. See:
+% Basser PJ, Pajevic S, Pierpaoli C, Duda J, Aldroubi A. 2000.
+% In vivo fiber tractography using DT-MRI data.
+% Magnetic Resonance in Medicine 44(4):625-32.
+afq.params.track.whichAlgorithm = 1;
+% Interpolation method. After each step we interpolate the tensor at that
+% point. Trilinear interpolation works well.
+afq.params.track.whichInterp = 1;
+% This adds some randomness to each seed point. Each seed point is move
+% randomly by randn*.1mm
+afq.params.track.offsetJitter = 0;
+% We seed in voxel in multiple locations. [0.25 and 0.75] Seeds each voxel
+% at 8 equidistant locations.  For one seed in the middle of the voxel use
+% afq.params.track.seedVoxelOffsets = 0.5;
+afq.params.track.seedVoxelOffsets = [0.25 0.75];
+% Mask from which to initialize tracking
+afq.params.track.faMaskThresh = 0.30;
 
 % TODO:
 %  Write a parameter translation routine based on mrvParamFormat()
@@ -148,5 +187,18 @@ afq.overwrite.fibers.segmented = zeros(AFQ_get(afq,'num subs'),1);
 afq.overwrite.fibers.clean = zeros(AFQ_get(afq,'num subs'),1);
 afq.overwrite.vals = zeros(AFQ_get(afq,'num subs',1));
 
+%% If desired compute constrained spherical deconvolution with mr trix
+if AFQ_get(afq,'use mrtrix')
+    for ii = 1:AFQ_get(afq,'num subs')
+        files = AFQ_mrtrixInit(AFQ_get(afq, 'dt6 path',ii));
+        AFQ.files.mrtrix.csd{ii} = files.csd;
+        AFQ.files.mrtrix.wm{ii} = files.wm;
+    end
+end
+% If mr trix is installed and CSD is computed then perform tracking on
+% constrained spherical deconvolution
+if afq.software.mrtrix == 1 && afq.computeCSD == 1
+    afq.params.track.software = 'mrtrix';
+end
 
 return
