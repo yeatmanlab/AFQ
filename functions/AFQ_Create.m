@@ -50,7 +50,7 @@ afq.sub_nums = [];
 afq.sub_dirs = {};
 
 %% Attach a vector to define each subject's group
-afq.sub_group = {};
+afq.sub_group = [];
 
 %% Attach the tract profile structure to the afq structure
 
@@ -59,11 +59,11 @@ fgNames = {'L_ATR' 'R_ATR' 'L_CST' 'R_CST' 'L_Cingulum_C' 'R_Cingulum_C'...
     'L_Cingulum_H' 'R_Cingulum_H' 'Callosum_Post' 'Callosum_Ant' 'L_IFOF'...
     'R_IFOF' 'L_ILF' 'R_ILF' 'L_SLF' 'R_SLF' 'L_Uncinate' 'R_Uncinate'...
     'L_Arcuate' 'R_Arcuate'};
-TractProfiles = struct;
-% Add a field to afq.TractProfiles for each tract defined above
-for ii = 1:length(fgNames)
-    afq.TractProfiles.(fgNames{ii}) = AFQ_CreateTractProfile('name',fgNames{ii});
-end
+afq.TractProfiles = AFQ_CreateTractProfile;
+% % Add a field to afq.TractProfiles for each tract defined above
+% for ii = 1:length(fgNames)
+%     afq.TractProfiles.(fgNames{ii}) = AFQ_CreateTractProfile('name',fgNames{ii});
+% end
 
 %% Check which software packages are installed
 afq.software.mrvista = check_mrvista;
@@ -118,7 +118,7 @@ afq.params.computeCSD = 0;
 %% AFQ Fiber Tracking parameters
 % Do fiber tracking with mrdiffusion by default. The other option is
 % 'mrtrix' if it is installed and the data is HARDI
-afq.params.track.software = 'mrdiffusion';
+afq.params.track.algorithm = 'mrdiffusion';
 % Distance between steps in the tractography algoithm
 afq.params.track.stepSizeMm = 1;
 % Stopping criteria FA<0.2
@@ -155,11 +155,16 @@ afq.params.track.faMaskThresh = 0.30;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Modify default parameters based on user input                          %
 afq = afqVarargin(afq, varargin);                                         %
-afq.params = afqVarargin(afq.params, varargin);                           %
+afq.params = afqVarargin(afq.params, varargin);     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Attach a structure pointing to each subjects data files
-afq.files.dt6 = {};
+for ii = 1: AFQ_get(afq,'num subs')
+    afq.files.dt6{ii} = fullfile(afq.sub_dirs{ii},'dt6.mat');
+    if ~exist(AFQ_get(afq,'dt6 path',ii))
+        error('%s file does not exist',AFQ_get(afq,'dt6 path',ii))
+    end
+end
 afq.files.images            = struct('name',{},'path',{});
 afq.files.fibers.wholebrain = cell(AFQ_get(afq,'num subs'),1);
 afq.files.fibers.segmented  = cell(AFQ_get(afq,'num subs'),1);
@@ -188,17 +193,19 @@ afq.overwrite.fibers.clean = zeros(AFQ_get(afq,'num subs'),1);
 afq.overwrite.vals = zeros(AFQ_get(afq,'num subs',1));
 
 %% If desired compute constrained spherical deconvolution with mr trix
+
+% If mr trix is installed and CSD is computed then perform tracking on
+% constrained spherical deconvolution
+if afq.software.mrtrix == 1 && afq.params.computeCSD == 1
+    afq.params.track.algorithm = 'mrtrix';
+end
+
 if AFQ_get(afq,'use mrtrix')
     for ii = 1:AFQ_get(afq,'num subs')
         files = AFQ_mrtrixInit(AFQ_get(afq, 'dt6 path',ii));
-        AFQ.files.mrtrix.csd{ii} = files.csd;
-        AFQ.files.mrtrix.wm{ii} = files.wm;
+        afq.files.mrtrix.csd{ii} = files.csd;
+        afq.files.mrtrix.wm{ii} = files.wm;
     end
-end
-% If mr trix is installed and CSD is computed then perform tracking on
-% constrained spherical deconvolution
-if afq.software.mrtrix == 1 && afq.computeCSD == 1
-    afq.params.track.software = 'mrtrix';
 end
 
 return

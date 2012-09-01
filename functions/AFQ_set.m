@@ -30,7 +30,8 @@ function afq = AFQ_set(afq,param,varargin)
 %                    varargin = [1 1 1 0 0 0.....,]
 % 'currentsubject' - Define current subject for afq computations
 %                    varargin = [subject number]
-% 'overwritefibers'- Recompute fibers for a subject
+% 'overwritefibers'- Recompute fibers for a subject. If the second argument
+%                    is blank then it will recompute for all subjects
 %                    varargin = [subject number]
 % 'overwritevals'  - Recompute Tract Profile values for a subject
 %                    varargin = [subject number]
@@ -101,9 +102,17 @@ switch(param)
         afq.currentsub = varargin{1};
         
     case 'overwritefibers' % Recompute fiber groups for subject # varargin
-        afq.overwrite.fibers.wholebrain(varargin{1}) = 1;
-        afq.overwrite.fibers.segmented(varargin{1})  = 1;
-        afq.overwrite.fibers.clean(varargin{1})      = 1;
+        % If a subject number is defined only overwrite for that subject
+        if nargin == 3
+            afq.overwrite.fibers.wholebrain(varargin{1}) = 1;
+            afq.overwrite.fibers.segmented(varargin{1})  = 1;
+            afq.overwrite.fibers.clean(varargin{1})      = 1;
+        else
+            % Otherwise overwrite for all subjects
+            afq.overwrite.fibers.wholebrain(:)= 1;
+            afq.overwrite.fibers.segmented(:)= 1;
+            afq.overwrite.fibers.clean(:)= 1;
+        end
         
     case 'overwritevals' % Recompute values for subject # varargin
         afq.overwrite.vals(varargin{1}) = 1;
@@ -153,6 +162,23 @@ switch(param)
             val1 = 1;
         end
         afq.files.fibers.clean{subnum} = varargin{val1};
+    case{'tractprofiles' 'tractprofile'}
+        % Add the values to the correct row of the data matrix
+        if strcmp('subnum',varargin{1})
+            % If the subject number was defined use that row
+            subnum = varargin{2};
+            % The first value will be in varargin{3}
+            val1 = 3;
+        else
+            % Otherwise add to the row of the current subject that is
+            % being processed
+            subnum = afq.currentsub;
+            % The first value will be in varargin{1}
+            val1 = 1;
+        end
+        for jj = 1:AFQ_get(afq,'number of fiber groups')
+            afq.TractProfiles(subnum,jj) = varargin{1}(jj);
+        end
     otherwise
         error('Uknown afq parameter');
 end

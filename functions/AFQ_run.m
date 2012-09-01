@@ -115,7 +115,7 @@ for ii=1:length(sub_dirs)
     if AFQ_get(afq, 'do tracking',ii) == 1
         % Perform whole-brain tractography
         fprintf('\nPerforming whole-brain tractograpy for subject %s\n',sub_dirs{ii});
-        fg = AFQ_WholebrainTractography(dt, afq.params.run_mode);
+        fg = AFQ_WholebrainTractography(dt, afq.params.run_mode, afq);
         % Save fiber group to fibers directory
         dtiWriteFiberGroup(fg,fullfile(fibDir,'WholeBrainFG.mat'));
         % Set the path to the fibers in the afq structure
@@ -229,6 +229,8 @@ for ii=1:length(sub_dirs)
         end
         % Add values to the afq structure
         afq = AFQ_set(afq,'vals','subnum',ii,'fa',fa,'md',md,'rd',rd,'ad',ad,'cl',cl);
+        % Add Tract Profiles to the afq structure
+        afq = AFQ_set(afq,'tract profile',TractProfile);
         
         % If any other images were supplied calculate a Tract Profile for that
         % parameter

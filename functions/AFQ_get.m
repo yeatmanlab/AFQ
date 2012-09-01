@@ -46,7 +46,7 @@ switch(param)
     case({'numberofsubjects' 'numsubjects' 'numsubs'})
         val = length(afq.sub_group);
     case({'numberoffibergroups' 'numfg' 'numfibergroups' 'nfg' 'numberfibergroups'});
-        val = length(afq.fgNames);
+        val = length(afq.fgnames);
     case{'dotracking' 'trackfibers' 'track'}
         % Check if user wants to overwrite wholebrain tractography or
         % Wholebrain fiber group has not been tracked
@@ -118,19 +118,19 @@ switch(param)
         end
     case{'usemrtrix'}
         if afq.software.mrtrix == 1 && ...
-                strcmp('mrtrix',afq.params.track.software)...
-                && afq.computeCSD == 1;
+                strcmp('mrtrix',afq.params.track.algorithm)...
+                && afq.params.computeCSD == 1;
             val = true;
         else
             val = false;
         end
     case{'dt6path'}
         val = afq.files.dt6{varargin{1}};
-    case{'tracking parameters'}
+    case{'trackingparameters'}
         val = afq.params.track;
     case{'mrtrixpath' 'mrtrixpaths'}
-        val.csd = AFQ.files.mrtrix.csd{varargin{1}};
-        val.wm  = AFQ.files.mrtrix.wm{varargin{1}};
+        val.csd = afq.files.mrtrix.csd{varargin{1}};
+        val.wm  = afq.files.mrtrix.wm{varargin{1}};
     otherwise
         error('Uknown afq parameter');
 end

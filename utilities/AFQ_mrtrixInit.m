@@ -63,7 +63,7 @@ computed = mrtrix_check_processes(files);
 
 % Convert the raw dwi data to the mrtrix format: 
 if (~computed.('dwi'))
-  mrtrix_mrconvert(dwRawFile, files.dwi); 
+  mrtrix_mrconvert(dwRawFile, files.dwi,0); 
 end
 
 % This file contains both bvecs and bvals, as per convention of mrtrix
@@ -81,36 +81,36 @@ end
 
 % Generate diffusion tensors:
 if (~computed.('dt'))
-  mrtrix_dwi2tensor(files.dwi, files.dt, files.b);
+  mrtrix_dwi2tensor(files.dwi, files.dt, files.b,0);
 end
 
 % Get the FA from the diffusion tensor estimates: 
 if (~computed.('fa'))
-  mrtrix_tensor2FA(files.dt, files.fa, files.brainmask);
+  mrtrix_tensor2FA(files.dt, files.fa, files.brainmask,0);
 end
 
 % Generate the eigenvectors, weighted by FA: 
 if  (~computed.('ev'))
-  mrtrix_tensor2vector(files.dt, files.ev, files.fa);
+  mrtrix_tensor2vector(files.dt, files.ev, files.fa,0);
 end
 
 % Estimate the response function of single fibers: 
 if (~computed.('response'))
   mrtrix_response(files.brainmask, files.fa, files.sf, files.dwi,...
-      files.response, files.b, true) % That last 'true' means a figure of the 
+      files.response, files.b, true,[],8,0) % That last 'true' means a figure of the 
                                   % response function will be displayed
 end
 
 % Create a white-matter mask, tracktography will act only in here.
 if (~computed.('wm'))
   wmMaskFile = fullfile(session, dt_info.files.wmMask);
-  mrtrix_mrconvert(wmMaskFile, files.wm)
+  mrtrix_mrconvert(wmMaskFile, files.wm,[],0)
 end
 
 % Compute the CSD estimates: 
 if (~computed.('csd'))  
   disp('The following step takes a while (a few hours)');                                  
-  mrtrix_csdeconv(files.dwi, files.response, lmax, files.csd, files.b, files.brainmask)
+  mrtrix_csdeconv(files.dwi, files.response, lmax, files.csd, files.b, files.brainmask,0)
 end
 
 

@@ -63,8 +63,8 @@ if ~exist('params','var') || isempty(params)
 elseif isafq(params)
     % If an afq structure is passed in get the tracking parameters and also
     % check if tracking should be done based on CSD with mrtrix
-    opts = AFQ_get(afq,'tracking parameters');
-    mrtrix = AFQ_get('use mrtrix');
+    opts = AFQ_get(params,'tracking parameters');
+    mrtrix = AFQ_get(params,'use mrtrix');
 else
     % Check to make sure the user defined all the propper parameters
     check = isfield(params,'seedVoxelOffsets')&&isfield(params,'whichInterp')&&...
@@ -76,8 +76,8 @@ end
 
 %% Track with mrtrix if the right files are there
 if exist('mrtrix','var') && mrtrix == 1
-    mrtrixpaths = AFQ_get(afq,'mrtrix paths');
-    [status, results, fg, pathstr] = mrtrix_track(mrtrixpaths.csd, mrtrixpaths.wm, mrtrixpaths.wm, 'stream', 250000)
+    mrtrixpaths = AFQ_get(params,'mrtrix paths',params.currentsub);
+    [status, results, fg, pathstr] = mrtrix_track(mrtrixpaths.csd, mrtrixpaths.wm, mrtrixpaths.wm, 'stream', 100000,[],[],1);
 else
     %% Otherwise track with mrdiffusion
     % Compute FA at every voxel
