@@ -176,8 +176,10 @@ switch(param)
             % The first value will be in varargin{1}
             val1 = 1;
         end
-        for jj = 1:AFQ_get(afq,'number of fiber groups')
-            afq.TractProfiles(subnum,jj) = varargin{1}(jj);
+        % Loop over the number of tract profiles and assign them to the afq
+        % structure
+        for jj = 1:length(varargin{val1})
+            afq.TractProfiles(subnum,jj) = varargin{val1}(jj);
         end
     otherwise
         error('Uknown afq parameter');
