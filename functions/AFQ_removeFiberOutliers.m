@@ -1,5 +1,5 @@
 function [fg keep]=AFQ_removeFiberOutliers(fg,maxDist,maxLen,numNodes,M,count,maxIter,show)
-% Remove fibers from a fiber group that are differ substantially from the
+% Remove fibers from a fiber group that differ substantially from the
 % mean fiber in the group.
 %
 % [fg keep]=AFQ_removeFiberOutliers(fg,maxDist,maxLen,numNodes,[M = 'mean'],[count = 0],[maxIter = 5], [show = 0])

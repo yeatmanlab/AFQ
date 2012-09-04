@@ -79,7 +79,11 @@ function [fg_classified,fg_unclassified,classification,fg] = ...
 %                   group number each fiber in the origional fiber group
 %                   was assigned to. For example
 %                   classification.index(150)=3 means that fg.fibers(150)
-%                   is part of the corticospinal tract fiber group.
+%                   is part of the corticospinal tract fiber group.  The
+%                   values in classification may not match the origional
+%                   fiber group because of pre-processing.  However they
+%                   will match the output fg which is the origional group
+%                   with preprocessing.
 % fg              - This is the origional pre-segmented fiber group.  It
 %                   may differ slightly from the input due to preprocessing
 %                   (eg splitting fibers that cross at the pons, removing 
