@@ -18,7 +18,7 @@ function val = AFQ_get(afq, param, varargin)
 % 'segmentfibers'         - [subject number]
 % 'cleanfibers'           - [subject number]
 % 'computevals'           - [subject number]
-% 'all vals'              - 'valname' eg ('fa')
+% 'all vals'              - 'valname' , 'group'
 % 'use mrtrix'
 % 'dt6path'               - [subject number]
 % 'tracking parameters'

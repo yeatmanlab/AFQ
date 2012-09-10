@@ -237,8 +237,11 @@ for ii=1:length(sub_dirs)
         numimages = AFQ_get(afq, 'numimages');
         if numimages > 0;
             for jj = 1:numimages
+                % Read the image file
                 image = readFileNifti(afq.files.images(jj).path{ii});
+                % Compute a Tract Profile for that image
                 imagevals = AFQ_ComputeTractProperties(fg_classified, image, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii});
+                % Add values to the afq structure
                 afq = AFQ_set(afq,'vals','subnum',ii,afq.files.images(jj).name, imagevals);
                 clear imagevals
             end

@@ -1,7 +1,7 @@
 function afq = AFQ_set(afq,param,varargin)
 % Set properties of afq object
 %
-% afq = AFQ_set(afq, param, vargrgin)
+% afq = AFQ_set(afq, param, [vargrgin])
 %
 % The afq structure stores all the AFQ computations.  AFQ_set is the main
 % function to add values, images, computations etc. to this structure.  As
@@ -16,25 +16,42 @@ function afq = AFQ_set(afq,param,varargin)
 %
 % Parameter list and associated arguments:
 %
-%  param     - varargin
+%  param           - varargin
 %
 % 'images'         - Add images to compute tract profiles on.
 %                    varargin = 1xN cell array (N is number of subjects) of
 %                    paths to nifti images.
 % 'vals'           - Add Tract Profile values to afq structure.
-%                    varargin = ('subnum', subnum, 'valnam', vals 'norms')         -
+%                    varargin = 'subnum', subnum, 'valname', vals
 % 'norms'          - Compute and assign control group norms to afq.norms
 %                    varargin = no argument needed
 % 'sub_group'      - Define subject group (patient=1 control=0) to afq
 %                    structure.
 %                    varargin = [1 1 1 0 0 0.....,]
-% 'currentsubject' - Define current subject for afq computations
+% 'current subject'- Define current subject for afq computations
 %                    varargin = [subject number]
 % 'overwritefibers'- Recompute fibers for a subject. If the second argument
 %                    is blank then it will recompute for all subjects
 %                    varargin = [subject number]
 % 'overwritevals'  - Recompute Tract Profile values for a subject
 %                    varargin = [subject number]
+% 'wholebrain fg path'- Set the path to the wholebrain fiber group for a
+%                       subject
+%                       varargin = 'subnum', [subject number]
+% 'segmented fg path' - Set the path to the segmented fiber group for a
+%                       subject
+%                       varargin = 'subnum', [subject number]
+% 'clean fg path'     - Set the path to the cleaned fiber group for a
+%                       subject
+%                       varargin = 'subnum', [subject number]
+% 'tractprofiles'  - Add tract profiles to the afq structure for a subject.
+%                    This should be a structure with each of the AFQ fiber
+%                    groups in it.  See AFQ_CreateTractProfile
+%                    varargin = 'subnum', [subject number], TractProfiles
+%
+% Example:
+%
+% afq = AFQ_set(afq, 'segemented fg path','subnum',10,'/data/sub10/fibers/'Morigroups.mat')
 %
 % Written by Jason D. Yeatman August 2012
 
