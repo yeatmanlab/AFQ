@@ -45,15 +45,17 @@ end
 % end
 
 % get the locations that we want
-xvaldesired = interp1([0 params(2,:) 1],[0 params(1,:) 1],xval,'linear');
+xvaldesired = interp1([0 params(2,:) 1],[0 params(1,:) 1],xval,'cubic');
 
 % do the interpolation through the original vector to
 % get the final vector
 f = interp1(xval,v,xvaldesired,'cubic');
 
-
+% Display mapping
 if showmapping == 1
     figure(999); clf;
     plot(xval,xvaldesired,'ro-');
-    pause(.1);
+    xlabel('Anchor Point');
+    ylabel('Mapping Destination');
+    pause(.02);
 end
