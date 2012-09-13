@@ -1,10 +1,8 @@
 AFQ version v1.0
 
-===
-
+==============================
 Automated Fiber Quantification
-
-===
+==============================
 
 AFQ was designed to generate Tract Profiles of tissue properties for major fiber tracts in healthy and diseased brains. Online documentation can be found at: 
 http://white.stanford.edu/newlm/index.php/AFQ.  
