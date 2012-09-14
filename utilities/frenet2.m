@@ -1,8 +1,8 @@
 function [T,N,B,k,t] = frenet2(x,y,z),
 % FRENET - Frenet-Serret Space Curve Invarients
 %   
-%   [T,N,B,k,t] = frenet(x,y);
-%   [T,N,B,k,t] = frenet(x,y,z);
+%   [T,N,B,k,t] = frenet2(x,y);
+%   [T,N,B,k,t] = frenet2(x,y,z);
 % 
 %   Returns the 3 vector and 2 scaler invarients of a space curve defined
 %   by vectors x,y and z.  If z is omitted then the curve is only a 2D,
