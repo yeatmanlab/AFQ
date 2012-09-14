@@ -202,5 +202,24 @@ switch(param)
         error('Uknown afq parameter');
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [subnum varargin]=GetSubNum(afq,varargin)
+% Check if subnum was input into AFQ_set
+loc = strcmp('subnum',varargin);
+if sum(loc) == 1
+    idx = find(loc);
+    % If so define the subjects number
+    subnum = varargin{idx+1};
+    % Then remove these cells from varargin
+    if length(varargin) >= idx+2
+        varargin = varargin([1:idx-1, idx+2:end]);
+    else
+        varargin = varargin(1:idx-1)
+    end
+    % Otherwise get the subject number from the afq structure
+else
+    subnum = afq.currentsub;
+end
 
+return
 
