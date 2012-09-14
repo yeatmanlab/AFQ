@@ -215,6 +215,11 @@ for ii=1:length(sub_dirs)
         % calculated
         [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified, dt, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii});
         
+        % Parameterize the shape of each fiber group with calculations of
+        % curvature and torsion at each point and add it to the tract
+        % profile
+        [~, ~, TractProfile] = AFQ_ParamaterizeTractShape(fg, TractProfile);
+        
         % Take the stats that were calculated in the previous function and add
         % them to a sructure for the full sample of subjects.  Each fiber group
         % has its own cell. Within each cell there is a row for each subject with
