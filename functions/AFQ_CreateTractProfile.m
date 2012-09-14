@@ -5,11 +5,13 @@ function TractProfile = AFQ_CreateTractProfile(varargin)
     
 %% Create the afq tract profile structure
 TractProfile.name    = 'name';
+TractProfile.nfibers = [];
 TractProfile.vals    = struct('fa',[],'md',[],'rd',[],'ad',[],'cl',[]);
 TractProfile.xform   = struct('acpc2mni',[],'mni2acpc',[],'acpc2dt6',[],'dt62acpc',[]);
 TractProfile.coords  = struct('acpc',[],'mni',[],'dt6',[]);
 TractProfile.fibercov     = [];
-TractProfile.nfibers = [];
+TractProfile.fiberCurvature = [];
+TractProfile.fiberTorsion = [];
 %% Set fields
 TractProfile = afqVarargin(TractProfile,varargin);
 %% Check if the old super fiber structure was passed in
