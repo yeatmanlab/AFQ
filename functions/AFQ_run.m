@@ -218,7 +218,7 @@ for ii=1:length(sub_dirs)
         % Parameterize the shape of each fiber group with calculations of
         % curvature and torsion at each point and add it to the tract
         % profile
-        [~, ~, TractProfile] = AFQ_ParamaterizeTractShape(fg, TractProfile);
+        [curv, tors, TractProfile] = AFQ_ParamaterizeTractShape(fg, TractProfile);
         
         % Take the stats that were calculated in the previous function and add
         % them to a sructure for the full sample of subjects.  Each fiber group
@@ -233,7 +233,8 @@ for ii=1:length(sub_dirs)
             groupCL{jj}(ii,:) = cl(:, jj);
         end
         % Add values to the afq structure
-        afq = AFQ_set(afq,'vals','subnum',ii,'fa',fa,'md',md,'rd',rd,'ad',ad,'cl',cl);
+        afq = AFQ_set(afq,'vals','subnum',ii,'fa',fa,'md',md,'rd',rd,...
+            'ad',ad,'cl',cl,'curvature',curv,'torsion',tors);
         % Add Tract Profiles to the afq structure
         afq = AFQ_set(afq,'tract profile',TractProfile);
         
