@@ -84,6 +84,7 @@ for jj=1:length(fg_classified.subgroupNames)
     % the database
     if isempty(fgtmp.fibers)
         fa(:, jj)=nan;md(:, jj)=nan;rd(:, jj)=nan;ad(:, jj)=nan;cl(:, jj)=nan;
+        TractProfile(jj) = AFQ_CreateTractProfile('name',fgtmp.name);
         continue
     end
     % Here is where we will create define the fiber group core and calculate
@@ -96,6 +97,7 @@ for jj=1:length(fg_classified.subgroupNames)
         TractProfile(jj) = AFQ_CreateTractProfile('name',fgtmp.name,'superfiber',SuperFibersGroup(jj));
     catch
         fa(:, jj)=nan;md(:, jj)=nan;rd(:, jj)=nan;ad(:, jj)=nan;cl(:, jj)=nan;
+        TractProfile(jj) = AFQ_CreateTractProfile('name',fgtmp.name);
     end
 end
 

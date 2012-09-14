@@ -12,6 +12,7 @@ TractProfile.coords  = struct('acpc',[],'mni',[],'dt6',[]);
 TractProfile.fibercov     = [];
 TractProfile.fiberCurvature = [];
 TractProfile.fiberTorsion = [];
+TractProfile.fiberVolume = [];
 %% Set fields
 TractProfile = afqVarargin(TractProfile,varargin);
 %% Check if the old super fiber structure was passed in

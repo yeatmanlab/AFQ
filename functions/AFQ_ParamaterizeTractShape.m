@@ -36,20 +36,27 @@ if ~exist('TractProfile','var') || isempty(TractProfile)
     end
 elseif length(TractProfile) == length(fg)
     % Number of nodes in the tract profile
-    numNodes = length(TractProfile(ii).coords.acpc);
+    numNodes = length(TractProfile(1).coords.acpc);
     for ii = 1:length(fg)
         % Resample and reorient fibers so that each fiber starts and ends in the
         % same place
-        fg(ii) = dtiReorientFibers(fg, numNodes);
+        fg(ii) = dtiReorientFibers(fg(ii), numNodes);
     end
 elseif length(TractProfile) ~= length(fg)
     error('TractProfile and fg must have the same number of fiber groups')
 end
 
 %% Loop over the fiber groups in fg and calculate torsion and curvature
-curvWA = zeros(numNodes,length(fg));
-torsWA = zeros(numNodes,length(fg));
+% Allocate data matrices
+curvWA = nan(numNodes,length(fg));
+torsWA = nan(numNodes,length(fg));
+% Check for empty fiber groups
+FGnotempty=zeros(length(fg),1);
 for jj = 1:length(fg)
+    FGnotempty(jj) = ~isempty(fg(jj).fibers) && ~isempty(TractProfile(jj).fibercov);
+end
+FGnotempty = find(FGnotempty)';
+for jj = FGnotempty
     % Initialize variables
     numfibers = length(fg(jj).fibers);
     curv = zeros(numNodes,numfibers);
@@ -70,15 +77,17 @@ for jj = 1:length(fg)
     % fiber core. They will be used to weight that fibers contribution to the
     % core measurement
     for node=1:numNodes
+        % Get the covariance structure from the tract profile
+        fcov = TractProfile(jj).fibercov;
         % Compute gaussian weights y = mvnpdf(X,mu,SIGMA);
         % Returns the density of the multivariate normal distribution with zero
         % mean and identity covariance matrix, evaluated at each row of X.
         X=fc((1:numNodes:numfibers*numNodes)+(node-1), :);
-        sigma = [SuperFiber.fibervarcovs{1}(1:3, node)'; ...
-            0 SuperFiber.fibervarcovs{1}(4:5, node)';...
-            0 0 SuperFiber.fibervarcovs{1}(6, node)'];
+        sigma = [fcov(1:3, node)'; ...
+            0 fcov(4:5, node)';...
+            0 0 fcov(6, node)'];
         sigma = sigma + sigma' - diag(diag(sigma));
-        mu    = SuperFiber.fibers{1}(:, node)';
+        mu    = TractProfile(jj).coords.acpc(:, node)';
         % Weights for the given node.
         weights(node, :) = mvnpdf(X,mu,sigma)';
     end
@@ -92,7 +101,7 @@ for jj = 1:length(fg)
     torsWA(:,jj) = sum(tors.*weightsNormalized,2);
     
     % Assign values to the tract profile structure
-    TractProfile(jj).fibercurvature = curvWA(:,jj);
-    TractProfile(jj).fibertorsion   = torsWA(:,jj);
+    TractProfile(jj).fiberCurvature = curvWA(:,jj);
+    TractProfile(jj).fiberTorsion   = torsWA(:,jj);
     
 end
