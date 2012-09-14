@@ -134,3 +134,5 @@ switch(param)
     otherwise
         error('Uknown afq parameter');
 end
+
+return
