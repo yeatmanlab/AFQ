@@ -98,6 +98,9 @@ function lightH = AFQ_RenderFibers(fg,varargin)
 % from the fiber group.  This is useful to save time when rendering large
 % groups.
 %
+% AFQ_RenderFibers(fg,'alpha',alpha) - Set the transparency of the fibers.
+% Alpha should be a value between 0 (transparent) and 1 (opaque).
+%
 % Example:
 %
 % fg = dtiReadFibers('Left_CST.mat');
@@ -286,6 +289,12 @@ if sum(strcmpi('numfibers',varargin)) > 0
     end
 end
 
+% Set the transparency of the fibers
+if sum(strcmpi('alpha',varargin)) > 0
+    alpha = varargin{find(strcmpi('alpha',varargin))+1};
+else
+    alpha = 1;
+end
 %% Loop over fibers and render them in 3-D
 
 % Only render in a new figure window if desired (default)
@@ -344,7 +353,7 @@ if tubes == 1
         C(C < 0) = 0;
         
         % Render fiber tubes
-        surf(X,Y,Z,C);
+        surf(X,Y,Z,C,'facealpha',alpha);
     end
     
     % Plot the fibers as lines (much faster than tubes) if the input tubes == 0
