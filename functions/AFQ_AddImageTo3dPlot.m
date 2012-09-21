@@ -1,7 +1,7 @@
-function h = AFQ_AddImageTo3dPlot(nifti, slice, cmap, rescale, alpha)
+function h = AFQ_AddImageTo3dPlot(nifti, slice, cmap, rescale, alpha, varargin)
 % Add a slice from a nifti image to a 3D plot
 %
-% h = AFQ_AddImageTo3dPlot(nifti, slice, [cmap], [rescale], alpha)
+% h = AFQ_AddImageTo3dPlot(nifti, slice, [cmap], [rescale], alpha, varargin)
 %
 % Inputs:
 %
@@ -30,6 +30,13 @@ function h = AFQ_AddImageTo3dPlot(nifti, slice, cmap, rescale, alpha)
 % alpha   = Alpha of the image. Value from 0 to 1 that sets how 
 %           transparent the image is.
 %
+% Aditional options:
+% 
+% To add an overlay heatmap to the rendering. For example BOLD activation.
+% Add the aditional argument 'overlay', followed by a nifti image and
+% threshold.
+% AFQ_AddImageTo3dPlot(nifti, slice, [cmap], [rescale], alpha,'overlay',nifti,threshold)
+% 
 % Output:
 %
 % h       = Handle for the object in the figure.  You can remove the slice
@@ -51,6 +58,8 @@ function h = AFQ_AddImageTo3dPlot(nifti, slice, cmap, rescale, alpha)
 %% Check arguments
 if ~exist('cmap','var') || isempty(cmap)
     cmap = gray(256);
+elseif ischar(cmap)
+    cmap = eval([cmap '(256)']);
 end
 if ~exist('rescale','var') || isempty(rescale)
     rescale = 1;
@@ -72,63 +81,30 @@ slice = slice .* plane;
 if size(slice,2) ~= 3
     slice = slice';
 end
+%% Create a color image from the slice in the 3d volume
+[colorimg min_x max_x min_y max_y min_z max_z] = ...
+    MakeImageFromVolume(nifti,slice,plane,cmap);
 
-%% Format the image with propper transforms etc.
-% The variable slice is given in acpc coordinates.  Transform acpc to image
-% coordinates
-imgXform = nifti.qto_ijk;
-ImCoords = round(imgXform * [slice 1]');
-imIndx = ImCoords(find(slice));
-
-% Pull the desired slice out of the 3d image volume
-if find(plane) == 1
-    image = squeeze(nifti.data(imIndx,:,:));
-    % Define the minimum and maximum coordinates of the image in each
-    % dimension in acpc mm space.
-    min_x = slice(1); max_x = min_x;
-    [y z] = size(image);
-    max_corner = inv(imgXform) * [imIndx y z 1]';
-    max_y = max_corner(2); max_z = max_corner(3);
-    min_corner = inv(imgXform) * [imIndx 0 0 1]';
-    min_y = min_corner(2); min_z = min_corner(3);
-elseif find(plane) == 2
-    image = squeeze(nifti.data(:,imIndx,:));
-    % Define the minimum and maximum coordinates of the image in each
-    % dimension in acpc mm space.
-    min_y = slice(2); max_y = min_y;
-    [x z] = size(image);
-    max_corner = inv(imgXform) * [x imIndx z 1]';
-    max_x = max_corner(1); max_z = max_corner(3);
-    min_corner = inv(imgXform) * [0 imIndx 0 1]';
-    min_x = min_corner(1); min_z = min_corner(3);
-else
-    image = squeeze(nifti.data(:,:,imIndx));
-    % Define the minimum and maximum coordinates of the image in each
-    % dimension in acpc mm space.
-    min_z = slice(3); max_z = min_z;
-    [x y] = size(image);
-    max_corner = inv(imgXform) * [x y imIndx 1]';
-    max_x = max_corner(1); max_y = max_corner(2);
-    min_corner = inv(imgXform) * [0 0 imIndx 1]';
-    min_x = min_corner(1); min_y = min_corner(2);
+%% Create overlay image
+% Check if an overlay image was passed in
+ov = find(strcmpi('overlay',varargin));
+if sum(ov) == 1
+    % Get the overlay image volume
+    overlayIm = varargin{ov+1};
+    % Get the overlay threshold
+    overlayThresh = varargin{ov+2};
+    % Get the colormap if one was defined
+    if length(varargin) > ov+2
+        overlayCmap = varargin{ov+3}
+    else
+        overlayCmap = autumn(256);
+    end
+    % Create a color image
+    OverColorImg = MakeImageFromVolume(overlayIm,slice,plane,overlayCmap,overlayThresh);
+    % Combine the overlay and the background images
+    nonan = find(~isnan(OverColorImg));
+    colorimg(nonan) = OverColorImg(nonan);
 end
-
-% Resample the image to 1mm resolution. The necessary scale factor is
-% stored in the image xform.
-scale = diag(nifti.qto_xyz); scale = scale(1:3);
-% The new dimensions will be the old dimensions multiplied by the scale
-% factors for the plane
-oldDim = size(image);
-newDim = oldDim .* scale(find(plane == 0))';
-% Resize the image
-image = double(imresize(image,newDim));
-
-% Scale and clip the image values so that the lowest 25% of the values are
-% zeroed, the top 5% are maxed and the range is 0 to 255
-image = uint8(mrAnatHistogramClip(image,.25,.95,1).* 255);
-
-% Convert the scaler image to an RGB image based on the chosen colormap
-colorimg = ind2rgb(image,cmap);
 
 %% Plot the image
 % The call to surface will be slightly different depending on whether it is
@@ -180,3 +156,89 @@ end
 hold on;
 
 return
+
+function [colorimg min_x max_x min_y max_y min_z max_z] =...
+     MakeImageFromVolume(nifti,slice,plane,cmap,thresh)
+% Get a slice from a nifti volume, resample it to 1mm isotropic resolution
+% and make a rgb image from it
+
+% First Format the image with propper transforms etc.
+% The variable slice is given in acpc coordinates.  Transform acpc to image
+% coordinates
+imgXform = nifti.qto_ijk;
+ImCoords = round(imgXform * [slice 1]');
+imIndx = ImCoords(find(slice));
+
+% Pull the desired slice out of the 3d image volume
+if find(plane) == 1
+    image = squeeze(nifti.data(imIndx,:,:));
+    % Define the minimum and maximum coordinates of the image in each
+    % dimension in acpc mm space.
+    min_x = slice(1); max_x = min_x;
+    [y z] = size(image);
+    max_corner = inv(imgXform) * [imIndx y z 1]';
+    max_y = max_corner(2); max_z = max_corner(3);
+    min_corner = inv(imgXform) * [imIndx 0 0 1]';
+    min_y = min_corner(2); min_z = min_corner(3);
+elseif find(plane) == 2
+    image = squeeze(nifti.data(:,imIndx,:));
+    % Define the minimum and maximum coordinates of the image in each
+    % dimension in acpc mm space.
+    min_y = slice(2); max_y = min_y;
+    [x z] = size(image);
+    max_corner = inv(imgXform) * [x imIndx z 1]';
+    max_x = max_corner(1); max_z = max_corner(3);
+    min_corner = inv(imgXform) * [0 imIndx 0 1]';
+    min_x = min_corner(1); min_z = min_corner(3);
+else
+    image = squeeze(nifti.data(:,:,imIndx));
+    % Define the minimum and maximum coordinates of the image in each
+    % dimension in acpc mm space.
+    min_z = slice(3); max_z = min_z;
+    [x y] = size(image);
+    max_corner = inv(imgXform) * [x y imIndx 1]';
+    max_x = max_corner(1); max_y = max_corner(2);
+    min_corner = inv(imgXform) * [0 0 imIndx 1]';
+    min_x = min_corner(1); min_y = min_corner(2);
+end
+
+% Resample the image to 1mm resolution. The necessary scale factor is
+% stored in the image xform.
+scale = diag(nifti.qto_xyz); scale = scale(1:3);
+
+% The new dimensions will be the old dimensions multiplied by the scale
+% factors for the plane
+oldDim = size(image);
+newDim = oldDim .* scale(find(plane == 0))';
+% Resize the image
+image = double(imresize(image,newDim));
+
+if ~exist('thresh','var') || isempty(thresh)
+    % Scale and clip the image values so that the lowest 25% of the values are
+    % zeroed, the top 5% are maxed and the range is 0 to 255
+    image = uint8(mrAnatHistogramClip(image,.25,.95,1).* 255);
+else
+    % If a threshold was defined then change values below that threshold to nan
+    nanindx = image < thresh(1);
+    image(nanindx) = thresh(1);
+    if length(thresh) == 2
+        % If a maximum threshold was defined then clip values above that
+        image(image > thresh(2)) = thresh(2);
+    end
+    % Scale the image based on the threshold values
+    imMin = min(image(:));
+    image = image - imMin;
+    imMax = max(image(:));
+    image = uint8((image./imMax).*255);
+end
+
+% Convert the scaler image to an RGB image based on the chosen colormap
+colorimg = ind2rgb(image,cmap);
+
+% If a threshold was defined then change values below that threshold to nan
+if exist('thresh','var') && ~isempty(thresh)
+    nanindx3 = repmat(nanindx,[1 1 3]);
+    colorimg(nanindx3) = nan;
+end
+
+
