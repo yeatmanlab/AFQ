@@ -29,7 +29,7 @@ if ~exist('params','var') || isempty(params)
         opts.faMaskThresh = 0.30;
     elseif strcmp(run_mode,'test')
         % Set a higher fa threshold, to reduce the number of fibers.
-        opts.faMaskThresh = 0.30;
+        opts.faMaskThresh = 0.35;
     end
     % Distance between steps in the tractography algoithm
     opts.stepSizeMm = 1;
