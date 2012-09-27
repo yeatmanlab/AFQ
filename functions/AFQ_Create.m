@@ -158,6 +158,11 @@ afq = afqVarargin(afq, varargin);                                         %
 afq.params = afqVarargin(afq.params, varargin);     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%% Modify tracking parameters if the mode is test mode
+if strcmp(afq.params.run_mode,'test')
+    afq.params.track.seedVoxelOffsets = [0.25 0.75];
+    afq.params.track.faMaskThresh = 0.35;
+end
 %% Attach a structure pointing to each subjects data files
 for ii = 1: AFQ_get(afq,'num subs')
     afq.files.dt6{ii} = fullfile(afq.sub_dirs{ii},'dt6.mat');
