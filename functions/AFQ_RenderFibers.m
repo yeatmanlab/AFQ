@@ -38,10 +38,13 @@ function lightH = AFQ_RenderFibers(fg,varargin)
 % tract profile. Default is r = [1 5] meaning that fibers have a 1mm radius
 % and the tract profile has a 5mm radius.
 %
-% AFQ_RenderFibers(fg,'tractprofile',TP) - A tract profile can be passed in
-% if it has been precomputed for the fiber tract. TP is a structure with
-% fields TP.vals and TP.coords that define the values to be plotted and the
-% coordinates of the tract profile.  See AFQ_CreateTractProfile.
+% AFQ_RenderFibers(fg,'tractprofile',TractProfile,'val',['fa']) - A
+% tract profile can be passed in if it has been precomputed for the fiber
+% tract. TractProfile is a structure created by AFQ_CreateTractProfile and
+% contains the coordinates and values to be plotted. The user can also
+% define which value in the tract profile should be plotted. The dafault is
+% 'fa' but the name of any value that exists within the TractProfile
+% structure is ok.
 %
 % AFQ_RenderFibers(fg,'color', rgbValues) - Render the fiber group in a
 % specific color.  rgbValues can be defined in 3 ways to do (1) uniform
@@ -236,6 +239,12 @@ else
     computeTP = false;
 end
 
+% Check what value should be plotted on the tract profile
+if sum(strcmpi('val',varargin)) > 0
+    valname = varargin{find(strcmpi('val',varargin))+1};
+else
+    valname = 'fa';
+end
 % Check if the user has defined a radius for the fiber tubes and for the
 % tract profile.  Within the radius variable the first number is for the
 % fibers and the second number is for the tract profile.
@@ -378,12 +387,20 @@ end
 if computeTP
     % compute tract profile
     [fa,md,rd,ad,cl,fgCore]=dtiComputeDiffusionPropertiesAlongFG(fg, dt, roi1, roi2, 100);
+    % Create Tract Profile structure
     TP = AFQ_CreateTractProfile;
-    TP.vals.fa = fa;
-    TP.coords  = fgCore.fibers{1};
+    % Set the desired values to the structure
+    TP = AFQ_TractProfileSet(TP,'vals',valname,eval(valname));
+    % Set the tract profile coordinates
+    TP = AFQ_TractProfileSet(TP,'coordsacpc',fgCore.fibers{1});
 end
 if exist('TP','var') && ~isempty(TP)
-    AFQ_RenderTractProfile(TP.coords,rTP,TP.vals.fa,30,cmap,crange);
+    % Get the coordinates
+    coords = AFQ_TractProfileGet(TP,'coordsacpc');
+    % Get the values
+    vals = AFQ_TractProfileGet(TP,'vals',valname);
+    % Render the tract Profile
+    AFQ_RenderTractProfile(coords,rTP,vals,30,cmap,crange);
 end
 
 % Render the ROIs if they were passed in
