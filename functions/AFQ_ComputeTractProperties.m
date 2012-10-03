@@ -1,7 +1,7 @@
 function [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,numberOfNodes,clip2rois,subDir)
 % Compute diffusion properties along the trajectory of the fiber groups
 %
-% [fa md rd ad cl SuperFibersGroup] = AFQ_ComputeTractProperties(fg_classified,dt,[numberOfNodes=30],[clip2rois=1],[subDir])
+% [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,[numberOfNodes=30],[clip2rois=1],[subDir])
 %
 % Input arguments:
 %  fg_classified  = Fiber group classified into 20 subgroups that
