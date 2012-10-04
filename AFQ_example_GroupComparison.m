@@ -13,7 +13,7 @@ sub_group = [1, 1, 1, 0, 0, 0];
 % structure. This will also be done automatically by AFQ_run if the user
 % does not wish to modify any parameters
 afq = AFQ_Create('run_mode','test', 'sub_dirs', sub_dirs, 'sub_group',...
-    sub_group, 'showfigs',true);
+    sub_group, 'showfigs',false);
 % Run AFQ to generate the fiber tracts
 [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq);
 
@@ -23,7 +23,7 @@ afq = AFQ_Create('run_mode','test', 'sub_dirs', sub_dirs, 'sub_group',...
 for jj = 1:20
     % Run an independent samples t-test comparing FA values between the
     % groups at each point along each tract
-    [h(jj,:),p(jj,:),~,Tstats(jj)] = ttest2(afq.control_data(jj).FA,afq.patient_data(jj).FA);
+    [h(jj,:),p(jj,:),~,Tstats(jj)] = ttest2(afq.patient_data(jj).FA,afq.control_data(jj).FA);
 end
 
 %% Make Tract Profiles of T statistics
@@ -43,20 +43,31 @@ for jj = 1:20
     TractProfile(jj) = AFQ_TractProfileSet(TractProfile(jj),'vals','Tstat',Tstats(jj).tstat);
 end
 
-%% Render the tract profiles of p values
+%% Render The tract Profiles of T statistics
 
 % The hot colormap is a good one because it will allow us to make regions
 % of the profile where p>0.05 black.
 cmap = 'hot';
 % Set the color range to black out non significant regions of the tract. We
-% will render the T-stat profile. T values below 1.96 correspond to p>0.05.
-crange = [1.96 3];
+% will render the T-stat profile such that T statistics greater than 5 will
+% be white and T statistics less than 1 will be black. Obviously a T value
+% of 1 is not considered significant however in this example we only have 3
+% subjects in each group hence we use a low value just to demonstrate the
+% proceedure.
+crange = [1 4];
 % Set the number of fibers to render. More fibers takes longer
-numfibers = 100;
-% Render the left corticospinal tract with a Tract Profile of T statistics 
-AFQ_RenderFibers(fg(3),'tractprofile',TractProfile(3),'val','Tstat',...
-    'numfibers',numfibers,'cmap',cmap,'crange',crange);
-% Add the defining ROIs to the rendering
+numfibers = 200;
+% Render the left corticospinal tract (fibers colored light blue) with a
+% Tract Profile of T statistics. Each fiber will have a 1mm radius and the
+% tract profile will have a 6mm radius.
+AFQ_RenderFibers(fg(3),'color',[.8 .8 1],'tractprofile',TractProfile(3),...
+    'val','Tstat','numfibers',numfibers,'cmap',cmap,'crange',crange,...
+    'radius',[1 6]);
+% Add the defining ROIs to the rendering.
 [roi1 roi2] = AFQ_LoadROIs(3,sub_dirs{3});
-AFQ_RenderRoi(roi1);
-AFQ_RenderRoi(roi2);
+% The rois will be rendered in dark blue
+AFQ_RenderRoi(roi1,[0 0 .7]);
+AFQ_RenderRoi(roi2,[0 0 .7]);
+% Add the slice x=-15 from the subject's b=0 image
+b0 = readFileNifti(dt.files.b0);
+AFQ_AddImageTo3dPlot(b0,[-15,0,0]);
