@@ -23,6 +23,8 @@ function val = AFQ_get(afq, param, varargin)
 % 'dt6path'               - [subject number]
 % 'tracking parameters'
 % 'mrtrixpaths'           - [subject number]
+% 'show figures'
+%
 % Written by Jason D. Yeatman August 2012
 
 % remove spaces and upper case
@@ -131,6 +133,8 @@ switch(param)
     case{'mrtrixpath' 'mrtrixpaths'}
         val.csd = afq.files.mrtrix.csd{varargin{1}};
         val.wm  = afq.files.mrtrix.wm{varargin{1}};
+    case{'showfigures' 'showfigs'}
+        val = logical(afq.params.showfigs);
     otherwise
         error('Uknown afq parameter');
 end
