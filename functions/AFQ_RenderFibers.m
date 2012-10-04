@@ -428,7 +428,7 @@ if newfig ==1
     if size(camera,2) == 2
         view(camera(1), camera(2));
     elseif size(camera,2) == 3
-        campos(camera)
+        campos(camera);
     end
     lightH = camlight;
     set(lightH, 'position',lightPosition);
