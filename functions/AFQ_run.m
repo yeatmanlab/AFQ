@@ -311,6 +311,6 @@ end
 % Only plot if there is data for patients and controls
 if sum(sub_group == 1) > 2 && sum(sub_group == 0) > 2 && AFQ_get(afq,'showfigs')
     AFQ_plot('Patients', patient_data, 'Controls', control_data, 'group');
-else
+elseif sum(sub_group == 1) <= 2 && sum(sub_group == 0) <= 2
     fprintf('\nNot enough subjects for a group comparison\n')
 end
