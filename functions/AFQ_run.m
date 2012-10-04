@@ -289,7 +289,7 @@ if sum(isnan(eval(['norms.mean' property '(1,:)']))) == 20
     fprintf('\nnorms are empty. Skipping AFQ_plot\n')
 elseif ~exist('abn','var') || sum(isnan(abn))==1
     fprintf('\nNo patients. Skipping AFQ_plot\n')
-else
+elseif AFQ_get(afq,'showfigs');
     % percentiles to define normal range
     ci = afq.params.cutoff;
     % loop over tracts and plot abnormal subjects
@@ -309,7 +309,7 @@ end
 %% Plot group means for the patients and the controls
 
 % Only plot if there is data for patients and controls
-if sum(sub_group == 1) > 2 && sum(sub_group == 0) > 2
+if sum(sub_group == 1) > 2 && sum(sub_group == 0) > 2 && AFQ_get(afq,'showfigs')
     AFQ_plot('Patients', patient_data, 'Controls', control_data, 'group');
 else
     fprintf('\nNot enough subjects for a group comparison\n')
