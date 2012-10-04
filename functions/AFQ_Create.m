@@ -110,8 +110,10 @@ afq.params.clip2rois = 1;
 afq.params.cleanClippedFibers = 0;
 % The directory to save all output figures and results
 afq.params.outdir = [];
+% Show figures? yes or no
+afq.params.showfigs = true;
 % Save figures? yes or no
-afq.params.savefigs = 0;
+afq.params.savefigs = false;
 % Whether or not to compute constrained spherical deconvolution using
 % mrtrix
 afq.params.computeCSD = 0;
@@ -160,7 +162,7 @@ afq.params = afqVarargin(afq.params, varargin);
 
 %% Modify tracking parameters if the mode is test mode
 if strcmp(afq.params.run_mode,'test')
-    afq.params.track.seedVoxelOffsets = [0.25 0.75];
+    afq.params.track.seedVoxelOffsets = [0.5];
     afq.params.track.faMaskThresh = 0.35;
 end
 %% Attach a structure pointing to each subjects data files
