@@ -40,7 +40,9 @@ elseif length(TractProfile) == length(fg)
     for ii = 1:length(fg)
         % Resample and reorient fibers so that each fiber starts and ends in the
         % same place
-        fg(ii) = dtiReorientFibers(fg(ii), numNodes);
+        if ~isempty(fg(ii).fibers)
+            fg(ii) = dtiReorientFibers(fg(ii), numNodes);
+        end
     end
 elseif length(TractProfile) ~= length(fg)
     error('TractProfile and fg must have the same number of fiber groups')
