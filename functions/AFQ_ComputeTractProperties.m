@@ -63,10 +63,18 @@ end
 if ~exist('subDir','var') || isempty(subDir) && strcmp(valname, 'dt')
     subDir = fileparts(dt.dataFile);
 end
+% Number of fiber groups
+numfg = length(fg_classified.subgroupNames);
 % Create Tract Profile structure
 TractProfile = AFQ_CreateTractProfile;
+% Pre allocate data arrays
+fa=nan(numberOfNodes,numfg);
+md=nan(numberOfNodes,numfg);
+rd=nan(numberOfNodes,numfg);
+ad=nan(numberOfNodes,numfg);
+cl=nan(numberOfNodes,numfg);
 % loop over the fiber groups
-for jj=1:length(fg_classified.subgroupNames)
+for jj=1:numfg
     % There are 20 fiber groups saved with the same structure. We will loop
     % over these fiber groups, allocate them to a tmp variable calculate
     % what we need and move on
