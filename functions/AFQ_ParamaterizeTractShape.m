@@ -35,12 +35,12 @@ if ~exist('TractProfile','var') || isempty(TractProfile)
         TractProfile(ii) = AFQ_CreateTractProfile('name',fg.name,'superfiber',SuperFiber);
     end
 elseif length(TractProfile) == length(fg)
-    % Number of nodes in the tract profile
-    numNodes = length(TractProfile(1).coords.acpc);
     for ii = 1:length(fg)
+        % Number of nodes in the tract profile
+        numNodes = length(TractProfile(ii).coords.acpc);
         % Resample and reorient fibers so that each fiber starts and ends in the
         % same place
-        if ~isempty(fg(ii).fibers)
+        if ~isempty(fg(ii).fibers) && numNodes > 0
             fg(ii) = dtiReorientFibers(fg(ii), numNodes);
         end
     end
