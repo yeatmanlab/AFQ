@@ -5,6 +5,7 @@ function val = AFQ_get(afq, param, varargin)
 %
 % param list:              - arguments:
 %
+% 'fiber group names'
 % 'number of images'
 % 'subject group'
 % 'patient data'
@@ -18,7 +19,18 @@ function val = AFQ_get(afq, param, varargin)
 % 'segmentfibers'         - [subject number]
 % 'cleanfibers'           - [subject number]
 % 'computevals'           - [subject number]
-% 'all vals'              - 'valname' , 'group'
+%
+% To get all the values for a particular measurement (eg. 'fa') for all the
+% subjects or a group of subjects (eg. 'patients'). If no input is passed
+% in for the group then it will return the values for all the subjects.
+% 'all vals'              - 'valname' , ['group']
+%
+% To get the values for a particular measurement (eg. 'fa') for a particlar
+% tract for all the subjects or a group of subjects. For the different
+% fiber group names see AFQ_get(afq, 'fgnames')
+% 'tractname'             - 'valname', 'group'
+% 'left arcuate'          - 'fa'     , 'controls'
+%
 % 'use mrtrix'
 % 'dt6path'               - [subject number]
 % 'tracking parameters'
@@ -29,8 +41,16 @@ function val = AFQ_get(afq, param, varargin)
 
 % remove spaces and upper case
 param = mrvParamFormat(param);
+% Get the names of all the fiber groups without spaces or capitals
+fgnames = cell(1,length(afq.fgnames));
+for jj = 1:length(fgnames)
+    fgnames{jj} = mrvParamFormat(afq.fgnames{jj});
+end
 
+%% Get the requested parameter
 switch(param)
+    case{'fibergroupnames' 'fgnames'}
+        val = afq.fgnames;
     case{'numimages', 'numberofimages'}
         val = length(afq.files.images);
     case({'sub_group' 'subgroup' 'subjectgroup'})
@@ -80,23 +100,37 @@ switch(param)
         val = logical(afq.overwrite.vals(varargin{1})) || ...
             isempty(afq.vals.fa) || ...
             size(afq.vals.fa{1},1) < varargin{1};
-    case{'vals' 'allvals' 'valsall'}
+    case{'vals' 'allvals' 'valsall' fgnames{:}}
         if ~exist('varargin' ,'var') || isempty(varargin)
             error('Need to define which value: AFQ_get(afq,''vals'',''fa'')');
+            % Three arguments means that the user defined the value they
+            % want but no group
         elseif(nargin == 3)
             % First argument is the value name
             valnames = fieldnames(afq.vals);
             v = find(strcmpi(varargin{1},valnames));
+            % Check if the user defined a specific fiber group
+            fgNum = find(strcmpi(param,fgnames));
             if ~isempty(v)
                 valname = valnames{v};
-                val = horzcat(afq.vals.(valname){:});
+                % If a specific fiber group was defined get vals for that
+                % group
+                if ~isempty(fgNum) && length(afq.vals.(valname)) >= fgNum
+                    val = afq.vals.(valname){fgNum};
+                elseif ~isempty(fgNum)
+                    error('%s values do not exist',fgnames{fgNum});
+                else
+                    % Otherwise get vals for all groups
+                    val = horzcat(afq.vals.(valname){:});
+                end
             else
                 error('%s values do not exist',varargin{1})
             end
+            % Four arguments means the user also defined the group
         elseif(nargin == 4)
             % Second argument is the subject group
             switch(varargin{2})
-                case{'patient', 1}
+                case{'patient','patients', 1}
                     valnames = fieldnames(afq.patient_data);
                     v = find(strcmpi(varargin{1},valnames));
                     if ~isempty(v)
@@ -105,7 +139,7 @@ switch(param)
                     else
                         error('%s values do not exist',varargin{1})
                     end
-                case{'control', 0}
+                case{'control','controls', 0}
                     valnames = fieldnames(afq.control_data);
                     v = find(strcmpi(varargin{1},valnames));
                     if ~isempty(v)
