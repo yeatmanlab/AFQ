@@ -37,13 +37,17 @@ if ~exist('TractProfile','var') || isempty(TractProfile)
 elseif length(TractProfile) == length(fg)
     for ii = 1:length(fg)
         % Number of nodes in the tract profile
-        numNodes = length(TractProfile(ii).coords.acpc);
+        numNodes(ii) = length(TractProfile(ii).coords.acpc);
         % Resample and reorient fibers so that each fiber starts and ends in the
         % same place
-        if ~isempty(fg(ii).fibers) && numNodes > 0
-            fg(ii) = dtiReorientFibers(fg(ii), numNodes);
+        if ~isempty(fg(ii).fibers) && numNodes(ii) > 0
+            fg(ii) = dtiReorientFibers(fg(ii), numNodes(ii));
         end
     end
+    % Sometimes a group has 0 nodes because it is empty. This will mess up
+    % future computations so we se numNodes to the maximum number of nodes.
+    % Note that all groups probably should have the same number of nodes
+    numNodes = max(numNodes);
 elseif length(TractProfile) ~= length(fg)
     error('TractProfile and fg must have the same number of fiber groups')
 end
