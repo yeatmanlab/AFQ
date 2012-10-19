@@ -3,14 +3,17 @@ function afq = AFQ_Create(varargin)
 %
 %    afq = AFQ_Create(varargin)
 %
-% Creates a default automated fiber quantification (AFQ) structure.  The
-% default fields are put in place and filled with default values.  The
-% arguments to the function are in the form 'parameter','value'.  For
-% example, if you call the function with
+% Creates anautomated fiber quantification (AFQ) structure.  The default
+% fields are put in place and filled with default values.  The default
+% parameters can also be changed and this will affect later stages of the
+% AFQ pipeline.  The arguments to the function are in the form
+% 'parameter','value'.  For example, if you call the function with
 %
-%    AFQ_Create('cutoff',[5 95]);
-%    AFQ_Create('sub_group',[1 1 1 0 0 0]);
-% The afq.params.cutoff parameter will be set to [5 95].
+%    AFQ_Create('cutoff',[5 95],'sub_group',[1 1 1 0 0 0]);
+% The afq.params.cutoff parameter will be set to [5 95] rather than the
+% default which is [10 90] and the subject groups will be defined for the
+% six subjects (3 patients and 3 controls).
+% 
 %
 % See Also: AFQ_Set AFQ_Get
 %
@@ -54,11 +57,6 @@ afq.sub_group = [];
 
 %% Attach the tract profile structure to the afq structure
 
-% The names of each tract
-fgNames = {'L_ATR' 'R_ATR' 'L_CST' 'R_CST' 'L_Cingulum_C' 'R_Cingulum_C'...
-    'L_Cingulum_H' 'R_Cingulum_H' 'Callosum_Post' 'Callosum_Ant' 'L_IFOF'...
-    'R_IFOF' 'L_ILF' 'R_ILF' 'L_SLF' 'R_SLF' 'L_Uncinate' 'R_Uncinate'...
-    'L_Arcuate' 'R_Arcuate'};
 afq.TractProfiles = AFQ_CreateTractProfile;
 % % Add a field to afq.TractProfiles for each tract defined above
 % for ii = 1:length(fgNames)
