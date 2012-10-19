@@ -1,4 +1,4 @@
-function [T,N,B,k,t] = frenet2(x,y,z),
+function [T,N,B,k,t] = frenet2(x,y,z)
 % FRENET - Frenet-Serret Space Curve Invarients
 %   
 %   [T,N,B,k,t] = frenet2(x,y);
@@ -28,7 +28,7 @@ function [T,N,B,k,t] = frenet2(x,y,z),
 %    x = cos(theta);
 %    y = sin(theta);
 %    z = theta/(2*pi);
-%    [T,N,B,k,t] = frenet(x,y,z);
+%    [T,N,B,k,t] = frenet2(x,y,z);
 %    line(x,y,z), hold on
 %    quiver3(x,y,z,T(:,1),T(:,2),T(:,3),'color','r')
 %    quiver3(x,y,z,N(:,1),N(:,2),N(:,3),'color','g')
