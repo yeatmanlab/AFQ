@@ -1,12 +1,17 @@
 function [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)
-% Run AFQ analysis on a set of subjects.
+% Run AFQ analysis on a set of subjects to generate Tract Profiles of white
+% matter properties.
 %
-% [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, [afq])
+% [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs,
+% sub_group, [afq])
 %
 % AFQ_run is the main function to run the AFQ analysis pipeline.  Each AFQ
 % function is an independent module that can be run on its own.  However
 % when AFQ_run is used to analyze data all the proceeding analyses are
-% organized into the afq data structure.
+% organized into the afq data structure. The AFQ analysis pipeline is
+% described in Yeatman J.D., Dougherty R.F., Myall N.J., Wandell B.A.,
+% Feldman H.M. (2012). Tract Profiles of White Matter Properties:
+% Automating Fiber-Tract Quantification. PLoS One.
 %
 % Input arguments:
 %  sub_dirs  = 1 x N cell array where N is the number of subjects in the
