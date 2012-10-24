@@ -1,13 +1,18 @@
 function [fg_classified,fg_unclassified,classification,fg] = ...
     AFQ_SegmentFiberGroups(dt6File, fg, Atlas, ...
     useRoiBasedApproach, useInterhemisphericSplit)
-% Categorizes each fiber in a group based on Mori white matter atlas. 
+% Categorizes each fiber in a group into one of the 20 tracts defined in
+% the Mori white matter atlas. 
 %
 %  [fg_classified,fg_unclassified]= AFQ_SegmentFiberGroups(dt6File, fg, ...
 %      [Atlas='MNI_JHU_tracts_prob.nii.gz'], ...
 %      [useRoiBasedApproach=true] ...
 %      [useInterhemisphericSplit=true]);
 %
+%  Fibers are segmented in two steps. Fibers become candidates for a fiber
+%  group if the pass through the 2 waypoint ROIs that define the
+%  tracjectory of the tract. Then each fiber is compared to a fiber
+%  proability map and high probability fibers are retained in the group.
 %  The segmentation alogrithm is based on:
 %
 %  Hua K, Zhang J, Wakana S, Jiang H, Li X, Reich DS, Calabresi PA, Pekar
