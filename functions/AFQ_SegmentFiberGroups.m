@@ -180,8 +180,11 @@ moriTracts = readFileNifti(fullfile(tdir, Atlas));
 moriTracts.data(:,:,:,15) = moriTracts.data(:,:,:,15)-moriTracts.data(:,:,:,19);
 moriTracts.data(:,:,:,16) = moriTracts.data(:,:,:,16)-moriTracts.data(:,:,:,20);
 % Load the fiber group labels
-labels = readTab(fullfile(tdir,'MNI_JHU_tracts_prob.txt'),',',false);
-labels = labels(1:20,2);
+%labels = readTab(fullfile(tdir,'MNI_JHU_tracts_prob.txt'),',',false);
+%labels = labels(1:20,2);
+labels = {'Left Thalmic Radiation','Right Thalmic Radiation','Left Corticospinal','Right Corticospinal', 'Left Cingulum Cingulate', 'Right Cingulum Cingulate'...
+    'Left Cingulum Hippocampus','Right Cingulum Hippocampus', 'Callosum Forceps Major', 'Callosum Forceps Minor'...
+    'Left IFOF','Right IFOF','Left ILF','Right ILF','Left SLF','Right SLF','Left Uncinate','Right Uncinate','Left Arcuate','Right Arcuate'};
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 % If you wanted to inverse-normalize the maps to this subject's brain:
