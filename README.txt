@@ -9,7 +9,10 @@ http://white.stanford.edu/newlm/index.php/AFQ.
 And the most recent version of the code can be downloaded from: 
 https://github.com/jyeatman/AFQ/zipball/master
 
-If you use this software please cite; Yeatman et al. (2012). Tract Profiles of White Matter Properties: Automating Fiber-Tract Quantification
+AFQ has been tested for MATLAB r2009b through MATLAB r2012b. It requires functions from the MATLAB stats toolbox, vistasoft and spm.
+
+If you use this software please cite; Yeatman et al. (2012). Tract Profiles of White Matter Properties: Automating Fiber-Tract Quantification. PLoS One.
+
 
     Copyright (C) 2012   Jason D. Yeatman   jyeatman@stanford.edu
 
