@@ -1,4 +1,5 @@
 function [params,mapv1,mapv1b,err] = AFQ_TractProfileAlign(v1,v2,numanchor,errmetric,show)
+% THIS FUNCTION IS STILL BEING DEVELOPED
 % Align two Tract Profiles by stretching one to match the other
 %
 % function [params,mapv1,mapv1b,err] = AFQ_TractProfileAlign(v1,v2,numanchor)
