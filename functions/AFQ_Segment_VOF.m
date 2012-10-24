@@ -1,5 +1,6 @@
 function [vofFG vofROI1 vofROI2] = AFQ_Segment_VOF(dt, wholebrainFG, varargin)
-% Define the vertical occipital fasciculus from a wholebrain fiber group
+% THIS FUNCTION IS STILL BEING DEVELOPED
+% Define the vertical occipital fasciculus from a wholebrain fiber group.
 
 if ischar(dt)
     dt = dtiLoadDt6(dt);
