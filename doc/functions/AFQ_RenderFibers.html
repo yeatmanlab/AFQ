@@ -97,6 +97,18 @@
  section of the fiber is hexagonal.  Increase Nsubdivs to make the fibers
  look like tubes. Default is Nsubdivs = 25
 
+ AFQ_RenderFibers(fg,'tubes', [1]) - Whether fibers should be rendered as
+ tubes [1] or lines [0]. Lines are faster tubes are prettier. Tubes are
+ default
+
+ AFQ_RenderFibers(fg,'newfig', [1]) - Check if rendering should be in new
+ window [1] or added to an old window [0]. Default is new figure.
+
+ AFQ_RenderFibers(fg,'numfibers', numfibers) - Only render as many fibers
+ as are defined in numfibers. This many fibers will randomly be chosen
+ from the fiber group.  This is useful to save time when rendering large
+ groups.
+
  Example:
 
  fg = dtiReadFibers('Left_CST.mat');
@@ -114,12 +126,12 @@ This function calls:
 <li><a href="AFQ_CreateTractProfile.html" class="code" title="function TractProfile = AFQ_CreateTractProfile(varargin)">AFQ_CreateTractProfile</a>	Create the AFQ Tract Profile structure</li><li><a href="AFQ_RenderTractProfile.html" class="code" title="function [lightH] = AFQ_RenderTractProfile(coords, radius, color, subdivs, cmap, crange)">AFQ_RenderTractProfile</a>	Render Tract Profile as a tube colored based on the Tract Profile values</li></ul>
 This function is called by:
 <ul style="list-style-image:url(../matlabicon.gif)">
-<li><a href="AFQ_removeFiberOutliers.html" class="code" title="function [fg keep]=AFQ_removeFiberOutliers(fg,maxDist,maxLen,numNodes,M,count,maxIter,show)">AFQ_removeFiberOutliers</a>	Remove fibers from a fiber group that are differ substantially from the</li></ul>
+<li><a href="AFQ_Segment_PostArcuate.html" class="code" title="function [L_FG R_FG L_roi_2 L_roi_3 R_roi_2 R_roi_3] = AFQ_Segment_PostArcuate(dt, wholebrainFG, sub_dir, varargin)">AFQ_Segment_PostArcuate</a>	Define the posterior segment of the arcuate from a wholebrain fiber group</li><li><a href="AFQ_removeFiberOutliers.html" class="code" title="function [fg keep]=AFQ_removeFiberOutliers(fg,maxDist,maxLen,numNodes,M,count,maxIter,show)">AFQ_removeFiberOutliers</a>	Remove fibers from a fiber group that are differ substantially from the</li></ul>
 <!-- crossreference -->
 
 
 
 
-<hr><address>Generated on Fri 25-May-2012 11:45:02 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+<hr><address>Generated on Thu 07-Jun-2012 16:00:13 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
 </body>
 </html>

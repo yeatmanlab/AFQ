@@ -38,10 +38,34 @@ function lightH = AFQ_RenderFibers(fg,varargin)
 % tract profile. Default is r = [1 5] meaning that fibers have a 1mm radius
 % and the tract profile has a 5mm radius.
 %
-% AFQ_RenderFibers(fg,'tractprofile',TP) - A tract profile can be passed in
-% if it has been precomputed for the fiber tract. TP is a structure with
-% fields TP.vals and TP.coords that define the values to be plotted and the
-% coordinates of the tract profile.  See AFQ_CreateTractProfile.
+% AFQ_RenderFibers(fg,'tractprofile',TractProfile,'val',['fa']) - A
+% tract profile can be passed in if it has been precomputed for the fiber
+% tract. TractProfile is a structure created by AFQ_CreateTractProfile and
+% contains the coordinates and values to be plotted. The user can also
+% define which value in the tract profile should be plotted. The dafault is
+% 'fa' but the name of any value that exists within the TractProfile
+% structure is ok.
+%
+% AFQ_RenderFibers(fg,'color', rgbValues) - Render the fiber group in a
+% specific color.  rgbValues can be defined in 3 ways to do (1) uniform
+% coloring for the fiber group, (2) fiberwise coloring or (3) pointwise
+% coloring. 
+% (1) If rgbValues is a 1 x 3 vector of rgb values than each fiber is
+% colored that same color. The default color is gray [0.7 0.7 0.7]. To do
+% cyan for example rgbValues = [0 1 1].
+% (2) If rgbValues is a N x 3 vector where N is the number of fibers in
+% the fiber group, then each fiber in the group is rendered in its own
+% color. Each fiber's color is defined by the coresponding row of
+% rgbValues. For example to color each fiber a random color:
+% rgbValues=rand(length(fg.fibers),3)
+% (3) If rgbValues is a 1 x N cell array where N is the number of fibers
+% in the fiber group, then each node on fiber n is colored based on the
+% corresponding row of rgbValues{n}. This means that each cell must have
+% the same number of rows as the corresponding fiber in the fiber group.
+% For example to color each point on each fiber based on its FA value: 
+% vals = dtiGetValFromFibers(dt.dt6,fg,inv(dt.xformToAcpc),'fa');
+% rgb = vals2colormap(vals);
+% AFQ_RenderFibers(fg,'color',rgb);
 %
 % AFQ_RenderFibers(fg,'camera', view) - Render the fiber group and view
 % from a specific plane.  The options for view are 'sagittal', 'coronal' or
@@ -49,10 +73,6 @@ function lightH = AFQ_RenderFibers(fg,varargin)
 % vector denoting the azimuth (horizontal rotation) and elevation (vertical
 % rotation) in degrees of the camera with respect to the fibers. See the
 % matlab view function
-%
-% AFQ_RenderFibers(fg,'color', rgbValues) - Render the fiber group in a
-% specific color.  Color is a 1 by 3 vector of rgb values. The default is
-% gray [0.7 0.7 0.7]. To do cyan for example rgbValues = [0 1 1].
 %
 % AFQ_RenderFibers(fg,'jittershading', jitter) - The darkness of each fiber
 % can be randomized slightly to make the fiber group take on more of a 3d
@@ -75,11 +95,14 @@ function lightH = AFQ_RenderFibers(fg,varargin)
 %
 % AFQ_RenderFibers(fg,'newfig', [1]) - Check if rendering should be in new
 % window [1] or added to an old window [0]. Default is new figure.
-% 
+%
 % AFQ_RenderFibers(fg,'numfibers', numfibers) - Only render as many fibers
 % as are defined in numfibers. This many fibers will randomly be chosen
 % from the fiber group.  This is useful to save time when rendering large
 % groups.
+%
+% AFQ_RenderFibers(fg,'alpha',alpha) - Set the transparency of the fibers.
+% Alpha should be a value between 0 (transparent) and 1 (opaque).
 %
 % Example:
 %
@@ -93,6 +116,11 @@ function lightH = AFQ_RenderFibers(fg,varargin)
 
 %% Argument checking
 
+% Check to make sure the fiber group isn't empty
+if isempty(fg.fibers) || length(fg.fibers) == 0
+    fprintf('Fiber group is empty\n');
+    return
+end
 % Check if a dt6 file was input
 if sum(strcmpi('dt',varargin)) > 0
     dt = varargin{find(strcmpi('dt',varargin))+1};
@@ -129,7 +157,7 @@ if sum(strcmpi('camera',varargin)) > 0
                 lightPosition = [-60 0 0];
             case 'axial'
                 camera = [0 90];
-                lightPosition = [-60 0 0];
+                lightPosition = [-10 10 80];
             case 'coronal'
                 camera = [0 0];
                 lightPosition = [-60 0 0];
@@ -147,11 +175,6 @@ if sum(strcmpi('camera',varargin)) > 0
         % default light position
         lightPosition = [-60 0 0];
     end
-%     if length(camera) ~= 2
-%         camera = [270 0];
-%         lightPosition = [-60 0 0];
-%         warning('Camera angle needs 2 numbers. Set to default')
-%     end
 else
     camera = [270 0]; %default camera angle is looking at the sagital plane
     lightPosition = [-60 0 0];
@@ -186,7 +209,7 @@ end
 if sum(strcmpi('subdivs',varargin)) > 0
     subdivs = varargin{find(strcmpi('subdivs',varargin))+1};
 else
-    subdivs = 25;
+    subdivs = 20;
 end
 
 % color range for tract profile
@@ -216,6 +239,12 @@ else
     computeTP = false;
 end
 
+% Check what value should be plotted on the tract profile
+if sum(strcmpi('val',varargin)) > 0
+    valname = varargin{find(strcmpi('val',varargin))+1};
+else
+    valname = 'fa';
+end
 % Check if the user has defined a radius for the fiber tubes and for the
 % tract profile.  Within the radius variable the first number is for the
 % fibers and the second number is for the tract profile.
@@ -253,12 +282,28 @@ end
 % Randomly choose the desired number of fibers to be rendered.
 if sum(strcmpi('numfibers',varargin)) > 0
     numfib = varargin{find(strcmpi('numfibers',varargin))+1};
-    % generate a random index of fibers
-    fibindx = randsample(length(fg.fibers),numfib);
-    % retain only these fibers for the rendering
-    fg.fibers = fg.fibers(fibindx);
+    % check if there are more fibers than the number specified
+    if length(fg.fibers) > numfib
+        % generate a random index of fibers
+        fibindx = randsample(length(fg.fibers),numfib);
+        % retain only these fibers for the rendering
+        fg.fibers = fg.fibers(fibindx);
+        % if there fiber specific coloring was defined make sure to retain
+        % the correct color values
+        if iscell(color)
+            color = color(fibindx);
+        elseif size(color,1) > 1
+            color = color(fibindx,:);
+        end
+    end
 end
 
+% Set the transparency of the fibers
+if sum(strcmpi('alpha',varargin)) > 0
+    alpha = varargin{find(strcmpi('alpha',varargin))+1};
+else
+    alpha = 1;
+end
 %% Loop over fibers and render them in 3-D
 
 % Only render in a new figure window if desired (default)
@@ -269,37 +314,29 @@ end
 % Render each fiber as a tube (slow) if the parameter tubes == 1
 if tubes == 1
     for ii = 1:length(fg.fibers)
+        
         % X, Y and Z coordinates for the fiber
-        x = fg.fibers{ii}(1,:)';
-        y = fg.fibers{ii}(2,:)';
-        z = fg.fibers{ii}(3,:)';
+        coords = fg.fibers{ii};
         
-        % Initialize the variables for the mesh
-        N = length(x);
-        X=zeros(N,subdivs);
-        Y=zeros(N,subdivs);
-        Z=zeros(N,subdivs);
-        theta=0:(2*pi/(subdivs-1)):(2*pi);
-        
-        % frame seems to work better than frenet
-        [t,n,b]=frame(x,y,z,randn(1,3));
-        %[t,n,b]=frenet(x,y,z);
-        
-        % set the radius of the tubes
-        r=rFib*ones(N,1);
-        
-        % Build a mesh for the fibers
-        for i=1:N
-            X(i,:)=x(i) + r(i)*(n(i,1)*cos(theta) + b(i,1)*sin(theta));
-            Y(i,:)=y(i) + r(i)*(n(i,2)*cos(theta) + b(i,2)*sin(theta));
-            Z(i,:)=z(i) + r(i)*(n(i,3)*cos(theta) + b(i,3)*sin(theta));
+        % Build the mesh of the fiber. The coloring of the mesh will depend
+        % on whether color was defined for the full fiber group, for each
+        % fiber, or for each point on each fiber
+        if size(color,1) == 1 && size(color,2) == 3
+            % If 1 color was defined than use that color for each fiber
+            [X Y Z C] = AFQ_TubeFromCoords(coords, rFib, color, subdivs);
+        elseif size(color,1) == length(fg.fibers) && size(color,2) == 3
+            % If color is a N x 3 array with a different color defined for
+            % each fiber than color fg.fibers{ii} the color defined by
+            % color(ii,:)
+            fColor = color(ii,:);
+            [X Y Z C] = AFQ_TubeFromCoords(coords, rFib, fColor, subdivs);
+        elseif iscell(color) && length(color) == length(fg.fibers)
+            % If color is a cell array where each cell contains a color for
+            % each point on the fiber than color each node fg.fibers{ii}
+            % the colors defined in color{ii}
+            fColor = color{ii};
+            [X Y Z C] = AFQ_TubeFromCoords(coords, rFib, fColor, subdivs);
         end
-        
-        % Set the color for each point on the mesh
-        C = ones(size(Z,1),size(Z,2),3);
-        C(:,:,1) = C(:,:,1).*color(1);
-        C(:,:,2) = C(:,:,2).*color(2);
-        C(:,:,3) = C(:,:,3).*color(3);
         
         % Add some random jitter to the shading so some fibers are slightly
         % lighter or darker
@@ -325,7 +362,7 @@ if tubes == 1
         C(C < 0) = 0;
         
         % Render fiber tubes
-        surf(X,Y,Z,C);
+        surf(X,Y,Z,C,'facealpha',alpha);
     end
     
     % Plot the fibers as lines (much faster than tubes) if the input tubes == 0
@@ -350,33 +387,48 @@ end
 if computeTP
     % compute tract profile
     [fa,md,rd,ad,cl,fgCore]=dtiComputeDiffusionPropertiesAlongFG(fg, dt, roi1, roi2, 100);
+    % Create Tract Profile structure
     TP = AFQ_CreateTractProfile;
-    TP.vals.fa = fa;
-    TP.coords  = fgCore.fibers{1};
+    % Set the desired values to the structure
+    TP = AFQ_TractProfileSet(TP,'vals',valname,eval(valname));
+    % Set the tract profile coordinates
+    TP = AFQ_TractProfileSet(TP,'coordsacpc',fgCore.fibers{1});
 end
 if exist('TP','var') && ~isempty(TP)
-    AFQ_RenderTractProfile(TP.coords,rTP,TP.vals.fa,30,cmap,crange);
+    % Get the coordinates
+    coords = AFQ_TractProfileGet(TP,'coordsacpc');
+    % Get the values
+    vals = AFQ_TractProfileGet(TP,'vals',valname);
+    % Render the tract Profile
+    AFQ_RenderTractProfile(coords,rTP,vals,30,cmap,crange);
+end
+
+% Render the ROIs if they were passed in
+if exist('roi1','var')&&exist('roi2','var')&&~isempty(roi1)&&~isempty(roi2)
+    AFQ_RenderRoi(roi1,[1 0 0]);
+    AFQ_RenderRoi(roi2,[1 0 0]);
 end
 %% Set the lighting, axes, etc.
-coordsAll = horzcat(fg.fibers{:});
-mx = minmax(coordsAll(1,:));
-my = minmax(coordsAll(2,:));
-mz = minmax(coordsAll(3,:));
-axis([mx(1)-3 mx(2)+3 my(1)-3 my(2)+3 mz(1)-3 mz(2)+3],'equal');
+
+shading('interp');
 % Only set window properties if the fibers were rendered in a new figure
 % window
 if newfig ==1
+    coordsAll = horzcat(fg.fibers{:});
+    mx = minmax(coordsAll(1,:));
+    my = minmax(coordsAll(2,:));
+    mz = minmax(coordsAll(3,:));
+    axis([mx(1)-3 mx(2)+3 my(1)-3 my(2)+3 mz(1)-3 mz(2)+3],'equal');
     xlabel('X mm','fontname','times','fontsize',14);
     ylabel('Y mm','fontname','times','fontsize',14);
     zlabel('Z mm','fontname','times','fontsize',14);
     set(gca,'fontname','times','fontsize',14);
     set(gcf,'color',[1 1 1]);
-    shading('interp');
     grid('on');
     if size(camera,2) == 2
         view(camera(1), camera(2));
     elseif size(camera,2) == 3
-        campos(camera)
+        campos(camera);
     end
     lightH = camlight;
     set(lightH, 'position',lightPosition);

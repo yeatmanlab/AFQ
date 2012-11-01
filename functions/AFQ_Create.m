@@ -3,14 +3,17 @@ function afq = AFQ_Create(varargin)
 %
 %    afq = AFQ_Create(varargin)
 %
-% Creates a default automated fiber quantification (AFQ) structure.  The
-% default fields are put in place and filled with default values.  The
-% arguments to the function are in the form 'parameter','value'.  For
-% example, if you call the function with
+% Creates anautomated fiber quantification (AFQ) structure.  The default
+% fields are put in place and filled with default values.  The default
+% parameters can also be changed and this will affect later stages of the
+% AFQ pipeline.  The arguments to the function are in the form
+% 'parameter','value'.  For example, if you call the function with
 %
-%    AFQ_Create('cutoff',[5 95]);  
-%
-% The afq.params.cutoff parameter will be set to [5 95].
+%    AFQ_Create('cutoff',[5 95],'sub_group',[1 1 1 0 0 0]);
+% The afq.params.cutoff parameter will be set to [5 95] rather than the
+% default which is [10 90] and the subject groups will be defined for the
+% six subjects (3 patients and 3 controls).
+% 
 %
 % See Also: AFQ_Set AFQ_Get
 %
@@ -22,16 +25,26 @@ function afq = AFQ_Create(varargin)
 % (c) Jason D. Yeatman December 2011
 %
 
+%% Define the type of structure
+afq.type = 'afq version 1';
+%% Names of all the fiber groups
+afq.fgnames = {'Left Thalmic Radiation','Right Thalmic Radiation','Left Corticospinal','Right Corticospinal', 'Left Cingulum Cingulate', 'Right Cingulum Cingulate'...
+    'Left Cingulum Hippocampus','Right Cingulum Hippocampus', 'Callosum Forceps Major', 'Callosum Forceps Minor'...
+    'Left IFOF','Right IFOF','Left ILF','Right ILF','Left SLF','Right SLF','Left Uncinate','Right Uncinate','Left Arcuate','Right Arcuate'};
+
 %% Attach a structure of values to the afq structure
-vals.fa = [];
-vals.md = [];
-vals.rd = [];
-vals.ad = [];
-vals.cl = [];
+vals.fa = {};
+vals.md = {};
+vals.rd = {};
+vals.ad = {};
+vals.cl = {};
 afq.vals = vals;
 
 %% Attach a cell array of subject names to the afq structure
 afq.sub_names = {};
+
+%% Attach a vector of subject groups to afq structure
+afq.sub_group = [];
 
 %% Attach a vector of subject id numbers to the afq structure
 afq.sub_nums = [];
@@ -40,20 +53,20 @@ afq.sub_nums = [];
 afq.sub_dirs = {};
 
 %% Attach a vector to define each subject's group
-afq.sub_group = {};
+afq.sub_group = [];
 
 %% Attach the tract profile structure to the afq structure
 
-% The names of each tract
-fgNames = {'L_ATR' 'R_ATR' 'L_CST' 'R_CST' 'L_Cingulum_C' 'R_Cingulum_C'...
-'L_Cingulum_H' 'R_Cingulum_H' 'Callosum_Post' 'Callosum_Ant' 'L_IFOF'...
-'R_IFOF' 'L_ILF' 'R_ILF' 'L_SLF' 'R_SLF' 'L_Uncinate' 'R_Uncinate'...
-'L_Arcuate' 'R_Arcuate'};
-TractProfiles = struct;
-% Add a field to afq.TractProfiles for each tract defined above
-for ii = 1:length(fgNames)
-    afq.TractProfiles.(fgNames{ii}) = AFQ_CreateTractProfile('name',fgNames{ii});
-end
+afq.TractProfiles = AFQ_CreateTractProfile;
+% % Add a field to afq.TractProfiles for each tract defined above
+% for ii = 1:length(fgNames)
+%     afq.TractProfiles.(fgNames{ii}) = AFQ_CreateTractProfile('name',fgNames{ii});
+% end
+
+%% Check which software packages are installed
+afq.software.mrvista = check_mrvista;
+afq.software.mrtrix = check_mrTrix;
+afq.software.spm = check_spm;
 
 %% Set the afq.params structure with default parameters
 %  cutoff: The percentile cutoff to be used to determine what is "abnormal"
@@ -75,6 +88,8 @@ afq.params.run_mode = [];
 % standard deviations from the core of the tract will be removed.  this
 % means that fibers groups will be forced to be a compact bundle
 afq.params.cleanFibers = 1;
+% Maximum number of iteration of the cleaning algorithm
+afq.params.cleanIter = 5;
 % Remove fibers that are more than maxDist standard deviations from the
 % core of the tract
 afq.params.maxDist = 5;
@@ -93,18 +108,109 @@ afq.params.clip2rois = 1;
 afq.params.cleanClippedFibers = 0;
 % The directory to save all output figures and results
 afq.params.outdir = [];
+% Show figures? yes or no
+afq.params.showfigs = true;
 % Save figures? yes or no
-afq.params.savefigs = 0;
+afq.params.savefigs = false;
+% Whether or not to compute constrained spherical deconvolution using
+% mrtrix
+afq.params.computeCSD = 0;
+%% AFQ Fiber Tracking parameters
+% Do fiber tracking with mrdiffusion by default. The other option is
+% 'mrtrix' if it is installed and the data is HARDI
+afq.params.track.algorithm = 'mrdiffusion';
+% Distance between steps in the tractography algoithm
+afq.params.track.stepSizeMm = 1;
+% Stopping criteria FA<0.2
+afq.params.track.faThresh = 0.2;
+% Discard Fibers shorter than 50mm or longer than 250mm
+afq.params.track.lengthThreshMm = [50 250];
+% Stopping criteria angle between steps >30 degrees
+afq.params.track.angleThresh = 30;
+% Unknown.....
+afq.params.track.wPuncture = 0.2;
+% There are multip.e algorithms that can be used.  We prefer STT. See:
+% Basser PJ, Pajevic S, Pierpaoli C, Duda J, Aldroubi A. 2000.
+% In vivo fiber tractography using DT-MRI data.
+% Magnetic Resonance in Medicine 44(4):625-32.
+afq.params.track.whichAlgorithm = 1;
+% Interpolation method. After each step we interpolate the tensor at that
+% point. Trilinear interpolation works well.
+afq.params.track.whichInterp = 1;
+% This adds some randomness to each seed point. Each seed point is move
+% randomly by randn*.1mm
+afq.params.track.offsetJitter = 0;
+% We seed in voxel in multiple locations. [0.25 and 0.75] Seeds each voxel
+% at 8 equidistant locations.  For one seed in the middle of the voxel use
+% afq.params.track.seedVoxelOffsets = 0.5;
+afq.params.track.seedVoxelOffsets = [0.25 0.75];
+% Mask from which to initialize tracking
+afq.params.track.faMaskThresh = 0.30;
 
 % TODO:
 %  Write a parameter translation routine based on mrvParamFormat()
 %  This will translate all of the parameters into the right format for the
 %  afq parameters structure.
 
-%% Modify default parameters based on user input
-afq.params = mrVarargin(afq.params, varargin);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Modify default parameters based on user input                          %
+afq = afqVarargin(afq, varargin);                                         %
+afq.params = afqVarargin(afq.params, varargin);     
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%% Modify tracking parameters if the mode is test mode
+if strcmp(afq.params.run_mode,'test')
+    afq.params.track.seedVoxelOffsets = [0.5];
+    afq.params.track.faMaskThresh = 0.35;
+end
+%% Attach a structure pointing to each subjects data files
+for ii = 1: AFQ_get(afq,'num subs')
+    afq.files.dt6{ii} = fullfile(afq.sub_dirs{ii},'dt6.mat');
+    if ~exist(AFQ_get(afq,'dt6 path',ii))
+        error('%s file does not exist',AFQ_get(afq,'dt6 path',ii))
+    end
+end
+afq.files.images            = struct('name',{},'path',{});
+afq.files.fibers.wholebrain = cell(AFQ_get(afq,'num subs'),1);
+afq.files.fibers.segmented  = cell(AFQ_get(afq,'num subs'),1);
+afq.files.fibers.clean      = cell(AFQ_get(afq,'num subs'),1);
 
+%% Add files from previous AFQ runs to afq structure
+for ii = 1:AFQ_get(afq,'num subs')
+    fibDir = fullfile(afq.sub_dirs{ii},'fibers');
+    wholebrainFG = fullfile(fibDir,'WholeBrainFG.mat');
+    segmentedFG = fullfile(fibDir,'MoriGroups.mat');
+    cleanFG = fullfile(fibDir,['MoriGroups_clean_D' num2str(afq.params.maxDist) '_L'  num2str(afq.params.maxLen) '.mat']);
+    if exist(wholebrainFG,'file')
+        afq.files.fibers.wholebrain{ii} = wholebrainFG;
+    end
+    if exist(segmentedFG,'file')
+        afq.files.fibers.segmented{ii} = segmentedFG;
+    end
+    if exist(cleanFG,'file')
+        afq.files.fibers.clean{ii} = cleanFG;
+    end
+end
+%% Allow previous analyses to be overwritten
+afq.overwrite.fibers.wholebrain = zeros(AFQ_get(afq,'num subs'),1);
+afq.overwrite.fibers.segmented = zeros(AFQ_get(afq,'num subs'),1);
+afq.overwrite.fibers.clean = zeros(AFQ_get(afq,'num subs'),1);
+afq.overwrite.vals = zeros(AFQ_get(afq,'num subs',1));
 
+%% If desired compute constrained spherical deconvolution with mr trix
+
+% If mr trix is installed and CSD is computed then perform tracking on
+% constrained spherical deconvolution
+if afq.software.mrtrix == 1 && afq.params.computeCSD == 1
+    afq.params.track.algorithm = 'mrtrix';
+end
+
+if AFQ_get(afq,'use mrtrix')
+    for ii = 1:AFQ_get(afq,'num subs')
+        files = AFQ_mrtrixInit(AFQ_get(afq, 'dt6 path',ii));
+        afq.files.mrtrix.csd{ii} = files.csd;
+        afq.files.mrtrix.wm{ii} = files.wm;
+    end
+end
 
 return

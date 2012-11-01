@@ -1,27 +1,29 @@
-function [fa md rd ad cl SuperFibersGroup] = AFQ_ComputeTractProperties(fg_classified,dt,numberOfNodes,clip2rois,subDir)
+function [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,numberOfNodes,clip2rois,subDir)
 % Compute diffusion properties along the trajectory of the fiber groups
 %
-% [fa md rd ad cl SuperFibersGroup] = AFQ_ComputeTractProperties(fg_classified,dt,[numberOfNodes=30],[clip2rois=1],subDir)
-% 
+% [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,[numberOfNodes=30],[clip2rois=1],[subDir])
+%
 % Input arguments:
 %  fg_classified  = Fiber group classified into 20 subgroups that
-%                   correspond to each of the 20 tracts output by 
+%                   correspond to each of the 20 tracts output by
 %                   AFQ_SegmentFiberGroups
 %
-%  dt             = dt6 structure or an image file.  
+%  dt             = dt6 structure or an image file.
 %
 %  numberOfNodes  = The number of nodes to sample each fiber to.
 %
-%  clip2rois      = if clip2rois is set to 1 (default) then only the 
-%                   central portion of the fiber group spanning between 
-%                   the 2 defining ROIs is analyzed. 
+%  clip2rois      = if clip2rois is set to 1 (default) then only the
+%                   central portion of the fiber group spanning between
+%                   the 2 defining ROIs is analyzed.
 %                   Otherwise the full trajectory is analyzed.
-%  
+%
 %  subDir         = The directory containing the subjects dt6 file. This is
-%                   needed to find the subject's ROIs if clip2rois==1
+%                   needed to find the subject's ROIs if clip2rois==1. By
+%                   defualt the subject's directory will be searched for
+%                   based on the path given in the dt6 file (dt.dataFile).
 %
 % Outputs:
-% fa               = vector of Fractional anisotropy along fiber core.             
+% fa               = vector of Fractional anisotropy along fiber core.
 % md               = vector of Mean Diffusivity values along fiber core.
 % rd               = vector of Radial Diffusivity values along fiber core.
 % ad               = vector of Axial Diffusivity values along fiber core.
@@ -57,8 +59,22 @@ if isfield(dt,'qto_xyz')
 else
     valname = 'dt';
 end
+% if no subject directory was defined then define based on the dt6 file
+if ~exist('subDir','var') || isempty(subDir) && strcmp(valname, 'dt')
+    subDir = fileparts(dt.dataFile);
+end
+% Number of fiber groups
+numfg = length(fg_classified.subgroupNames);
+% Create Tract Profile structure
+TractProfile = AFQ_CreateTractProfile;
+% Pre allocate data arrays
+fa=nan(numberOfNodes,numfg);
+md=nan(numberOfNodes,numfg);
+rd=nan(numberOfNodes,numfg);
+ad=nan(numberOfNodes,numfg);
+cl=nan(numberOfNodes,numfg);
 % loop over the fiber groups
-for jj=1:length(fg_classified.subgroupNames)
+for jj=1:numfg
     % There are 20 fiber groups saved with the same structure. We will loop
     % over these fiber groups, allocate them to a tmp variable calculate
     % what we need and move on
@@ -76,6 +92,7 @@ for jj=1:length(fg_classified.subgroupNames)
     % the database
     if isempty(fgtmp.fibers)
         fa(:, jj)=nan;md(:, jj)=nan;rd(:, jj)=nan;ad(:, jj)=nan;cl(:, jj)=nan;
+        TractProfile(jj) = AFQ_CreateTractProfile('name',fgtmp.name);
         continue
     end
     % Here is where we will create define the fiber group core and calculate
@@ -84,12 +101,13 @@ for jj=1:length(fg_classified.subgroupNames)
     % To avoid breaking the whole loop we use the try catch loop
     try
         [fa(:, jj),md(:, jj),rd(:, jj),ad(:, jj),cl(:, jj),SuperFibersGroup(jj)]=dtiComputeDiffusionPropertiesAlongFG(fgtmp, dt, roi1, roi2, numberOfNodes);
+        % Put mean fiber into Tract Profile structure
+        TractProfile(jj) = AFQ_CreateTractProfile('name',fgtmp.name,'superfiber',SuperFibersGroup(jj));
     catch
         fa(:, jj)=nan;md(:, jj)=nan;rd(:, jj)=nan;ad(:, jj)=nan;cl(:, jj)=nan;
+        TractProfile(jj) = AFQ_CreateTractProfile('name',fgtmp.name);
     end
 end
-% Save the data file in the subjects directory so these computations never
-% have to be repeated
-% save(fullfile(subDir,'FiberTractStats'));
+
 
 return
