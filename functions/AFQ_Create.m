@@ -3,7 +3,7 @@ function afq = AFQ_Create(varargin)
 %
 %    afq = AFQ_Create(varargin)
 %
-% Creates anautomated fiber quantification (AFQ) structure.  The default
+% Creates an automated fiber quantification (AFQ) structure.  The default
 % fields are put in place and filled with default values.  The default
 % parameters can also be changed and this will affect later stages of the
 % AFQ pipeline.  The arguments to the function are in the form
