@@ -95,7 +95,7 @@ if ~exist('subDir','var') || isempty(subDir) && strcmp(valname, 'dt')
 end
 % Check if a weighting factor was defined otherwise set to gaussian
 % weighting
-if ~exit('weighting','var') || isempty(weighting)
+if ~exist('weighting','var') || isempty(weighting)
     weighting = 1;
 end
 % Number of fiber groups
