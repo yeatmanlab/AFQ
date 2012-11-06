@@ -216,9 +216,12 @@ for ii=1:length(sub_dirs)
     
     if AFQ_get(afq,'compute profiles',ii)
         fprintf('\nComputing Tract Profiles for subject %s',sub_dirs{ii});
+        % Determine how much to weight each fiber's contribution to the
+        % measurement at the tract core. Higher values mean steaper falloff
+        fWeight = AFQ_get(afq,'fiber weighting');
         % By default Tract Profiles of diffusion properties will always be
         % calculated
-        [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified, dt, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii});
+        [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified, dt, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii}, fWeight);
         
         % Parameterize the shape of each fiber group with calculations of
         % curvature and torsion at each point and add it to the tract
@@ -254,7 +257,7 @@ for ii=1:length(sub_dirs)
                 % Read the image file
                 image = readFileNifti(afq.files.images(jj).path{ii});
                 % Compute a Tract Profile for that image
-                imagevals = AFQ_ComputeTractProperties(fg_classified, image, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii});
+                imagevals = AFQ_ComputeTractProperties(fg_classified, image, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii}, fWeight);
                 % Add values to the afq structure
                 afq = AFQ_set(afq,'vals','subnum',ii,afq.files.images(jj).name, imagevals);
                 clear imagevals
