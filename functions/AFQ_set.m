@@ -114,6 +114,8 @@ switch(param)
         
     case 'sub_group' % Define subject groups in afq.sub_group
         afq.sub_group = varargin{1};
+    case 'sub_dirs'
+        afq.sub_dirs = varargin{1};
         
     case 'currentsubject' % Define the current subject being analyzed
         afq.currentsub = varargin{1};
