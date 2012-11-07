@@ -101,6 +101,14 @@ afq.params.numberOfNodes = 100;
 % Should we analyze the whole length of the fiber group or just the central
 % portion spanning between 2 ROIs
 afq.params.clip2rois = 1;
+% Set the amount of weighting that will be applied when calculating tract
+% profiles. 0 meanse that each fiber contributes equally. 1 means that we
+% apply gaussian weighting where each fibers contribution to the
+% measurement at a node is weighted by its gaussian distance from the tract
+% core. Values greater than 1 mean that the core of the tract is weighted
+% more heavily and fibers futher from the core are weighted less heavily
+% (faster fall off than a gaussian).  See AFQ_ComputeTractProperties
+afq.params.fiberWeighting = 1;
 % If params.cleanFibers==1, then this will indicate whether to perform the
 % cleaning on just the clipped portion of the tract or on the full tract.
 % This may be helpful for tracts like the ILF that are extremely messy with

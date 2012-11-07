@@ -1,13 +1,18 @@
 function [fg_classified,fg_unclassified,classification,fg] = ...
     AFQ_SegmentFiberGroups(dt6File, fg, Atlas, ...
     useRoiBasedApproach, useInterhemisphericSplit)
-% Categorizes each fiber in a group based on Mori white matter atlas. 
+% Categorizes each fiber in a group into one of the 20 tracts defined in
+% the Mori white matter atlas. 
 %
 %  [fg_classified,fg_unclassified]= AFQ_SegmentFiberGroups(dt6File, fg, ...
 %      [Atlas='MNI_JHU_tracts_prob.nii.gz'], ...
 %      [useRoiBasedApproach=true] ...
 %      [useInterhemisphericSplit=true]);
 %
+%  Fibers are segmented in two steps. Fibers become candidates for a fiber
+%  group if the pass through the 2 waypoint ROIs that define the
+%  tracjectory of the tract. Then each fiber is compared to a fiber
+%  proability map and high probability fibers are retained in the group.
 %  The segmentation alogrithm is based on:
 %
 %  Hua K, Zhang J, Wakana S, Jiang H, Li X, Reich DS, Calabresi PA, Pekar
@@ -180,8 +185,11 @@ moriTracts = readFileNifti(fullfile(tdir, Atlas));
 moriTracts.data(:,:,:,15) = moriTracts.data(:,:,:,15)-moriTracts.data(:,:,:,19);
 moriTracts.data(:,:,:,16) = moriTracts.data(:,:,:,16)-moriTracts.data(:,:,:,20);
 % Load the fiber group labels
-labels = readTab(fullfile(tdir,'MNI_JHU_tracts_prob.txt'),',',false);
-labels = labels(1:20,2);
+%labels = readTab(fullfile(tdir,'MNI_JHU_tracts_prob.txt'),',',false);
+%labels = labels(1:20,2);
+labels = {'Left Thalmic Radiation','Right Thalmic Radiation','Left Corticospinal','Right Corticospinal', 'Left Cingulum Cingulate', 'Right Cingulum Cingulate'...
+    'Left Cingulum Hippocampus','Right Cingulum Hippocampus', 'Callosum Forceps Major', 'Callosum Forceps Minor'...
+    'Left IFOF','Right IFOF','Left ILF','Right ILF','Left SLF','Right SLF','Left Uncinate','Right Uncinate','Left Arcuate','Right Arcuate'};
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 % If you wanted to inverse-normalize the maps to this subject's brain:

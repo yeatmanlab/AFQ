@@ -36,6 +36,11 @@ function val = AFQ_get(afq, param, varargin)
 % 'tracking parameters'
 % 'mrtrixpaths'           - [subject number]
 % 'show figures'
+% 
+% To get any of the parameters save in the afq structure (see AFQ_Create),
+% enter the name of the parameter. Some have not been implimented yet, but
+% will be soon.
+% AFQ_get(afq,'fiberWeighting')
 %
 % Written by Jason D. Yeatman August 2012
 
@@ -169,6 +174,8 @@ switch(param)
         val.wm  = afq.files.mrtrix.wm{varargin{1}};
     case{'showfigures' 'showfigs'}
         val = logical(afq.params.showfigs);
+    case{'fiberweighting'}
+        val = afq.params.fiberWeighting;
     otherwise
         error('Uknown afq parameter');
 end

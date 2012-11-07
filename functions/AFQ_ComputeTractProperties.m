@@ -1,7 +1,22 @@
-function [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,numberOfNodes,clip2rois,subDir)
-% Compute diffusion properties along the trajectory of the fiber groups
+function [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,numberOfNodes,clip2rois,subDir, weighting)
+% Compute diffusion properties along the trajectory of the fiber groups.
+% The function returns vectors of diffusion properties and TractProfile
+% structure for each fiber group
 %
-% [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,[numberOfNodes=30],[clip2rois=1],[subDir])
+% [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,[numberOfNodes=30],[clip2rois=1],[subDir], [weighting = 1])
+%
+% The input fiber group can either be a single fiber group or an array of
+% fiber groups (See fg2Array). Each fiber group is clipped to its 2
+% defining ROIs (if clip2rois == true). The fibers are sampled to a defined
+% number of nodes (sampled at equidistant locations on each fiber) and
+% flipped so that they start and end in an equivalent location (if
+% clip2rois==false then we assume that fibers have already start and end in
+% equivalent regions), then diffusion properties are calculated at each
+% node as a weighted sum of the diffusion properties of each fiber at that
+% node. The weights are determined based on each fibers gaussian distance
+% from the core (mean) of the tract. Other quantitative maps can also be
+% input into this function and Tract Profiles of these measures will be
+% returned.
 %
 % Input arguments:
 %  fg_classified  = Fiber group classified into 20 subgroups that
@@ -21,6 +36,19 @@ function [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classifie
 %                   needed to find the subject's ROIs if clip2rois==1. By
 %                   defualt the subject's directory will be searched for
 %                   based on the path given in the dt6 file (dt.dataFile).
+% weighting       = By default each fiber's contribution to the
+%                   measurement at the fiber tract core is weighted by its
+%                   gaussian distance from the core. This can also be
+%                   interpreted as the probability that it is a member of
+%                   the fiber group.  weighting defines the steepness of
+%                   the falloff of the weights assigned to each fiber where
+%                   a value of 0 means that there is no weighting and each
+%                   fiber contributes equally, a value of 1 means that we
+%                   use gaussian weighting (default) and values >1 mean
+%                   that the weights fall off steaper as the fibers deviate
+%                   further from the core. Higher weighting values mean the
+%                   core is weighted more heavily compare to the periphery
+%                   of the tract.
 %
 % Outputs:
 % fa               = vector of Fractional anisotropy along fiber core.
@@ -28,7 +56,9 @@ function [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classifie
 % rd               = vector of Radial Diffusivity values along fiber core.
 % ad               = vector of Axial Diffusivity values along fiber core.
 % cl               = vector of linearity values along fiber core.
-% SuperFibersGroup = Fiber group core and covariance at each node
+% TractProfile     = TractProfile structure (see AFQ_CreateTractProfile).
+%                    Contains fiber group core, fiber covariance, and 
+%                    fiber tract properties at each node. 
 %
 %  Example:
 %
@@ -62,6 +92,11 @@ end
 % if no subject directory was defined then define based on the dt6 file
 if ~exist('subDir','var') || isempty(subDir) && strcmp(valname, 'dt')
     subDir = fileparts(dt.dataFile);
+end
+% Check if a weighting factor was defined otherwise set to gaussian
+% weighting
+if ~exist('weighting','var') || isempty(weighting)
+    weighting = 1;
 end
 % Number of fiber groups
 numfg = length(fg_classified.subgroupNames);
@@ -100,7 +135,7 @@ for jj=1:numfg
     % there is a problem such as only having 1 fiber in the fiber group.
     % To avoid breaking the whole loop we use the try catch loop
     try
-        [fa(:, jj),md(:, jj),rd(:, jj),ad(:, jj),cl(:, jj),SuperFibersGroup(jj)]=dtiComputeDiffusionPropertiesAlongFG(fgtmp, dt, roi1, roi2, numberOfNodes);
+        [fa(:, jj),md(:, jj),rd(:, jj),ad(:, jj),cl(:, jj),SuperFibersGroup(jj)]=dtiComputeDiffusionPropertiesAlongFG(fgtmp, dt, roi1, roi2, numberOfNodes,weighting);
         % Put mean fiber into Tract Profile structure
         TractProfile(jj) = AFQ_CreateTractProfile('name',fgtmp.name,'superfiber',SuperFibersGroup(jj));
     catch
