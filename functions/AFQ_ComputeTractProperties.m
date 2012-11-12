@@ -72,9 +72,11 @@ function [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classifie
 % Copyright Stanford Vista Team 2011
 % Written by Jason D. Yeatman
 
-% check the format of the fiber group.
-if isstruct(fg_classified) && length(fg_classified) > 1
-    fg_classified = dtiFgArrayToFiberGroup(fg_classified);
+% check the format of the fiber group. Convert to an array of fiber groups
+% if necessary
+if isstruct(fg_classified) && isfield(fg_classified,'subgroupNames')...
+        && isfield(fg_classified,'subgroup')
+    fg_classified = fg2Array(fg_classified);
 end
 % if number of nodes doesn't exist then set to 30
 if ~exist('numberOfNodes','var') || isempty(numberOfNodes)
@@ -99,7 +101,7 @@ if ~exist('weighting','var') || isempty(weighting)
     weighting = 1;
 end
 % Number of fiber groups
-numfg = length(fg_classified.subgroupNames);
+numfg = length(fg_classified);
 % Create Tract Profile structure
 TractProfile = AFQ_CreateTractProfile;
 % Pre allocate data arrays
@@ -110,11 +112,16 @@ ad=nan(numberOfNodes,numfg);
 cl=nan(numberOfNodes,numfg);
 % loop over the fiber groups
 for jj=1:numfg
-    % There are 20 fiber groups saved with the same structure. We will loop
-    % over these fiber groups, allocate them to a tmp variable calculate
-    % what we need and move on
-    fgtmp=dtiNewFiberGroup(fg_classified.subgroupNames(jj).subgroupName);
-    fgtmp.fibers=fg_classified.fibers(fg_classified.subgroup==jj);
+    % There are 20 fiber groups saved within the same structure. We will
+    % loop over these fiber groups, allocate them to a tmp variable
+    % calculate what we need and move on
+    fgtmp = fg_classified(jj);
+    
+    % This is what we would do with the old fiber group structure
+    % fgtmp=dtiNewFiberGroup(fg_classified.subgroupNames(jj).subgroupName);
+    %  fgtmp.fibers=fg_classified.fibers(fg_classified.subgroup==jj);
+
+
     % clip the fiber group to the portion spanning between the two ROIs if
     % desired
     if clip2rois==1
