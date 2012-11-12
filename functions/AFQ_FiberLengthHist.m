@@ -18,7 +18,7 @@ if ~exist('fg','var') || isempty(fg) || ~isfield(fg,'fibers') || isempty(fg.fibe
     Lnorm=[]; Lmm=[];
     return
 end
-if ~exist('showHIst','var') || isempty(showHist)
+if ~exist('showHist','var') || isempty(showHist)
     showHist = 0; %Default to not showing a figure
 end
 % Calculate the length in mm of each fiber in the fiber group
