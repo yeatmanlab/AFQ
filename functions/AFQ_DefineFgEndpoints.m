@@ -1,4 +1,5 @@
 function [fg keep flipped] = AFQ_DefineFgEndpoints(fg,startpoint,endpoint,dt6Path,dCrit,invDef)
+% THIS FUNCTION IS STILL BEING DEVELOPED
 % Define the cortical endpoints of a fiber group, remove fibers that do not
 % terminate in the correct location and reorient each fiber in the group so
 % that it has consistent start and endpoints. Cortical regions are rough

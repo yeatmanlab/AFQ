@@ -1,4 +1,5 @@
 function [fg flipped] = AFQ_matchFgEndpoints(fg,startpoint,endpoint)
+% THIS FUNCTION IS STILL BEING DEVELOPED
 % Reorder each fiber in a group so that they all go the same direction (eg
 % anterior-posteror). Each fiber within a fiber group will be reoriented so
 % that it's first coordinate is closer to the defined startpoint than it's

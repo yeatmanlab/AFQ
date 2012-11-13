@@ -1,4 +1,5 @@
 function [TractProfile V] = AFQ_TractProfileVolume(TractProfile)
+% THIS FUNCTION IS STILL BEING DEVELOPED
 % Calculate the volume of the ellipse defined by the covariance matrix at
 % each node of the tract profile
 %
