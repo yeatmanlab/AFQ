@@ -8,7 +8,7 @@ AFQ was designed to generate Tract Profiles of tissue properties for major fiber
 http://white.stanford.edu/newlm/index.php/AFQ.  
 The current stable release (v0.1) can be downloaded from: 
 https://github.com/jyeatman/AFQ/archive/v0.1.zip
-For help and updates see the AFQ mailing list in google groups:
+For help and updates join the AFQ mailing list in google groups:
 https://groups.google.com/forum/?fromgroups#!forum/automated-fiber-quantification-afq
 
 AFQ has been tested for MATLAB r2009b through MATLAB r2012b. It requires functions from the MATLAB stats toolbox, vistasoft and spm.
