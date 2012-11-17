@@ -110,12 +110,20 @@ Lnum = find(strcmpi(Lname,labels(:,2)));
 % If the name was not in the label file check if it is a composite region
 if isempty(Lnum)
     switch(Lname)
-        case('occipital')
-            % We include the fusiform
-            Lnum = 43:56;
-        case{'temporal'}
+        case'occipital'
+            % We do not include the fusiform
+            Lnum = 43:54;
+        case 'leftoccipital'
+            Lnum = [43:2:53];
+        case 'rightoccipital'
+            Lnum = [44:2:54];
+        case'temporal'
             % We include the fusiform
             Lnum = [55, 56, 79:90];
+        case 'lefttemporal'
+            [55 79:2:89];
+        case 'righttemporal'
+            [56 80:2:90];
     end
 end
 
