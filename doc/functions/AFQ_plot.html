@@ -79,12 +79,382 @@ This function calls:
 </ul>
 This function is called by:
 <ul style="list-style-image:url(../matlabicon.gif)">
-<li><a href="AFQ_run.html" class="code" title="function [patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)">AFQ_run</a>	Run AFQ analysis on a set of subjects.</li></ul>
+<li><a href="AFQ_run.html" class="code" title="function [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)">AFQ_run</a>	Run AFQ analysis on a set of subjects to generate Tract Profiles of white</li></ul>
 <!-- crossreference -->
 
 
 
-
-<hr><address>Generated on Thu 07-Jun-2012 16:00:13 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function AFQ_plot(varargin)</a>
+0002 <span class="comment">% This function will plot AFQ results in a variety of ways</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% AFQ_plot(varargin)</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Plotting options are described below:</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% --Group Plots--</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% AFQ_plot('group1 name', data1, 'group2 name', data2, 'group')</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% Tract diffusion profiles can be plotted for multiple groups of subjects.</span>
+0013 <span class="comment">% For each of the 20 tracts the group mean +/- 1 standard error of the mean</span>
+0014 <span class="comment">% is plotted.  Each group is on the same plot in a different color. The</span>
+0015 <span class="comment">% propper input to the function is 'group name' as a string followed</span>
+0016 <span class="comment">% by data which is the structured array of tract diffusion profiles output from</span>
+0017 <span class="comment">% AFQ_run.  The string 'group' at the end defines that you would like</span>
+0018 <span class="comment">% a group plot as oppose to one of the other plotting options.</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">% Examples:</span>
+0021 <span class="comment">% [patient_data control_data]=AFQ_run(sub_dirs, sub_group);</span>
+0022 <span class="comment">% AFQ_plot('patient',patient_data,'control',control_data, 'group');</span>
+0023 <span class="comment">% Options:</span>
+0024 <span class="comment">% To plot the data only for a subset of the tracts pass in the 'tracts'</span>
+0025 <span class="comment">% argument followed by a vector of tract numbers to plot</span>
+0026 <span class="comment">% AFQ_plot('patient',patient_data,'control',control_data,'tracts',[1,2,6],'group');</span>
+0027 <span class="comment">%</span>
+0028 <span class="comment">% --Individual Subject Plots--</span>
+0029 <span class="comment">%</span>
+0030 <span class="comment">% AFQ_plot(norms, patient_data, 'ci',[10 90], 'legend',subnames, 'individual')</span>
+0031 <span class="comment">%</span>
+0032 <span class="comment">% Tract diffusion profiles will be plotted for each patient with respect to</span>
+0033 <span class="comment">% the control group norms. The 'ci' argument is optional.  This will define</span>
+0034 <span class="comment">% the width of the outer confidence interval in percentiles to plot for the</span>
+0035 <span class="comment">% nomrs.  If this argument is not passed in default values of 10th and 90th</span>
+0036 <span class="comment">% percentiles will be used. The 'legend' argument is also optional and will</span>
+0037 <span class="comment">% allow a cell array of subject names to be passed in and these will be</span>
+0038 <span class="comment">% added to a legend on each plot.</span>
+0039 <span class="comment">%</span>
+0040 <span class="comment">% Examples:</span>
+0041 <span class="comment">% [patient_data control_data]=AFQ_run(sub_dirs, sub_group);</span>
+0042 <span class="comment">% subnames = {'Sub 1' 'Sub 2' 'Sub 3' 'Sub 4'};</span>
+0043 <span class="comment">% AFQ_plot(norms,patient_data,'ci',[10 90], 'legend',subnames,'individual');</span>
+0044 <span class="comment">%</span>
+0045 <span class="comment">% Copyright Jason D. Yeatman Stanford Vista Team 2011</span>
+0046 
+0047 <span class="comment">%% Argument checks and data formatting</span>
+0048 
+0049 <span class="comment">% Divide up the inputs into data and arguments. This is done by looping</span>
+0050 <span class="comment">% over the number of input arguments and checking if they are structures or</span>
+0051 <span class="comment">% strings</span>
+0052 argnum = 0; datanum = 0;
+0053 <span class="keyword">for</span> ii = 1 : nargin
+0054     <span class="keyword">if</span> ischar(varargin{ii})
+0055         argnum        = argnum + 1;
+0056         arg{argnum}   = varargin{ii};
+0057     <span class="keyword">elseif</span> isstruct(varargin{ii})
+0058         datanum       = datanum + 1;
+0059         data{datanum} = varargin{ii};
+0060     <span class="keyword">end</span>
+0061 <span class="keyword">end</span>
+0062 
+0063 <span class="comment">% check if figures should be saved</span>
+0064 s = strcmpi(<span class="string">'savefigs'</span>, varargin);
+0065 <span class="keyword">if</span> sum(s) &gt; 0
+0066     outdir = varargin{find(s)+1};
+0067     savefigs = 1;
+0068 <span class="keyword">else</span>
+0069     savefigs = 0;
+0070 <span class="keyword">end</span>
+0071 
+0072 <span class="comment">% Check if the user specified a subset of tracts to plot otherwise plot all</span>
+0073 <span class="comment">% of them</span>
+0074 t = strcmpi(<span class="string">'tracts'</span>, varargin);
+0075 <span class="keyword">if</span> sum(t) &gt; 0
+0076     tracts = varargin{find(t)+1};
+0077 <span class="keyword">elseif</span> sum(strcmpi(<span class="string">'colormap'</span>,arg)) &gt; 0
+0078     <span class="comment">% For 'colormap' plots the tract data will be in data{1}</span>
+0079     tracts = 1:length(data{1});
+0080 <span class="keyword">elseif</span> sum(strcmpi(<span class="string">'group'</span>,arg)) &gt; 0 || sum(strcmpi(<span class="string">'individual'</span>,arg)) &gt; 0;
+0081     <span class="comment">% For 'group' and 'individual' plots the tract data will be in data{2}</span>
+0082     tracts = 1:length(data{2});
+0083 <span class="keyword">end</span>
+0084 <span class="comment">% tracts should be a row vector</span>
+0085 <span class="keyword">if</span> size(tracts,2) &lt; size(tracts,1)
+0086     tracts = tracts';
+0087 <span class="keyword">end</span>
+0088 
+0089 <span class="comment">% Check if there is a defined property to plot</span>
+0090 p = strcmpi(<span class="string">'property'</span>, varargin);
+0091 <span class="keyword">if</span> sum(p) &gt; 0
+0092     property = lower(varargin{find(p)+1});
+0093 <span class="keyword">else</span>
+0094     <span class="comment">% default property to plot</span>
+0095     property = <span class="string">'fa'</span>;
+0096 <span class="keyword">end</span>
+0097 
+0098 <span class="comment">% Check if there are defined subjects to plot otherwise plot all subjects</span>
+0099 s = strcmpi(<span class="string">'subjects'</span>, varargin);
+0100 <span class="keyword">if</span> sum(s) &gt; 0
+0101     <span class="comment">% For 'colormap' plots the tract data will be in data{1}</span>
+0102     subjects = varargin{find(s)+1};
+0103 <span class="keyword">elseif</span> sum(strcmpi(<span class="string">'colormap'</span>,arg)) &gt; 0
+0104     subjects = 1:length(data{1}(1).FA(:,1));
+0105 <span class="keyword">elseif</span> sum(strcmpi(<span class="string">'group'</span>,arg)) &gt; 0 || sum(strcmpi(<span class="string">'individual'</span>,arg)) &gt; 0;
+0106     <span class="comment">% For 'group' and 'individual' plots the tract data will be in data{2}</span>
+0107     subjects = 1:length(data{2}(1).FA(:,1));
+0108 <span class="keyword">end</span>
+0109 <span class="comment">% subjects should be a row vector</span>
+0110 <span class="keyword">if</span> size(subjects,2) &lt; size(subjects,1)
+0111     subjects = subjects';
+0112 <span class="keyword">end</span>
+0113 
+0114 <span class="comment">% generate random numbers for the figure windowss</span>
+0115 fignums = ceil(rand(1,max(tracts)).*10000);
+0116 
+0117 <span class="comment">% These are the names of the fiber groups</span>
+0118 fgNames={<span class="string">'Left Thalmic Radiation'</span>,<span class="string">'Right Thalmic Radiation'</span>,<span class="string">'Left Corticospinal'</span>,<span class="string">'Right Corticospinal'</span>, <span class="string">'Left Cingulum Cingulate'</span>, <span class="string">'Right Cingulum Cingulate'</span><span class="keyword">...</span>
+0119     <span class="string">'Left Cingulum Hippocampus'</span>,<span class="string">'Right Cingulum Hippocampus'</span>, <span class="string">'Callosum Forceps Major'</span>, <span class="string">'Callosum Forceps Minor'</span><span class="keyword">...</span>
+0120     <span class="string">'Left IFOF'</span>,<span class="string">'Right IFOF'</span>,<span class="string">'Left ILF'</span>,<span class="string">'Right ILF'</span>,<span class="string">'Left SLF'</span>,<span class="string">'Right SLF'</span>,<span class="string">'Left Uncinate'</span>,<span class="string">'Right Uncinate'</span>,<span class="string">'Left Arcuate'</span>,<span class="string">'Right Arcuate'</span>};
+0121 
+0122 
+0123 <span class="comment">%% Group plots</span>
+0124 <span class="comment">%  Plot the mean +/- 1 std. err. for each data set that is sent in</span>
+0125 <span class="keyword">if</span> sum(strcmpi(<span class="string">'group'</span>,arg)) == 1
+0126     <span class="comment">% define the colors to be used for each groups plot</span>
+0127     c = lines(length(data));
+0128     <span class="comment">% Loop over all the tracts</span>
+0129     <span class="keyword">for</span> jj = 1 : length(tracts)
+0130         <span class="comment">% For each tract loop over the number of groups and plot each</span>
+0131         <span class="comment">% on the same plot</span>
+0132         <span class="keyword">for</span> ii = 1 : length(data)
+0133             figure(fignums(jj)); hold on;
+0134             <span class="comment">% collect the value of interest</span>
+0135             <span class="keyword">switch</span>(property)
+0136                 <span class="keyword">case</span> <span class="string">'fa'</span>
+0137                     vals = data{ii}(tracts(jj)).FA;
+0138                     label = <span class="string">'Fractional Anisotropy'</span>;
+0139                 <span class="keyword">case</span> <span class="string">'rd'</span>
+0140                     vals = data{ii}(tracts(jj)).RD;
+0141                     label = <span class="string">'Radial Diffusivity'</span>;
+0142                 <span class="keyword">case</span> <span class="string">'ad'</span>
+0143                     vals = data{ii}(tracts(jj)).AD;
+0144                     label = <span class="string">'Axial Diffusivity'</span>;
+0145                 <span class="keyword">case</span> <span class="string">'md'</span>
+0146                     vals = data{ii}(tracts(jj)).MD;
+0147                     label = <span class="string">'Mead Diffusivity'</span>;
+0148             <span class="keyword">end</span>
+0149             <span class="comment">% number of subjects with measurements for this tract</span>
+0150             n  = sum(~isnan(vals(:,1)));
+0151             <span class="comment">% group mean diffusion profile</span>
+0152             m  = nanmean(vals);
+0153             <span class="comment">% standard deviation at each node</span>
+0154             sd = nanstd(vals);
+0155             <span class="comment">% standard error of the mean at each node</span>
+0156             se = sd./sqrt(n);
+0157             <span class="comment">% plot the mean</span>
+0158             h(ii) = plot(m,<span class="string">'-'</span>,<span class="string">'Color'</span>,c(ii,:),<span class="string">'linewidth'</span>,3);
+0159             <span class="comment">% plot the confidence interval</span>
+0160             plot(m+se,<span class="string">'--'</span>,<span class="string">'Color'</span>,c(ii,:));
+0161             plot(m-se,<span class="string">'--'</span>,<span class="string">'Color'</span>,c(ii,:));
+0162             <span class="comment">% label the axes etc.</span>
+0163             xlabel(<span class="string">'Location'</span>,<span class="string">'fontName'</span>,<span class="string">'Times'</span>,<span class="string">'fontSize'</span>,12);
+0164             ylabel(label,<span class="string">'fontName'</span>,<span class="string">'Times'</span>,<span class="string">'fontSize'</span>,12);
+0165             title(fgNames{tracts(jj)},<span class="string">'fontName'</span>,<span class="string">'Times'</span>,<span class="string">'fontSize'</span>,12);
+0166             set(gca,<span class="string">'fontName'</span>,<span class="string">'Times'</span>,<span class="string">'fontSize'</span>,12);
+0167         <span class="keyword">end</span>
+0168         <span class="comment">% add a legend to the plot</span>
+0169         legend(h,arg(1:length(data)));
+0170     <span class="keyword">end</span>    
+0171 <span class="keyword">end</span>
+0172 <span class="comment">%% Individual plots</span>
+0173 <span class="comment">%  Plot the norms and confidence intervals then add each individual patient</span>
+0174 <span class="comment">%  to the plot</span>
+0175 <span class="keyword">if</span> sum(strcmpi(<span class="string">'individual'</span>,arg)) == 1
+0176     <span class="comment">% The first set of data will be norms. Collect the property of interest</span>
+0177     norms = data{1};
+0178     <span class="comment">% number of nodes to be plotted</span>
+0179     nnodes = size(data{1}.meanFA,1);
+0180     <span class="comment">% collect the value of interest</span>
+0181     <span class="keyword">switch</span>(property)
+0182         <span class="keyword">case</span> <span class="string">'fa'</span>
+0183             Meanvals = norms.meanFA;
+0184             SDvals   = norms.sdFA;
+0185             axisScale = [1 nnodes .2 .9];
+0186             label = <span class="string">'Fractional Anisotropy'</span>;
+0187         <span class="keyword">case</span> <span class="string">'rd'</span>
+0188             Meanvals = norms.meanRD;
+0189             SDvals   = norms.sdRD;
+0190             axisScale = [1 nnodes .2 .9];
+0191             label = <span class="string">'Radial Diffusivity'</span>;
+0192         <span class="keyword">case</span> <span class="string">'ad'</span>
+0193             Meanvals = norms.meanAD;
+0194             SDvals   = norms.sdAD;
+0195             axisScale = [1 nnodes 1 2.1];
+0196             label = <span class="string">'Axial Diffusivity'</span>;
+0197         <span class="keyword">case</span> <span class="string">'md'</span>
+0198             Meanvals = norms.meanMD;
+0199             SDvals   = norms.sdMD;
+0200             axisScale = [1 nnodes .6 1.3];
+0201             label = <span class="string">'Mead Diffusivity'</span>;
+0202     <span class="keyword">end</span>
+0203     <span class="comment">% make a legend if desired</span>
+0204     <span class="keyword">if</span> sum(strcmpi(<span class="string">'legend'</span>,varargin)) &gt; 0
+0205         L = varargin{find(strcmpi(<span class="string">'legend'</span>,varargin))+1};
+0206     <span class="keyword">else</span>
+0207         L = [];
+0208     <span class="keyword">end</span>
+0209     <span class="comment">% Define the confidence intervals to be plotted. Percentiles are</span>
+0210     <span class="comment">% converted to z scores</span>
+0211     <span class="keyword">if</span> sum(strcmpi(<span class="string">'ci'</span>,varargin)) &gt; 0
+0212         cutoff = varargin{find(strcmpi(<span class="string">'ci'</span>,varargin))+1};
+0213     <span class="keyword">else</span>
+0214         <span class="comment">% if no confidence interval is defined use 10 and 90</span>
+0215         cutoff = [10 90];
+0216     <span class="keyword">end</span>
+0217     cutZ=norminv(cutoff*.01);
+0218     cutZ2=norminv([.25 .75]);
+0219     <span class="comment">% plot the norms for each tract</span>
+0220     <span class="keyword">for</span> jj = tracts
+0221         figure(fignums(jj));hold on;
+0222         <span class="comment">% plot 10 and 90 percentile bands unless the user defines another</span>
+0223         <span class="comment">% confidence interval</span>
+0224         x = [1:nnodes fliplr(1:nnodes)];
+0225         y = vertcat(Meanvals(:,jj)+max(cutZ)*SDvals(:,jj), flipud(Meanvals(:,jj)+min(cutZ)*SDvals(:,jj)));
+0226         fill(x,y, [.6 .6 .6]);
+0227         clear y
+0228         <span class="comment">% plot the 25 and 75 percentile bands</span>
+0229         y = vertcat(Meanvals(:,jj)+max(cutZ2)*SDvals(:,jj), flipud(Meanvals(:,jj)+min(cutZ2)*norms.sdFA(:,jj)));
+0230         fill(x,y, [.3 .3 .3]);
+0231         clear y
+0232         <span class="comment">% plot the mean</span>
+0233         plot(Meanvals(:,jj),<span class="string">'-'</span>,<span class="string">'Color'</span>,<span class="string">'k'</span>,<span class="string">'LineWidth'</span>,5);
+0234         <span class="comment">% scale the axes and name them</span>
+0235         axis(axisScale);
+0236         xlabel(<span class="string">'Location'</span>,<span class="string">'fontName'</span>,<span class="string">'Times'</span>,<span class="string">'fontSize'</span>,12);
+0237         ylabel(label,<span class="string">'fontName'</span>,<span class="string">'Times'</span>,<span class="string">'fontSize'</span>,12)
+0238         title(fgNames{jj},<span class="string">'fontName'</span>,<span class="string">'Times'</span>,<span class="string">'fontSize'</span>,12)
+0239         set(gcf,<span class="string">'Color'</span>,<span class="string">'w'</span>);
+0240         set(gca,<span class="string">'Color'</span>,[.9 .9 .9],<span class="string">'fontName'</span>,<span class="string">'Times'</span>,<span class="string">'fontSize'</span>,12)
+0241     <span class="keyword">end</span>
+0242     <span class="comment">% the second set of data will be individual subjects</span>
+0243     subData = data{2};
+0244     <span class="comment">% define the colors to be used for each individual</span>
+0245     c = hsv(length(subData(1).FA(:,1))).*0.6;
+0246     <span class="comment">% Loop over all the tracts</span>
+0247     <span class="keyword">for</span> jj = tracts
+0248         figure(fignums(jj));
+0249         <span class="comment">% Collect the property of interest for tract jj</span>
+0250         subVals = [];
+0251         <span class="keyword">switch</span>(property)
+0252             <span class="keyword">case</span> <span class="string">'fa'</span>
+0253                 subVals = subData(jj).FA;
+0254             <span class="keyword">case</span> <span class="string">'rd'</span>
+0255                 subVals = subData(jj).RD;
+0256             <span class="keyword">case</span> <span class="string">'ad'</span>
+0257                 subVals = subData(jj).AD;
+0258             <span class="keyword">case</span> <span class="string">'md'</span>
+0259                 subVals = subData(jj).MD;
+0260         <span class="keyword">end</span>
+0261         <span class="comment">% For each tract loop over the number of subjects and plot each</span>
+0262         <span class="comment">% on the same plot with the norms</span>
+0263         <span class="keyword">for</span> ii = subjects
+0264             h(ii) = plot(subVals(ii,:)',<span class="string">'--'</span>,<span class="string">'Color'</span>,c(ii,:),<span class="string">'linewidth'</span>,2);
+0265         <span class="keyword">end</span>
+0266         <span class="comment">% add a legend to the plot if desired</span>
+0267         <span class="keyword">if</span> ~isempty(L)
+0268             legend(h(subjects),L);
+0269         <span class="keyword">end</span>
+0270     <span class="keyword">end</span>   
+0271 <span class="keyword">end</span>
+0272 
+0273 <span class="comment">%% Colormap plots</span>
+0274 <span class="comment">% Plot each individual subject and the group mean.  The Color of the group</span>
+0275 <span class="comment">% mean will vary based on the value at that location on the tract profile.</span>
+0276 <span class="keyword">if</span> sum(strcmpi(<span class="string">'colormap'</span>,arg)) == 1
+0277     <span class="comment">% Check if a legend is desired</span>
+0278     <span class="keyword">if</span> sum(strcmpi(<span class="string">'legend'</span>,varargin)) &gt; 0
+0279         L = varargin{find(strcmpi(<span class="string">'legend'</span>,varargin))+1};
+0280     <span class="keyword">else</span> 
+0281         L = [];
+0282     <span class="keyword">end</span>
+0283     <span class="comment">% Check if the colormap range is defined</span>
+0284     <span class="keyword">if</span> sum(strcmpi(<span class="string">'cmap'</span>,varargin)) &gt; 0
+0285         FArange = varargin{find(strcmpi(<span class="string">'cmap'</span>,varargin))+1};
+0286     <span class="keyword">else</span>
+0287         FArange = [.3 .6];
+0288     <span class="keyword">end</span>
+0289     <span class="comment">% the second set of data will be individual subjects</span>
+0290     subData = data{1};
+0291     <span class="comment">% number of nodes to be plotted</span>
+0292     nnodes = length(subData(1).FA(1,:));
+0293     
+0294     <span class="comment">% Loop over all the tracts</span>
+0295     <span class="keyword">for</span> jj = 1 : length(tracts)
+0296         <span class="comment">% collect the property of interest for tract jj</span>
+0297         <span class="keyword">switch</span>(property)
+0298             <span class="keyword">case</span> <span class="string">'fa'</span>
+0299                 subVals = subData(tracts(jj)).FA;
+0300                 axisScale = [1 nnodes .2 .9];
+0301                 label = <span class="string">'Fractional Anisotropy'</span>;
+0302             <span class="keyword">case</span> <span class="string">'rd'</span>
+0303                 subVals = subData(tracts(jj)).RD;
+0304                 axisScale = [1 nnodes .2 .9];
+0305                 label = <span class="string">'Radial Diffusivity'</span>;
+0306             <span class="keyword">case</span> <span class="string">'ad'</span>
+0307                 subVals = subData(tracts(jj)).AD;
+0308                 axisScale = [1 nnodes 1 2.1];
+0309                 label = <span class="string">'Axial Diffusivity'</span>;
+0310             <span class="keyword">case</span> <span class="string">'md'</span>
+0311                 subVals = subData(tracts(jj)).MD;
+0312                 axisScale = [1 nnodes .6 1.3];
+0313                 label = <span class="string">'Mean Diffusivity'</span>;
+0314         <span class="keyword">end</span>
+0315         
+0316         figure(fignums(jj)); hold on;
+0317         <span class="comment">% For each tract loop over the number of subjects and plot each</span>
+0318         <span class="comment">% on the same axis</span>
+0319         <span class="keyword">for</span> ii = 1 : length(subVals(:,1))
+0320             h(ii) = plot(subVals(ii,:)',<span class="string">'-'</span>,<span class="string">'Color'</span>,[.5 .5 .5],<span class="string">'linewidth'</span>,1);
+0321         <span class="keyword">end</span>
+0322         <span class="comment">% add a legend to the plot if desired</span>
+0323         <span class="keyword">if</span> ~isempty(L)
+0324             legend(h(1:length(L)),L);
+0325         <span class="keyword">end</span>
+0326     <span class="keyword">end</span>
+0327     
+0328     <span class="comment">% To plot the mean we will heatmap each location on the mean</span>
+0329     <span class="comment">% profile based on it's FA value and plot a sphere there.</span>
+0330     <span class="keyword">for</span> jj=1:length(tracts)
+0331         figure(fignums(jj));hold on;
+0332         <span class="comment">% compute the mean tract profile</span>
+0333         meanTP = nanmean(subData(tracts(jj)).FA);
+0334         <span class="comment">% Interpolate the mean profile so the heatmap transitions smoothly</span>
+0335         meanTPinterp = interp1(1:100,meanTP,linspace(1,100,1000));
+0336         <span class="comment">% Set the colormap</span>
+0337         c = jet(256);
+0338         <span class="comment">% Create a evenly spaced linear mapping between values in the tract</span>
+0339         <span class="comment">% profile and colors in the colormap</span>
+0340         lm = linspace(FArange(1), FArange(2),256);
+0341         <span class="comment">% Compute the apropriate color for each point on the tract profile</span>
+0342         <span class="keyword">for</span> k = 1:length(meanTPinterp)
+0343             d = [];
+0344             d = abs(meanTPinterp(k) - lm);
+0345             [tmp, mcolor(k)] = min(d);
+0346         <span class="keyword">end</span>
+0347         <span class="comment">% Plot each point on the tract profile a circle of the apropriate</span>
+0348         <span class="comment">% color</span>
+0349         <span class="keyword">for</span> k = 1:1000
+0350             plot(k./10,meanTPinterp(k),<span class="string">'.'</span>,<span class="string">'Color'</span>,c(mcolor(k),:),<span class="string">'markersize'</span>,40);
+0351         <span class="keyword">end</span>
+0352         <span class="comment">% scale the axes and name them</span>
+0353         axis(axisScale);
+0354         xlabel(<span class="string">'Location'</span>,<span class="string">'fontName'</span>,<span class="string">'Times'</span>,<span class="string">'fontSize'</span>,12);
+0355         ylabel(label,<span class="string">'fontName'</span>,<span class="string">'Times'</span>,<span class="string">'fontSize'</span>,12)
+0356         title(fgNames{tracts(jj)},<span class="string">'fontName'</span>,<span class="string">'Times'</span>,<span class="string">'fontSize'</span>,12)
+0357         set(gcf,<span class="string">'Color'</span>,<span class="string">'w'</span>);
+0358         set(gca,<span class="string">'fontName'</span>,<span class="string">'Times'</span>,<span class="string">'fontSize'</span>,12)
+0359     <span class="keyword">end</span>
+0360 <span class="keyword">end</span>
+0361 <span class="comment">%% Save figures if an output directory is defined</span>
+0362 <span class="keyword">if</span> savefigs==1
+0363     cd(outdir)
+0364     <span class="keyword">for</span> ii=1:length(fa)
+0365         figure(ii);
+0366         set(gcf,<span class="string">'Color'</span>,<span class="string">'w'</span>,<span class="string">'InvertHardCopy'</span>,<span class="string">'off'</span>,<span class="string">'PaperPositionMode'</span>,<span class="string">'auto'</span>);
+0367         saveas(gcf,[<span class="string">'Figure'</span> num2str(ii)],<span class="string">'png'</span>);
+0368     <span class="keyword">end</span>
+0369 <span class="keyword">end</span>
+0370</pre></div>
+<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
 </body>
 </html>

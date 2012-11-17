@@ -29,6 +29,8 @@
 <h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
 <div class="fragment"><pre class="comment"> Calculate the distribution of fiber lengths for a fiber group
 
+ [Lnorm Lmm]=AFQ_FiberLengthHist(fg, [showHist = fales])
+
  Inputs:
  fg       = The input fiber group
  showHist = 0 Don't display a histagram of lengths, 1 do display histogram
@@ -46,12 +48,54 @@ This function calls:
 </ul>
 This function is called by:
 <ul style="list-style-image:url(../matlabicon.gif)">
-<li><a href="AFQ_removeFiberOutliers.html" class="code" title="function [fg keep]=AFQ_removeFiberOutliers(fg,maxDist,maxLen,numNodes,M,count,maxIter,show)">AFQ_removeFiberOutliers</a>	Remove fibers from a fiber group that are differ substantially from the</li></ul>
+<li><a href="AFQ_removeFiberOutliers.html" class="code" title="function [fg keep]=AFQ_removeFiberOutliers(fg,maxDist,maxLen,numNodes,M,count,maxIter,show)">AFQ_removeFiberOutliers</a>	Remove fibers from a fiber group that differ substantially from the</li></ul>
 <!-- crossreference -->
 
 
 
-
-<hr><address>Generated on Thu 07-Jun-2012 16:00:13 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [Lnorm Lmm]=AFQ_FiberLengthHist(fg, showHist)</a>
+0002 <span class="comment">% Calculate the distribution of fiber lengths for a fiber group</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% [Lnorm Lmm]=AFQ_FiberLengthHist(fg, [showHist = fales])</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Inputs:</span>
+0007 <span class="comment">% fg       = The input fiber group</span>
+0008 <span class="comment">% showHist = 0 Don't display a histagram of lengths, 1 do display histogram</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Outputs:</span>
+0011 <span class="comment">% Lnorm    = Normalized length of each fiber, in units of z-score.</span>
+0012 <span class="comment">% Lmm      = The length of each fiber in mm.</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Written by Jason D. Yeatman 11/5/2011</span>
+0015 
+0016 <span class="keyword">if</span> ~exist(<span class="string">'fg'</span>,<span class="string">'var'</span>) || isempty(fg) || ~isfield(fg,<span class="string">'fibers'</span>) || isempty(fg.fibers)
+0017     fprintf(<span class="string">'\nNo fibers in fiber group'</span>)
+0018     Lnorm=[]; Lmm=[];
+0019     <span class="keyword">return</span>
+0020 <span class="keyword">end</span>
+0021 <span class="keyword">if</span> ~exist(<span class="string">'showHist'</span>,<span class="string">'var'</span>) || isempty(showHist)
+0022     showHist = 0; <span class="comment">%Default to not showing a figure</span>
+0023 <span class="keyword">end</span>
+0024 <span class="comment">% Calculate the length in mm of each fiber in the fiber group</span>
+0025 Lmm=cellfun(<span class="string">'length'</span>,fg.fibers);
+0026 <span class="comment">% Calculate distribution of lengths</span>
+0027 [Lnorm, Mu, Sigma]= zscore(Lmm);
+0028 <span class="comment">% Show a histagram</span>
+0029 <span class="keyword">if</span> showHist==1
+0030     figure;hold on;
+0031     [n xout]=hist(Lmm,20);
+0032     bar(xout,n,<span class="string">'FaceColor'</span>,<span class="string">'b'</span>,<span class="string">'EdgeColor'</span>,<span class="string">'k'</span>);
+0033     axis([min(xout) max(xout) 0 max(n)]);
+0034     xlabel(<span class="string">'Fiber Length (mm)'</span>);
+0035     plot([Mu Mu],[0 max(n)],<span class="string">'r'</span>,<span class="string">'linewidth'</span>,2);
+0036     plot([Mu-Sigma Mu-Sigma],[0 max(n)],<span class="string">'--r'</span>);
+0037     plot([Mu+Sigma Mu+Sigma],[0 max(n)],<span class="string">'--r'</span>);
+0038     plot([Mu-2*Sigma Mu-2*Sigma],[0 max(n)],<span class="string">'--r'</span>);
+0039     plot([Mu+2*Sigma Mu+2*Sigma],[0 max(n)],<span class="string">'--r'</span>);
+0040 <span class="keyword">end</span>
+0041 
+0042 <span class="keyword">return</span></pre></div>
+<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
 </body>
 </html>

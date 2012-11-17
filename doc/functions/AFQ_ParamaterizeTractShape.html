@@ -1,0 +1,178 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of AFQ_ParamaterizeTractShape</title>
+  <meta name="keywords" content="AFQ_ParamaterizeTractShape">
+  <meta name="description" content="Paramaterize curvature and torsion along a tract profile">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">functions</a> &gt; AFQ_ParamaterizeTractShape.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for functions&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>AFQ_ParamaterizeTractShape
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Paramaterize curvature and torsion along a tract profile</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [curvWA torsWA TractProfile] = AFQ_ParamaterizeTractShape(fg, TractProfile) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Paramaterize curvature and torsion along a tract profile
+
+ [curvWA torsWA TractProfile] = AFQ_ParamaterizeTractShape(fg, TractProfile)
+
+ Inputs:
+ fg           - Fiber Group. This can be a structure containing multiple
+                fiber groups where each fiber group is an entry in the
+                structure
+ TractProfile - Tract Profile for the fiber group. If one is not entered
+                then it will be calculated
+
+ Outputs:
+ curvWA       - Curvature of the tract core calculated by taking a
+                weighted average of curvature on each fiber.
+ torsWA       - Torsion of the tract core calculated by taking a weighted
+                average of torsion on each fiber.
+ TractProfile - Tract Profile containing these measurements
+
+ Written by Jason D. Yeatman September 2012</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="AFQ_CreateTractProfile.html" class="code" title="function TractProfile = AFQ_CreateTractProfile(varargin)">AFQ_CreateTractProfile</a>	Create the AFQ Tract Profile structure</li><li><a href="../utilities/frenet2.html" class="code" title="function [T,N,B,k,t] = frenet2(x,y,z)">frenet2</a>	FRENET - Frenet-Serret Space Curve Invarients</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="AFQ_run.html" class="code" title="function [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)">AFQ_run</a>	Run AFQ analysis on a set of subjects to generate Tract Profiles of white</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [curvWA torsWA TractProfile] = AFQ_ParamaterizeTractShape(fg, TractProfile)</a>
+0002 <span class="comment">% Paramaterize curvature and torsion along a tract profile</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% [curvWA torsWA TractProfile] = AFQ_ParamaterizeTractShape(fg, TractProfile)</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Inputs:</span>
+0007 <span class="comment">% fg           - Fiber Group. This can be a structure containing multiple</span>
+0008 <span class="comment">%                fiber groups where each fiber group is an entry in the</span>
+0009 <span class="comment">%                structure</span>
+0010 <span class="comment">% TractProfile - Tract Profile for the fiber group. If one is not entered</span>
+0011 <span class="comment">%                then it will be calculated</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% Outputs:</span>
+0014 <span class="comment">% curvWA       - Curvature of the tract core calculated by taking a</span>
+0015 <span class="comment">%                weighted average of curvature on each fiber.</span>
+0016 <span class="comment">% torsWA       - Torsion of the tract core calculated by taking a weighted</span>
+0017 <span class="comment">%                average of torsion on each fiber.</span>
+0018 <span class="comment">% TractProfile - Tract Profile containing these measurements</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">% Written by Jason D. Yeatman September 2012</span>
+0021 
+0022 <span class="comment">%% Argument checking</span>
+0023 <span class="keyword">if</span> ~exist(<span class="string">'fg'</span>,<span class="string">'var'</span>) || isempty(fg)
+0024     error(<span class="string">'Please provide a fiber group'</span>)
+0025 <span class="keyword">elseif</span> isfield(fg,<span class="string">'subgroup'</span>) &amp;&amp; isfield(fg,<span class="string">'subgroupNames'</span>) &amp;&amp; length(fg.subgroupNames) &gt; 1
+0026     fg = fg2Array(fg);
+0027 <span class="keyword">end</span>
+0028 
+0029 <span class="keyword">if</span> ~exist(<span class="string">'TractProfile'</span>,<span class="string">'var'</span>) || isempty(TractProfile)
+0030     <span class="comment">% Build a tract profile of the fiber group if one was not passed in</span>
+0031     numNodes = 100;
+0032     <span class="comment">% If there are multiple fiber groups stored within fg then loop over them</span>
+0033     <span class="keyword">for</span> ii = 1:length(fg)
+0034         [SuperFiber, fg(ii)]= dtiComputeSuperFiberRepresentation(fg(ii), [], numNodes);
+0035         TractProfile(ii) = <a href="AFQ_CreateTractProfile.html" class="code" title="function TractProfile = AFQ_CreateTractProfile(varargin)">AFQ_CreateTractProfile</a>(<span class="string">'name'</span>,fg.name,<span class="string">'superfiber'</span>,SuperFiber);
+0036     <span class="keyword">end</span>
+0037 <span class="keyword">elseif</span> length(TractProfile) == length(fg)
+0038     <span class="keyword">for</span> ii = 1:length(fg)
+0039         <span class="comment">% Number of nodes in the tract profile</span>
+0040         numNodes(ii) = length(TractProfile(ii).coords.acpc);
+0041         <span class="comment">% Resample and reorient fibers so that each fiber starts and ends in the</span>
+0042         <span class="comment">% same place</span>
+0043         <span class="keyword">if</span> ~isempty(fg(ii).fibers) &amp;&amp; numNodes(ii) &gt; 0
+0044             fg(ii) = dtiReorientFibers(fg(ii), numNodes(ii));
+0045         <span class="keyword">end</span>
+0046     <span class="keyword">end</span>
+0047     <span class="comment">% Sometimes a group has 0 nodes because it is empty. This will mess up</span>
+0048     <span class="comment">% future computations so we se numNodes to the maximum number of nodes.</span>
+0049     <span class="comment">% Note that all groups probably should have the same number of nodes</span>
+0050     numNodes = max(numNodes);
+0051 <span class="keyword">elseif</span> length(TractProfile) ~= length(fg)
+0052     error(<span class="string">'TractProfile and fg must have the same number of fiber groups'</span>)
+0053 <span class="keyword">end</span>
+0054 
+0055 <span class="comment">%% Loop over the fiber groups in fg and calculate torsion and curvature</span>
+0056 <span class="comment">% Allocate data matrices</span>
+0057 curvWA = nan(numNodes,length(fg));
+0058 torsWA = nan(numNodes,length(fg));
+0059 <span class="comment">% Check for empty fiber groups</span>
+0060 FGnotempty=zeros(length(fg),1);
+0061 <span class="keyword">for</span> jj = 1:length(fg)
+0062     FGnotempty(jj) = ~isempty(fg(jj).fibers) &amp;&amp; ~isempty(TractProfile(jj).fibercov);
+0063 <span class="keyword">end</span>
+0064 FGnotempty = find(FGnotempty)';
+0065 <span class="keyword">for</span> jj = FGnotempty
+0066     <span class="comment">% Initialize variables</span>
+0067     numfibers = length(fg(jj).fibers);
+0068     curv = zeros(numNodes,numfibers);
+0069     tors = zeros(numNodes,numfibers);
+0070     weights = zeros(numNodes,numfibers);
+0071     
+0072     <span class="comment">% Calculate curvature and torsion for each node on each fiber</span>
+0073     <span class="keyword">for</span> ii = 1:numfibers
+0074         [~,~,~,curv(:,ii),tors(:,ii)] = <a href="../utilities/frenet2.html" class="code" title="function [T,N,B,k,t] = frenet2(x,y,z)">frenet2</a>(fg(jj).fibers{ii}(1,:)',fg(jj).fibers{ii}(2,:)',fg(jj).fibers{ii}(3,:)');
+0075     <span class="keyword">end</span>
+0076     
+0077     <span class="comment">% Each fiber is represented by numberOfNodes, so can easily loop over 1st</span>
+0078     <span class="comment">% node, 2nd, etc...</span>
+0079     fc = horzcat(fg(jj).fibers{:})';
+0080     
+0081     <span class="comment">% Calculate the weights to be applied to each fibers curvature estimates.</span>
+0082     <span class="comment">% These weights are based on the fiber's mahalanobis distance from the</span>
+0083     <span class="comment">% fiber core. They will be used to weight that fibers contribution to the</span>
+0084     <span class="comment">% core measurement</span>
+0085     <span class="keyword">for</span> node=1:numNodes
+0086         <span class="comment">% Get the covariance structure from the tract profile</span>
+0087         fcov = TractProfile(jj).fibercov;
+0088         <span class="comment">% Compute gaussian weights y = mvnpdf(X,mu,SIGMA);</span>
+0089         <span class="comment">% Returns the density of the multivariate normal distribution with zero</span>
+0090         <span class="comment">% mean and identity covariance matrix, evaluated at each row of X.</span>
+0091         X=fc((1:numNodes:numfibers*numNodes)+(node-1), :);
+0092         sigma = [fcov(1:3, node)'; <span class="keyword">...</span>
+0093             0 fcov(4:5, node)';<span class="keyword">...</span>
+0094             0 0 fcov(6, node)'];
+0095         sigma = sigma + sigma' - diag(diag(sigma));
+0096         mu    = TractProfile(jj).coords.acpc(:, node)';
+0097         <span class="comment">% Weights for the given node.</span>
+0098         weights(node, :) = mvnpdf(X,mu,sigma)';
+0099     <span class="keyword">end</span>
+0100     
+0101     <span class="comment">% The weights for each node should add up to one across fibers.</span>
+0102     weightsNormalized = weights./(repmat(sum(weights, 2), [1 numfibers]));
+0103     
+0104     <span class="comment">% Weight each curvature and torsion calculation by its distance from the</span>
+0105     <span class="comment">% core</span>
+0106     curvWA(:,jj) = sum(curv.*weightsNormalized,2);
+0107     torsWA(:,jj) = sum(tors.*weightsNormalized,2);
+0108     
+0109     <span class="comment">% Assign values to the tract profile structure</span>
+0110     TractProfile(jj).fiberCurvature = curvWA(:,jj);
+0111     TractProfile(jj).fiberTorsion   = torsWA(:,jj);
+0112     
+0113 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

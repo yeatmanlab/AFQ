@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of isafq</title>
+  <meta name="keywords" content="isafq">
+  <meta name="description" content="Check if a variable is an afq structure">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">utilities</a> &gt; isafq.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for utilities&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>isafq
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Check if a variable is an afq structure</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function log = isafq(afq) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Check if a variable is an afq structure
+
+ log = isafq(afq)
+
+ Returns a 0 (false) if the input is not an afq structure and a 1 (true)
+ if it is</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="../functions/AFQ_WholebrainTractography.html" class="code" title="function fg = AFQ_WholebrainTractography(dt,run_mode,params)">AFQ_WholebrainTractography</a>	Perform whole brain deterministic tractography within a white matter mask</li><li><a href="../functions/AFQ_pca.html" class="code" title="function [coeff, score, subMeans, latent] = AFQ_pca(afq, valname, group, demean)">AFQ_pca</a>	Perform principal components analysis on AFQ Tract Profiles</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function log = isafq(afq)</a>
+0002 <span class="comment">% Check if a variable is an afq structure</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% log = isafq(afq)</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Returns a 0 (false) if the input is not an afq structure and a 1 (true)</span>
+0007 <span class="comment">% if it is</span>
+0008 
+0009 log = isstruct(afq) &amp;&amp; isfield(afq,<span class="string">'type'</span>) &amp;&amp; strcmp(afq.type,<span class="string">'afq version 1'</span>);</pre></div>
+<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

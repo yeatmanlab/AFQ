@@ -64,7 +64,79 @@ This function is called by:
 
 
 
-
-<hr><address>Generated on Thu 07-Jun-2012 16:00:13 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function f = randnmulti(n,mn,sigma,sd)</a>
+0002 
+0003 <span class="comment">% function f = randnmulti(n,mn,sigma,sd)</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% &lt;n&gt; is the number of random points to draw</span>
+0006 <span class="comment">% &lt;mn&gt; is a vector with the desired mean for each variable.</span>
+0007 <span class="comment">%   for example, [1 2] means the mean of the Gaussian is at (1,2).</span>
+0008 <span class="comment">%   can be a scalar (in which case it is assumed for</span>
+0009 <span class="comment">%   all variables).  if [], default to 0.</span>
+0010 <span class="comment">% &lt;sigma&gt; is the desired covariance matrix (which should be positive definite).</span>
+0011 <span class="comment">%   the interpretation should be that this is the covariance matrix after</span>
+0012 <span class="comment">%   each variable has been standardized (i.e. mean-subtracted and</span>
+0013 <span class="comment">%   normalized to standard deviation 1).  thus, there should be 1s along</span>
+0014 <span class="comment">%   the diagonal of &lt;sigma&gt;.  notice that the correlation</span>
+0015 <span class="comment">%   coefficient is just the dot product of standardized variables, divided</span>
+0016 <span class="comment">%   by n.  thus, a &lt;sigma&gt; of [1 .5; .5 1] corresponds to the case of</span>
+0017 <span class="comment">%   two standardized variables with a correlation coefficient of .5.</span>
+0018 <span class="comment">% &lt;sd&gt; (optional) is a vector with the desired standard deviation for each variable.</span>
+0019 <span class="comment">%   can be a scalar (in which case it is assumed for all variables).</span>
+0020 <span class="comment">%   default: 1.</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">% randomly draw &lt;n&gt; points from a multivariate Gaussian defined by</span>
+0023 <span class="comment">% &lt;mn&gt;, &lt;sigma&gt;, and &lt;sd&gt;.  return a matrix of size &lt;n&gt; x size(sigma,1).</span>
+0024 <span class="comment">%</span>
+0025 <span class="comment">% note that we first generate random numbers consistent with &lt;sigma&gt;,</span>
+0026 <span class="comment">% and then do scaling (&lt;sd&gt;) and adding (&lt;mn&gt;) if necessary.</span>
+0027 
+0028 <span class="comment">% calc</span>
+0029 dim = size(sigma,1);
+0030 
+0031 <span class="comment">% input</span>
+0032 <span class="keyword">if</span> isempty(mn)
+0033   mn = 0;
+0034 <span class="keyword">end</span>
+0035 <span class="keyword">if</span> ~exist(<span class="string">'sd'</span>,<span class="string">'var'</span>) || isempty(sd)
+0036   sd = 1;
+0037 <span class="keyword">end</span>
+0038 
+0039 <span class="comment">% cholesky decomposition, compute R</span>
+0040 <span class="keyword">if</span> all(sigma(:)==1)  <span class="comment">% special case</span>
+0041   R = zeros(size(sigma));
+0042   R(1,:) = 1;
+0043 <span class="keyword">else</span>
+0044   [R,p] = chol(sigma);
+0045   assert(p==0,<span class="string">'sigma is not positive definite'</span>);
+0046 <span class="keyword">end</span>
+0047 
+0048 <span class="comment">% do it</span>
+0049 f = randn(n,dim)*R;  <span class="comment">% aha, we just mix the random numbers together in certain proportions</span>
+0050   <span class="comment">% let X be randn(n,dim).  then, f = X*R.</span>
+0051   <span class="comment">% the covariance of f is (X*R)'*(X*R) / n = R'*X'*X*R / n = R'*R*(n*I) / n = sigma.</span>
+0052   <span class="comment">% thus, the covariance of f at this point is the desired sigma.</span>
+0053   <span class="comment">% moreover, at this point, each variable is standardized (mean-subtracted, standard deviation 1).</span>
+0054   <span class="comment">% to achieve different standard deviations, we just need to scale each variable, as we do below.</span>
+0055 
+0056 <span class="comment">% scale if necessary (standard deviation)</span>
+0057 <span class="keyword">if</span> ~all(sd==1)
+0058   <span class="keyword">if</span> isscalar(sd)
+0059     f = f * sd;
+0060   <span class="keyword">else</span>
+0061     f = f .* repmat(sd,[n 1]);
+0062   <span class="keyword">end</span>
+0063 <span class="keyword">end</span>
+0064 
+0065 <span class="comment">% add constant if necessary (mean)</span>
+0066 <span class="keyword">if</span> ~all(mn==0)
+0067   <span class="keyword">if</span> isscalar(mn)
+0068     f = f + mn;
+0069   <span class="keyword">else</span>
+0070     f = f + repmat(mn,[n 1]);
+0071   <span class="keyword">end</span>
+0072 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
 </body>
 </html>

@@ -41,7 +41,65 @@ This function is called by:
 
 
 
-
-<hr><address>Generated on Thu 07-Jun-2012 16:00:13 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function AFQ_PlotResults(patient_data, norms, abn, cutoff,property, numberOfNodes, outdir, savefigs);</a>
+0002 <span class="comment">% This function will plot all the results of the previous analyses</span>
+0003 
+0004 fgNames={<span class="string">'Left Thalmic Radiation'</span>,<span class="string">'Right Thalmic Radiation'</span>,<span class="string">'Left Corticospinal'</span>,<span class="string">'Right Corticospinal'</span>, <span class="string">'Left Cingulum Cingulate'</span>, <span class="string">'Right Cingulum Cingulate'</span><span class="keyword">...</span>
+0005     <span class="string">'Left Cingulum Hippocampus'</span>,<span class="string">'Right Cingulum Hippocampus'</span>, <span class="string">'Callosum Forceps Major'</span>, <span class="string">'Callosum Forceps Minor'</span><span class="keyword">...</span>
+0006     <span class="string">'Left IFOF'</span>,<span class="string">'Right IFOF'</span>,<span class="string">'Left ILF'</span>,<span class="string">'Right ILF'</span>,<span class="string">'Left SLF'</span>,<span class="string">'Right SLF'</span>,<span class="string">'Left Uncinate'</span>,<span class="string">'Right Uncinate'</span>,<span class="string">'Left Arcuate'</span>,<span class="string">'Right Arcuate'</span>};
+0007 <span class="comment">%% calc and plot</span>
+0008 cutZ=norminv(cutoff*.01);
+0009 cutZ2=norminv([.25 .75]);
+0010 
+0011 <span class="comment">%first collect value of interet</span>
+0012 <span class="keyword">for</span> jj=1:length(fgNames)
+0013     figure(jj);hold on;
+0014     <span class="comment">% 25 and 75 percentile bands</span>
+0015     x=[1:numberOfNodes fliplr(1:numberOfNodes)];
+0016     y=vertcat(norms.meanFA(:,jj)+max(cutZ)*norms.sdFA(:,jj), flipud(norms.meanFA(:,jj)+min(cutZ)*norms.sdFA(:,jj)));
+0017     fill(x,y, [.6 .6 .6]);
+0018     clear y
+0019     y=vertcat(norms.meanFA(:,jj)+max(cutZ2)*norms.sdFA(:,jj), flipud(norms.meanFA(:,jj)+min(cutZ2)*norms.sdFA(:,jj)));
+0020     fill(x,y, [.3 .3 .3]);
+0021     clear y
+0022     plot(norms.meanFA(:,jj),<span class="string">'-'</span>,<span class="string">'Color'</span>,<span class="string">'k'</span>,<span class="string">'LineWidth'</span>,5);
+0023     axis([1 numberOfNodes .2 .9]);
+0024     xlabel(<span class="string">'Location'</span>,<span class="string">'fontName'</span>,<span class="string">'Times'</span>,<span class="string">'fontSize'</span>,14);
+0025     ylabel(<span class="string">'Fractional Anisotropy'</span>,<span class="string">'fontName'</span>,<span class="string">'Times'</span>,<span class="string">'fontSize'</span>,14)
+0026     title(fgNames{jj},<span class="string">'fontName'</span>,<span class="string">'Times'</span>,<span class="string">'fontSize'</span>,14)
+0027     set(gcf,<span class="string">'Color'</span>,<span class="string">'w'</span>);
+0028     set(gca,<span class="string">'Color'</span>,[.9 .9 .9],<span class="string">'fontName'</span>,<span class="string">'Times'</span>,<span class="string">'fontSize'</span>,12)
+0029 <span class="keyword">end</span>
+0030 <span class="comment">%% add patients to plot</span>
+0031 <span class="comment">% we will only plot premies who are abnormal on at least 1 tract</span>
+0032 c=hsv(sum(abn));
+0033 c=c./1.4;
+0034 c(2:2:<span class="keyword">end</span>,:)=c(2:2:<span class="keyword">end</span>,:)./1.5;
+0035 <span class="keyword">for</span> ii=1:size(patient_data(1).FA,1)
+0036     <span class="keyword">for</span> jj=1:length(patient_data)
+0037         figure(jj);hold on;
+0038         <span class="keyword">if</span> abn(ii)==1
+0039             <span class="keyword">switch</span>(property)
+0040                 <span class="keyword">case</span> <span class="string">'AD'</span>
+0041                     plot(patient_data(jj).AD(ii,:),<span class="string">'color'</span>,c(sum(abn(1:ii)),:),<span class="string">'linewidth'</span>,2);hold on;
+0042                 <span class="keyword">case</span> <span class="string">'RD'</span>
+0043                     plot(patient_data(jj).RD(ii,:),<span class="string">'color'</span>,c(sum(abn(1:ii)),:),<span class="string">'linewidth'</span>,2);hold on;
+0044                 <span class="keyword">case</span> <span class="string">'FA'</span>
+0045                     plot(patient_data(jj).FA(ii,:),<span class="string">'color'</span>,c(sum(abn(1:ii)),:),<span class="string">'linewidth'</span>,2);hold on;
+0046             <span class="keyword">end</span>
+0047         <span class="keyword">end</span>
+0048     <span class="keyword">end</span>
+0049 <span class="keyword">end</span>
+0050 <span class="keyword">if</span> savefigs==1
+0051     cd(outdir)
+0052     <span class="keyword">for</span> ii=1:length(fa)
+0053         figure(ii);
+0054         set(gcf,<span class="string">'Color'</span>,<span class="string">'w'</span>,<span class="string">'InvertHardCopy'</span>,<span class="string">'off'</span>,<span class="string">'PaperPositionMode'</span>,<span class="string">'auto'</span>);
+0055         saveas(gcf,[<span class="string">'Figure'</span> num2str(ii)],<span class="string">'png'</span>);
+0056     <span class="keyword">end</span>
+0057 <span class="keyword">end</span>
+0058</pre></div>
+<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
 </body>
 </html>

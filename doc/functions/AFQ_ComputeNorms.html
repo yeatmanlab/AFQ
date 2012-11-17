@@ -24,12 +24,13 @@
 <div class="box"><strong>Compute tract diffusion profile norms from control group data</strong></div>
 
 <h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
-<div class="box"><strong>function [norms patient_data control_data] = AFQ_ComputeNorms(groupFA, groupMD, groupRD, groupAD, groupCL, sub_group) </strong></div>
+<div class="box"><strong>function [norms patient_data control_data afq] = AFQ_ComputeNorms(varargin) </strong></div>
 
 <h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
-<div class="fragment"><pre class="comment">Compute tract diffusion profile norms from control group data
+<div class="fragment"><pre class="comment"> Compute tract diffusion profile norms from control group data
 
  [norms patient_data control_data] = AFQ_ComputeNorms(groupFA, groupMD, groupRD, groupAD, groupCL, sub_group)
+ [norms patient_data control_data afq] = AFQ_ComputeNorms(afq)
 
  Inputs:
  groupFA   = Cell array of FA values for each subject's fiber tracts
@@ -47,15 +48,77 @@
 <h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
 This function calls:
 <ul style="list-style-image:url(../matlabicon.gif)">
-</ul>
+<li><a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>	Get value from afq structure</li><li><a href="AFQ_set.html" class="code" title="function afq = AFQ_set(afq,param,varargin)">AFQ_set</a>	Set properties of afq object</li></ul>
 This function is called by:
 <ul style="list-style-image:url(../matlabicon.gif)">
-<li><a href="AFQ_run.html" class="code" title="function [patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)">AFQ_run</a>	Run AFQ analysis on a set of subjects.</li></ul>
+<li><a href="AFQ_run.html" class="code" title="function [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)">AFQ_run</a>	Run AFQ analysis on a set of subjects to generate Tract Profiles of white</li></ul>
 <!-- crossreference -->
 
 
 
-
-<hr><address>Generated on Thu 07-Jun-2012 16:00:13 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [norms patient_data control_data afq] = AFQ_ComputeNorms(varargin)</a>
+0002 <span class="comment">% Compute tract diffusion profile norms from control group data</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% [norms patient_data control_data] = AFQ_ComputeNorms(groupFA, groupMD, groupRD, groupAD, groupCL, sub_group)</span>
+0005 <span class="comment">% [norms patient_data control_data afq] = AFQ_ComputeNorms(afq)</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Inputs:</span>
+0008 <span class="comment">% groupFA   = Cell array of FA values for each subject's fiber tracts</span>
+0009 <span class="comment">% groupRD   = Cell array of RD values for each subject's fiber tracts</span>
+0010 <span class="comment">% groupAD   = Cell array of AD values for each subject's fiber tracts</span>
+0011 <span class="comment">% groupCL   = Cell array of CL values for each subject's fiber tracts</span>
+0012 <span class="comment">% sub_group = 0 or 1 denoting whether subject's are patients (1) or</span>
+0013 <span class="comment">%             controls (0)</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% Outputs:</span>
+0016 <span class="comment">% norms     = means and standard deviations for each point on each fiber</span>
+0017 <span class="comment">%             tract</span>
+0018 
+0019 <span class="keyword">if</span> nargin == 1
+0020     afq = varargin{1};
+0021     afq = <a href="AFQ_set.html" class="code" title="function afq = AFQ_set(afq,param,varargin)">AFQ_set</a>(afq,<span class="string">'norms'</span>);
+0022     norms = <a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'norms'</span>);
+0023     patient_data = <a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'patient_data'</span>);
+0024     control_data = <a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'control_data'</span>);
+0025 <span class="keyword">elseif</span> nargin == 6
+0026     <span class="comment">% If no afq structure was provided than assume inputs are Tract Diffusion</span>
+0027     <span class="comment">% Profiles</span>
+0028     groupFA = varargin{1}; groupMD = varargin{2}; groupRD = varargin{3};
+0029     groupAD = varargin{4}; groupCL = varargin{5}; sub_group = varargin{6};
+0030     
+0031     <span class="comment">% Loop over fiber tracts and compute norms</span>
+0032     <span class="keyword">for</span> jj=1:length(groupFA)
+0033         
+0034         norms.meanFA(:,jj)  = nanmean(groupFA{jj}(sub_group==0,:));
+0035         norms.sdFA(:,jj)    = nanstd(groupFA{jj}(sub_group==0,:));
+0036         patient_data(jj).FA = groupFA{jj}(sub_group==1,:);
+0037         control_data(jj).FA = groupFA{jj}(sub_group==0,:);
+0038         
+0039         norms.meanMD(:,jj)  = nanmean(groupMD{jj}(sub_group==0,:));
+0040         norms.sdMD(:,jj)    = nanstd(groupMD{jj}(sub_group==0,:));
+0041         patient_data(jj).MD = groupMD{jj}(sub_group==1,:);
+0042         control_data(jj).MD = groupMD{jj}(sub_group==0,:);
+0043         
+0044         norms.meanRD(:,jj)  = nanmean(groupRD{jj}(sub_group==0,:));
+0045         norms.sdRD(:,jj)    = nanstd(groupRD{jj}(sub_group==0,:));
+0046         patient_data(jj).RD = groupRD{jj}(sub_group==1,:);
+0047         control_data(jj).RD = groupRD{jj}(sub_group==0,:);
+0048         
+0049         norms.meanAD(:,jj)  = nanmean(groupAD{jj}(sub_group==0,:));
+0050         norms.sdAD(:,jj)    = nanstd(groupAD{jj}(sub_group==0,:));
+0051         patient_data(jj).AD = groupAD{jj}(sub_group==1,:);
+0052         control_data(jj).AD = groupAD{jj}(sub_group==0,:);
+0053         
+0054         norms.meanCL(:,jj)  = nanmean(groupCL{jj}(sub_group==0,:));
+0055         norms.sdCL(:,jj)    = nanstd(groupCL{jj}(sub_group==0,:));
+0056         patient_data(jj).CL = groupCL{jj}(sub_group==1,:);
+0057         control_data(jj).CL = groupCL{jj}(sub_group==0,:);
+0058         
+0059     <span class="keyword">end</span>
+0060 <span class="keyword">else</span>
+0061     error(<span class="string">'impropper number of input arguments'</span>);
+0062 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
 </body>
 </html>

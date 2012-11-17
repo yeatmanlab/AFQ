@@ -4,7 +4,7 @@
 <head>
   <title>Description of AFQ_removeFiberOutliers</title>
   <meta name="keywords" content="AFQ_removeFiberOutliers">
-  <meta name="description" content="Remove fibers from a fiber group that are differ substantially from the">
+  <meta name="description" content="Remove fibers from a fiber group that differ substantially from the">
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
   <meta name="robots" content="index, follow">
@@ -21,13 +21,13 @@
 </h1>
 
 <h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
-<div class="box"><strong>Remove fibers from a fiber group that are differ substantially from the</strong></div>
+<div class="box"><strong>Remove fibers from a fiber group that differ substantially from the</strong></div>
 
 <h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
 <div class="box"><strong>function [fg keep]=AFQ_removeFiberOutliers(fg,maxDist,maxLen,numNodes,M,count,maxIter,show) </strong></div>
 
 <h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
-<div class="fragment"><pre class="comment"> Remove fibers from a fiber group that are differ substantially from the
+<div class="fragment"><pre class="comment"> Remove fibers from a fiber group that differ substantially from the
  mean fiber in the group.
 
  [fg keep]=AFQ_removeFiberOutliers(fg,maxDist,maxLen,numNodes,[M = 'mean'],[count = 0],[maxIter = 5], [show = 0])
@@ -72,12 +72,159 @@ This function calls:
 <li><a href="AFQ_FiberLengthHist.html" class="code" title="function [Lnorm Lmm]=AFQ_FiberLengthHist(fg, showHist)">AFQ_FiberLengthHist</a>	Calculate the distribution of fiber lengths for a fiber group</li><li><a href="AFQ_FiberTractGaussian.html" class="code" title="function [SuperFiber, weights] = AFQ_FiberTractGaussian(fg, numberOfNodes, M)">AFQ_FiberTractGaussian</a>	Represent fiber group as a 3d gaussian</li><li><a href="AFQ_RenderFibers.html" class="code" title="function lightH = AFQ_RenderFibers(fg,varargin)">AFQ_RenderFibers</a>	Render a fiber group and tract profile in 3-D</li></ul>
 This function is called by:
 <ul style="list-style-image:url(../matlabicon.gif)">
-<li><a href="AFQ_run.html" class="code" title="function [patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)">AFQ_run</a>	Run AFQ analysis on a set of subjects.</li></ul>
+<li><a href="AFQ_run.html" class="code" title="function [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)">AFQ_run</a>	Run AFQ analysis on a set of subjects to generate Tract Profiles of white</li></ul>
 <!-- crossreference -->
 
 
 
-
-<hr><address>Generated on Thu 07-Jun-2012 16:00:13 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [fg keep]=AFQ_removeFiberOutliers(fg,maxDist,maxLen,numNodes,M,count,maxIter,show)</a>
+0002 <span class="comment">% Remove fibers from a fiber group that differ substantially from the</span>
+0003 <span class="comment">% mean fiber in the group.</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% [fg keep]=AFQ_removeFiberOutliers(fg,maxDist,maxLen,numNodes,[M = 'mean'],[count = 0],[maxIter = 5], [show = 0])</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Inputs:</span>
+0008 <span class="comment">% fg       = input fiber group structure to be cleaned</span>
+0009 <span class="comment">% maxDist  = the maximum gaussian distance a fiber can be from the core of</span>
+0010 <span class="comment">%            the tract and be retained in the fiber group</span>
+0011 <span class="comment">% maxLen   = The maximum length of a fiber (in stadard deviations from the</span>
+0012 <span class="comment">%            mean length)</span>
+0013 <span class="comment">% numNodes = Each fiber will be resampled to have numNodes points</span>
+0014 <span class="comment">% M        = median or mean to represent the center of the tract</span>
+0015 <span class="comment">% count    = whether or not to print pruning results to screen</span>
+0016 <span class="comment">% maxIter  = The maximum number of iterations for the algorithm</span>
+0017 <span class="comment">% show     = whether or not to show which fibers are being removed in each</span>
+0018 <span class="comment">%            iteration. If show == 1 then the the fibers that are being</span>
+0019 <span class="comment">%            kept and removed will be rendered in 3-D and the user will be</span>
+0020 <span class="comment">%            prompted to decide whether continue with the cleaning</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">% Outputs:</span>
+0023 <span class="comment">% fg       = Cleaned fiber group</span>
+0024 <span class="comment">% keep     = A 1xN vector where n is the number of fibers in the origional</span>
+0025 <span class="comment">%            fiber group.  Each entry in keep denotes whether that fiber</span>
+0026 <span class="comment">%            was kept (1) or removed (0).</span>
+0027 <span class="comment">%</span>
+0028 <span class="comment">%  Example:</span>
+0029 <span class="comment">%  AFQdata = '/home/jyeatman/matlab/svn/vistadata/AFQ/';</span>
+0030 <span class="comment">%  fg = dtiReadFibers(fullfile(AFQdata,'fibers/L_Arcuate_uncleaned.mat'));</span>
+0031 <span class="comment">%  maxDist = 4; maxLen = 4;</span>
+0032 <span class="comment">%  numNodes = 25; M = 'mean'; count = 1; show = 1;</span>
+0033 <span class="comment">%  [fgclean keep]=AFQ_removeFiberOutliers(fg,maxDist,maxLen,numNodes,M,count,show);</span>
+0034 <span class="comment">%  % Note that the output fgclean will be equivalent to</span>
+0035 <span class="comment">%  fgclean = dtiNewFiberGroup; fgclean.fibers = fg.fibers(keep);</span>
+0036 <span class="comment">%</span>
+0037 <span class="comment">% Copyright Stanford Vista Team 2011</span>
+0038 <span class="comment">% Written by Jason D. Yeatman 11/4/2011</span>
+0039 <span class="comment">%</span>
+0040 
+0041 <span class="comment">% whether to compute fiber core with mean or median</span>
+0042 <span class="keyword">if</span> ~exist(<span class="string">'M'</span>,<span class="string">'var'</span>) || isempty(M)
+0043     M=<span class="string">'mean'</span>;
+0044 <span class="keyword">end</span>
+0045 
+0046 <span class="comment">% display the number of fibers that were removed in each iteration</span>
+0047 <span class="keyword">if</span> ~exist(<span class="string">'count'</span>,<span class="string">'var'</span>) || isempty(count)
+0048     count = 0;
+0049 <span class="keyword">end</span>
+0050 
+0051 <span class="comment">% maximum number of iterations</span>
+0052 <span class="keyword">if</span> ~exist(<span class="string">'maxIter'</span>,<span class="string">'var'</span>) || isempty(maxIter)
+0053     maxIter = 5;
+0054 <span class="keyword">end</span>
+0055 
+0056 <span class="comment">% show the removed fibers or not</span>
+0057 <span class="keyword">if</span> ~exist(<span class="string">'show'</span>,<span class="string">'var'</span>) || isempty(show)
+0058     show = 0;
+0059 <span class="keyword">end</span>
+0060 
+0061 <span class="comment">% initialize a vector defining the fibers to keep</span>
+0062 keep    = ones(length(fg.fibers),1);
+0063 keep_prev = keep;
+0064 idx0    = find(keep);
+0065 
+0066 <span class="comment">% compute the amount of outliers expected given a normal distribution</span>
+0067 <span class="keyword">if</span> exist(<span class="string">'normpdf'</span>,<span class="string">'file'</span>)
+0068     maxoutDist  = normpdf(maxDist);   <span class="comment">% Requires statistics toolbox</span>
+0069     maxoutLen  = normpdf(maxLen);
+0070 <span class="keyword">else</span>
+0071 <span class="keyword">end</span>
+0072 
+0073 <span class="comment">% Create a variable to save the origional fiber group before starting to</span>
+0074 <span class="comment">% clean it</span>
+0075 fg_orig = fg;
+0076 
+0077 <span class="comment">% Continue cleaning fibers until there are no outliers</span>
+0078 iter=0; cont=1;
+0079 <span class="keyword">while</span> cont ==1 &amp;&amp; iter&lt;=maxIter
+0080     <span class="comment">% display the number of fibers in the fiber group</span>
+0081     <span class="keyword">if</span> count==1
+0082         fprintf(<span class="string">'\n%s number of fibers: %.0f '</span>,fg.name,length(fg.fibers))
+0083     <span class="keyword">end</span>
+0084     <span class="comment">% keep track of the number of iterations</span>
+0085     iter = iter+1;
+0086     <span class="comment">% First remove fibers that are too long</span>
+0087     Lnorm     = <a href="AFQ_FiberLengthHist.html" class="code" title="function [Lnorm Lmm]=AFQ_FiberLengthHist(fg, showHist)">AFQ_FiberLengthHist</a>(fg);
+0088     keep1     = Lnorm &lt; maxLen;
+0089     idx1      = find(keep1);
+0090     fg.fibers = fg.fibers(keep1);
+0091     <span class="comment">% Represent each node as a 3d gaussian where the covariance matrix is the</span>
+0092     <span class="comment">% gaussian distance of each fibers node from the mean fiber</span>
+0093     <span class="keyword">if</span> length(fg.fibers) &gt; 20
+0094         [SuperFiber, weights] = <a href="AFQ_FiberTractGaussian.html" class="code" title="function [SuperFiber, weights] = AFQ_FiberTractGaussian(fg, numberOfNodes, M)">AFQ_FiberTractGaussian</a>(fg, numNodes, M);
+0095         <span class="comment">% Check if any fibers are farther than maxDist from any node.</span>
+0096         keep2 = weights &lt; maxDist;
+0097         keep2 = sum(keep2) == numNodes;
+0098         idx2  = find(keep2);
+0099         <span class="comment">% If there are more fibers that are farther than max dist then would be</span>
+0100         <span class="comment">% expected in a gaussian distribution then continue iterating</span>
+0101         cont = sum(~keep2) &gt; length(fg.fibers)*maxoutDist;
+0102         <span class="comment">% Remove fibers that are more than maxDist from any node</span>
+0103         fg.fibers = fg.fibers(keep2);
+0104         <span class="comment">% Keep track of which fibers in the orgional fiber group are being</span>
+0105         <span class="comment">% removed</span>
+0106         keep1(idx1) = keep2;
+0107         keep(idx0)  = keep1;
+0108         idx0        = find(keep);
+0109     <span class="keyword">else</span>
+0110         <span class="comment">% If there are more fibers that are farther than max length then would be</span>
+0111         <span class="comment">% expected in a gaussian distribution then continue iterating</span>
+0112         cont = sum(~keep1) &gt; length(fg.fibers)*maxoutLen;
+0113     <span class="keyword">end</span>
+0114     <span class="comment">% TODO -- Render the retained and removed fibers for the user to inspect</span>
+0115     <span class="keyword">if</span> show ==1
+0116         <span class="keyword">if</span> ~exist(<span class="string">'camera'</span>,<span class="string">'var'</span>) || isempty(camera)
+0117             camera = <span class="string">'sagittal'</span>;
+0118         <span class="keyword">end</span>
+0119         fg_keep = dtiNewFiberGroup(<span class="string">'keep'</span>,<span class="string">'b'</span>,[],[],fg_orig.fibers(logical(keep)));
+0120         <span class="comment">% fibers that were just removed in this iteration</span>
+0121         new_remove = ~keep &amp; keep_prev;
+0122         fg_remove = dtiNewFiberGroup(<span class="string">'keep'</span>,<span class="string">'b'</span>,[],[],fg_orig.fibers(logical(new_remove)));
+0123         <span class="comment">% render fibers to keep in blue and to remove in red</span>
+0124         <a href="AFQ_RenderFibers.html" class="code" title="function lightH = AFQ_RenderFibers(fg,varargin)">AFQ_RenderFibers</a>(fg_keep,<span class="string">'color'</span>,[0 0 1],<span class="string">'camera'</span>,camera,<span class="string">'tubes'</span>,0);
+0125         <a href="AFQ_RenderFibers.html" class="code" title="function lightH = AFQ_RenderFibers(fg,varargin)">AFQ_RenderFibers</a>(fg_remove,<span class="string">'color'</span>,[1 0 0],<span class="string">'camera'</span>,camera,<span class="string">'newfig'</span>,0,<span class="string">'tubes'</span>,0);
+0126         <span class="comment">% ask for users input on whether to keep cleaning</span>
+0127         remove = input(<span class="string">'Would you like to remove the fiber outliers shown in red? y/n  '</span>,<span class="string">'s'</span>);
+0128         <span class="comment">% If the user does not like the results of this round of cleaning</span>
+0129         <span class="comment">% than we revert back to the fiber group from the previous round</span>
+0130         <span class="comment">% and exit out of the cleaning proceedure</span>
+0131         <span class="keyword">if</span> remove == 0 || strcmpi(remove,<span class="string">'n'</span>)
+0132             fg = fg_orig;
+0133             fg.fibers = fg_orig.fibers(logical(keep_prev));
+0134             <span class="keyword">return</span>
+0135         <span class="keyword">end</span>
+0136         <span class="comment">% get the camera view</span>
+0137         camera = [];
+0138         camera = campos;
+0139         close;
+0140     <span class="keyword">end</span>
+0141     <span class="comment">% Save the keep variable from the current iteration before updating it</span>
+0142     <span class="comment">% in the next iteration</span>
+0143     keep_prev = keep;
+0144 <span class="keyword">end</span>
+0145 keep = logical(keep);
+0146 
+0147 <span class="keyword">return</span></pre></div>
+<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
 </body>
 </html>

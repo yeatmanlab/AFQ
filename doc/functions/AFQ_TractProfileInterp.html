@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of AFQ_TractProfileInterp</title>
+  <meta name="keywords" content="AFQ_TractProfileInterp">
+  <meta name="description" content="function f = mapping(params,v,showmapping)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">functions</a> &gt; AFQ_TractProfileInterp.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for functions&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>AFQ_TractProfileInterp
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function f = mapping(params,v,showmapping)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function f = AFQ_TractProfileInterp(params,v,showmapping) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> function f = mapping(params,v,showmapping)
+
+ &lt;params&gt; is 2 x N with the coordinates of the N anchor points
+ &lt;v&gt; is a vector of data
+
+ map &lt;v&gt; according to &lt;params&gt; and return the new vector.
+
+ example:
+ v = evalgaussian1d([20 5 1 0],1:100);
+ v2 = mapping([.3 .7]',v);
+ figure; hold on;
+ plot(v,'r-');
+ plot(v2,'b-');</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="AFQ_TractProfileAlign.html" class="code" title="function [params,mapv1,mapv1b,err] = AFQ_TractProfileAlign(v1,v2,numanchor,errmetric,show)">AFQ_TractProfileAlign</a>	THIS FUNCTION IS STILL BEING DEVELOPED</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function f = AFQ_TractProfileInterp(params,v,showmapping)</a>
+0002 
+0003 <span class="comment">% function f = mapping(params,v,showmapping)</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% &lt;params&gt; is 2 x N with the coordinates of the N anchor points</span>
+0006 <span class="comment">% &lt;v&gt; is a vector of data</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% map &lt;v&gt; according to &lt;params&gt; and return the new vector.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% example:</span>
+0011 <span class="comment">% v = evalgaussian1d([20 5 1 0],1:100);</span>
+0012 <span class="comment">% v2 = mapping([.3 .7]',v);</span>
+0013 <span class="comment">% figure; hold on;</span>
+0014 <span class="comment">% plot(v,'r-');</span>
+0015 <span class="comment">% plot(v2,'b-');</span>
+0016 
+0017 <span class="keyword">if</span> ~exist(<span class="string">'showmapping'</span>,<span class="string">'var'</span>) || isempty(showmapping)
+0018     showmapping = false;
+0019 <span class="keyword">end</span>
+0020 
+0021 <span class="comment">% calc</span>
+0022 xval = linspace(0,1,length(v));
+0023 
+0024 
+0025 params = reshape(params,2,[]);  <span class="comment">% first row is x-coordinates</span>
+0026 
+0027 <span class="comment">% % enforce 0 and 1 bounds</span>
+0028 <span class="comment">% params = max(0,params);</span>
+0029 <span class="comment">% params = min(1,params);</span>
+0030 
+0031 <span class="comment">% % sort according to x-values</span>
+0032 <span class="comment">% [params(1,:),ii] = sort(params(1,:));</span>
+0033 <span class="comment">% params(2,:) = params(2,ii);</span>
+0034 
+0035 <span class="comment">% if not monotonically increasing, blow up</span>
+0036 <span class="keyword">if</span> ~all(diff(params(1,:)) &gt; 0) || ~all(diff(params(2,:)) &gt; 0)
+0037     f = zeros(size(v));
+0038     <span class="keyword">return</span>;
+0039 <span class="keyword">end</span>
+0040 
+0041 <span class="comment">% %</span>
+0042 <span class="comment">% if any(diff(params(1,:)) &lt; .1) || any(diff(params(2,:)) &lt; .1)</span>
+0043 <span class="comment">%   f = zeros(size(v));</span>
+0044 <span class="comment">%   return;</span>
+0045 <span class="comment">% end</span>
+0046 
+0047 <span class="comment">% get the locations that we want</span>
+0048 xvaldesired = interp1([0 params(2,:) 1],[0 params(1,:) 1],xval,<span class="string">'cubic'</span>);
+0049 
+0050 <span class="comment">% do the interpolation through the original vector to</span>
+0051 <span class="comment">% get the final vector</span>
+0052 f = interp1(xval,v,xvaldesired,<span class="string">'cubic'</span>);
+0053 
+0054 <span class="comment">% Display mapping</span>
+0055 <span class="keyword">if</span> showmapping == 1
+0056     figure(999); clf;
+0057     plot(xval,xvaldesired,<span class="string">'ro-'</span>);
+0058     xlabel(<span class="string">'Anchor Point'</span>);
+0059     ylabel(<span class="string">'Mapping Destination'</span>);
+0060     pause(.02);
+0061 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

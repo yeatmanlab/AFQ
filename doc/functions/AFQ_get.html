@@ -1,0 +1,273 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of AFQ_get</title>
+  <meta name="keywords" content="AFQ_get">
+  <meta name="description" content="Get value from afq structure">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">functions</a> &gt; AFQ_get.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for functions&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>AFQ_get
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Get value from afq structure</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function val = AFQ_get(afq, param, varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Get value from afq structure
+
+ val = AFQ_get(afq, param, varargin)
+
+ param list:              - arguments:
+
+ 'fiber group names'
+ 'number of images'
+ 'subject group'
+ 'patient data'
+ 'control data'
+ 'norms'
+ 'number of patients'
+ 'number of controls'
+ 'number of subjects'
+ 'number of fibergroups'
+ 'track whole brain'     - [subject number]
+ 'segmentfibers'         - [subject number]
+ 'cleanfibers'           - [subject number]
+ 'computevals'           - [subject number]
+
+ To get all the values for a particular measurement (eg. 'fa') for all the
+ subjects or a group of subjects (eg. 'patients'). If no input is passed
+ in for the group then it will return the values for all the subjects.
+ 'all vals'              - 'valname' , ['group']
+
+ To get the values for a particular measurement (eg. 'fa') for a particlar
+ tract for all the subjects or a group of subjects. For the different
+ fiber group names see AFQ_get(afq, 'fgnames')
+ 'tractname'             - 'valname', 'group'
+ 'left arcuate'          - 'fa'     , 'controls'
+
+ 'use mrtrix'
+ 'dt6path'               - [subject number]
+ 'tracking parameters'
+ 'mrtrixpaths'           - [subject number]
+ 'show figures'
+ 
+ To get any of the parameters save in the afq structure (see AFQ_Create),
+ enter the name of the parameter. Some have not been implimented yet, but
+ will be soon.
+ AFQ_get(afq,'fiberWeighting')
+
+ Written by Jason D. Yeatman August 2012</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="AFQ_ComputeNorms.html" class="code" title="function [norms patient_data control_data afq] = AFQ_ComputeNorms(varargin)">AFQ_ComputeNorms</a>	Compute tract diffusion profile norms from control group data</li><li><a href="AFQ_Create.html" class="code" title="function afq = AFQ_Create(varargin)">AFQ_Create</a>	Create AFQ structure and set default parameters</li><li><a href="AFQ_WholebrainTractography.html" class="code" title="function fg = AFQ_WholebrainTractography(dt,run_mode,params)">AFQ_WholebrainTractography</a>	Perform whole brain deterministic tractography within a white matter mask</li><li><a href="AFQ_pca.html" class="code" title="function [coeff, score, subMeans, latent] = AFQ_pca(afq, valname, group, demean)">AFQ_pca</a>	Perform principal components analysis on AFQ Tract Profiles</li><li><a href="AFQ_run.html" class="code" title="function [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)">AFQ_run</a>	Run AFQ analysis on a set of subjects to generate Tract Profiles of white</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function val = AFQ_get(afq, param, varargin)</a>
+0002 <span class="comment">% Get value from afq structure</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% val = AFQ_get(afq, param, varargin)</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% param list:              - arguments:</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% 'fiber group names'</span>
+0009 <span class="comment">% 'number of images'</span>
+0010 <span class="comment">% 'subject group'</span>
+0011 <span class="comment">% 'patient data'</span>
+0012 <span class="comment">% 'control data'</span>
+0013 <span class="comment">% 'norms'</span>
+0014 <span class="comment">% 'number of patients'</span>
+0015 <span class="comment">% 'number of controls'</span>
+0016 <span class="comment">% 'number of subjects'</span>
+0017 <span class="comment">% 'number of fibergroups'</span>
+0018 <span class="comment">% 'track whole brain'     - [subject number]</span>
+0019 <span class="comment">% 'segmentfibers'         - [subject number]</span>
+0020 <span class="comment">% 'cleanfibers'           - [subject number]</span>
+0021 <span class="comment">% 'computevals'           - [subject number]</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">% To get all the values for a particular measurement (eg. 'fa') for all the</span>
+0024 <span class="comment">% subjects or a group of subjects (eg. 'patients'). If no input is passed</span>
+0025 <span class="comment">% in for the group then it will return the values for all the subjects.</span>
+0026 <span class="comment">% 'all vals'              - 'valname' , ['group']</span>
+0027 <span class="comment">%</span>
+0028 <span class="comment">% To get the values for a particular measurement (eg. 'fa') for a particlar</span>
+0029 <span class="comment">% tract for all the subjects or a group of subjects. For the different</span>
+0030 <span class="comment">% fiber group names see AFQ_get(afq, 'fgnames')</span>
+0031 <span class="comment">% 'tractname'             - 'valname', 'group'</span>
+0032 <span class="comment">% 'left arcuate'          - 'fa'     , 'controls'</span>
+0033 <span class="comment">%</span>
+0034 <span class="comment">% 'use mrtrix'</span>
+0035 <span class="comment">% 'dt6path'               - [subject number]</span>
+0036 <span class="comment">% 'tracking parameters'</span>
+0037 <span class="comment">% 'mrtrixpaths'           - [subject number]</span>
+0038 <span class="comment">% 'show figures'</span>
+0039 <span class="comment">%</span>
+0040 <span class="comment">% To get any of the parameters save in the afq structure (see AFQ_Create),</span>
+0041 <span class="comment">% enter the name of the parameter. Some have not been implimented yet, but</span>
+0042 <span class="comment">% will be soon.</span>
+0043 <span class="comment">% AFQ_get(afq,'fiberWeighting')</span>
+0044 <span class="comment">%</span>
+0045 <span class="comment">% Written by Jason D. Yeatman August 2012</span>
+0046 
+0047 <span class="comment">% remove spaces and upper case</span>
+0048 param = mrvParamFormat(param);
+0049 <span class="comment">% Get the names of all the fiber groups without spaces or capitals</span>
+0050 fgnames = cell(1,length(afq.fgnames));
+0051 <span class="keyword">for</span> jj = 1:length(fgnames)
+0052     fgnames{jj} = mrvParamFormat(afq.fgnames{jj});
+0053 <span class="keyword">end</span>
+0054 
+0055 <span class="comment">%% Get the requested parameter</span>
+0056 <span class="keyword">switch</span>(param)
+0057     <span class="keyword">case</span>{<span class="string">'fibergroupnames'</span> <span class="string">'fgnames'</span>}
+0058         val = afq.fgnames;
+0059     <span class="keyword">case</span>{<span class="string">'numimages'</span>, <span class="string">'numberofimages'</span>}
+0060         val = length(afq.files.images);
+0061     <span class="keyword">case</span>({<span class="string">'sub_group'</span> <span class="string">'subgroup'</span> <span class="string">'subjectgroup'</span>})
+0062         val = afq.sub_group;
+0063     <span class="keyword">case</span>({<span class="string">'patient_data'</span> <span class="string">'patientdata'</span>})
+0064         val = afq.patient_data;
+0065     <span class="keyword">case</span>({<span class="string">'control_data'</span> <span class="string">'controldata'</span>})
+0066         val = afq.control_data;
+0067     <span class="keyword">case</span>(<span class="string">'norms'</span>)
+0068         val = afq.norms;
+0069     <span class="keyword">case</span>({<span class="string">'numberofpatients'</span> <span class="string">'numpatients'</span>})
+0070         val = sum(afq.sub_group);
+0071     <span class="keyword">case</span>({<span class="string">'numberofcontrols'</span> <span class="string">'numcontrols'</span>});
+0072         val = sum(afq.sub_group == 0);
+0073     <span class="keyword">case</span>({<span class="string">'numberofsubjects'</span> <span class="string">'numsubjects'</span> <span class="string">'numsubs'</span>})
+0074         val = length(afq.sub_group);
+0075     <span class="keyword">case</span>({<span class="string">'numberoffibergroups'</span> <span class="string">'numfg'</span> <span class="string">'numfibergroups'</span> <span class="string">'nfg'</span> <span class="string">'numberfibergroups'</span>});
+0076         val = length(afq.fgnames);
+0077     <span class="keyword">case</span>{<span class="string">'dotracking'</span> <span class="string">'trackfibers'</span> <span class="string">'track'</span>}
+0078         <span class="comment">% Check if user wants to overwrite wholebrain tractography or</span>
+0079         <span class="comment">% Wholebrain fiber group has not been tracked</span>
+0080         val = logical(afq.overwrite.fibers.wholebrain(varargin{1})) || <span class="keyword">...</span>
+0081             isempty(afq.files.fibers.wholebrain{varargin{1}}) || <span class="keyword">...</span>
+0082             ~ischar(afq.files.fibers.wholebrain{varargin{1}});
+0083     <span class="keyword">case</span>{<span class="string">'wholebrainfibergroup'</span> <span class="string">'wholebrain'</span> <span class="string">'wholebrainfg'</span>}
+0084             val = dtiReadFibers(afq.files.fibers.wholebrain{varargin{1}});
+0085     <span class="keyword">case</span>{<span class="string">'dosegmentation'</span>}
+0086         <span class="comment">% Check if user wants to overwrite segmented fibers or</span>
+0087         <span class="comment">% Fibers have not yet been segmented</span>
+0088         val = logical(afq.overwrite.fibers.segmented(varargin{1})) || <span class="keyword">...</span>
+0089             isempty(afq.files.fibers.segmented{varargin{1}}) || <span class="keyword">...</span>
+0090             ~ischar(afq.files.fibers.segmented{varargin{1}});
+0091     <span class="keyword">case</span>{<span class="string">'segmentedfibers'</span> <span class="string">'morigroups'</span>}
+0092             val = dtiReadFibers(afq.files.fibers.segmented{varargin{1}});
+0093     <span class="keyword">case</span>{<span class="string">'docleaning'</span>}
+0094         <span class="comment">% Check if user wants to overwrite cleaned fibers for this subject or</span>
+0095         <span class="comment">% Fibers have not yet been cleaned</span>
+0096         val = logical(afq.overwrite.fibers.clean(varargin{1})) || <span class="keyword">...</span>
+0097             isempty(afq.files.fibers.clean{varargin{1}}) || <span class="keyword">...</span>
+0098             ~ischar(afq.files.fibers.clean{varargin{1}});
+0099     <span class="keyword">case</span>{<span class="string">'cleanfibers'</span> <span class="string">'cleanedfibers'</span> <span class="string">'cleanfg'</span>}
+0100             val = dtiReadFibers(afq.files.fibers.clean{varargin{1}});
+0101     <span class="keyword">case</span>{<span class="string">'computevals'</span> <span class="string">'computeprofiles'</span> <span class="string">'computetractprofiles'</span> <span class="string">'compute'</span>}
+0102         <span class="comment">% Check if user wants to overwrite values for this subject or</span>
+0103         <span class="comment">% No values have been computed yet or</span>
+0104         <span class="comment">% Values have not yet been computed for this subject</span>
+0105         val = logical(afq.overwrite.vals(varargin{1})) || <span class="keyword">...</span>
+0106             isempty(afq.vals.fa) || <span class="keyword">...</span>
+0107             size(afq.vals.fa{1},1) &lt; varargin{1};
+0108     <span class="keyword">case</span>{<span class="string">'vals'</span> <span class="string">'allvals'</span> <span class="string">'valsall'</span> fgnames{:}}
+0109         <span class="keyword">if</span> ~exist(<span class="string">'varargin'</span> ,<span class="string">'var'</span>) || isempty(varargin)
+0110             error(<span class="string">'Need to define which value: AFQ_get(afq,''vals'',''fa'')'</span>);
+0111             <span class="comment">% Three arguments means that the user defined the value they</span>
+0112             <span class="comment">% want but no group</span>
+0113         <span class="keyword">elseif</span>(nargin == 3)
+0114             <span class="comment">% First argument is the value name</span>
+0115             valnames = fieldnames(afq.vals);
+0116             v = find(strcmpi(varargin{1},valnames));
+0117             <span class="comment">% Check if the user defined a specific fiber group</span>
+0118             fgNum = find(strcmpi(param,fgnames));
+0119             <span class="keyword">if</span> ~isempty(v)
+0120                 valname = valnames{v};
+0121                 <span class="comment">% If a specific fiber group was defined get vals for that</span>
+0122                 <span class="comment">% group</span>
+0123                 <span class="keyword">if</span> ~isempty(fgNum) &amp;&amp; length(afq.vals.(valname)) &gt;= fgNum
+0124                     val = afq.vals.(valname){fgNum};
+0125                 <span class="keyword">elseif</span> ~isempty(fgNum)
+0126                     error(<span class="string">'%s values do not exist'</span>,fgnames{fgNum});
+0127                 <span class="keyword">else</span>
+0128                     <span class="comment">% Otherwise get vals for all groups</span>
+0129                     val = horzcat(afq.vals.(valname){:});
+0130                 <span class="keyword">end</span>
+0131             <span class="keyword">else</span>
+0132                 error(<span class="string">'%s values do not exist'</span>,varargin{1})
+0133             <span class="keyword">end</span>
+0134             <span class="comment">% Four arguments means the user also defined the group</span>
+0135         <span class="keyword">elseif</span>(nargin == 4)
+0136             <span class="comment">% Second argument is the subject group</span>
+0137             <span class="keyword">switch</span>(varargin{2})
+0138                 <span class="keyword">case</span>{<span class="string">'patient'</span>,<span class="string">'patients'</span>, 1}
+0139                     valnames = fieldnames(afq.patient_data);
+0140                     v = find(strcmpi(varargin{1},valnames));
+0141                     <span class="keyword">if</span> ~isempty(v)
+0142                         valname = valnames{v};
+0143                         val = horzcat(afq.patient_data(:).(valname));
+0144                     <span class="keyword">else</span>
+0145                         error(<span class="string">'%s values do not exist'</span>,varargin{1})
+0146                     <span class="keyword">end</span>
+0147                 <span class="keyword">case</span>{<span class="string">'control'</span>,<span class="string">'controls'</span>, 0}
+0148                     valnames = fieldnames(afq.control_data);
+0149                     v = find(strcmpi(varargin{1},valnames));
+0150                     <span class="keyword">if</span> ~isempty(v)
+0151                         valname = valnames{strcmpi(varargin{1},valnames)};
+0152                         val = horzcat(afq.control_data(:).(valname));
+0153                     <span class="keyword">else</span>
+0154                         error(<span class="string">'%s values do not exist'</span>,varargin{1})
+0155                     <span class="keyword">end</span>
+0156                 <span class="keyword">otherwise</span>
+0157                     error(<span class="string">'Do you want vals for patients or controls?'</span>)
+0158             <span class="keyword">end</span>
+0159         <span class="keyword">end</span>
+0160     <span class="keyword">case</span>{<span class="string">'usemrtrix'</span>}
+0161         <span class="keyword">if</span> afq.software.mrtrix == 1 &amp;&amp; <span class="keyword">...</span>
+0162                 strcmp(<span class="string">'mrtrix'</span>,afq.params.track.algorithm)<span class="keyword">...</span>
+0163                 &amp;&amp; afq.params.computeCSD == 1;
+0164             val = true;
+0165         <span class="keyword">else</span>
+0166             val = false;
+0167         <span class="keyword">end</span>
+0168     <span class="keyword">case</span>{<span class="string">'dt6path'</span>}
+0169         val = afq.files.dt6{varargin{1}};
+0170     <span class="keyword">case</span>{<span class="string">'trackingparameters'</span>}
+0171         val = afq.params.track;
+0172     <span class="keyword">case</span>{<span class="string">'mrtrixpath'</span> <span class="string">'mrtrixpaths'</span>}
+0173         val.csd = afq.files.mrtrix.csd{varargin{1}};
+0174         val.wm  = afq.files.mrtrix.wm{varargin{1}};
+0175     <span class="keyword">case</span>{<span class="string">'showfigures'</span> <span class="string">'showfigs'</span>}
+0176         val = logical(afq.params.showfigs);
+0177     <span class="keyword">case</span>{<span class="string">'fiberweighting'</span>}
+0178         val = afq.params.fiberWeighting;
+0179     <span class="keyword">otherwise</span>
+0180         error(<span class="string">'Uknown afq parameter'</span>);
+0181 <span class="keyword">end</span>
+0182 
+0183 <span class="keyword">return</span></pre></div>
+<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

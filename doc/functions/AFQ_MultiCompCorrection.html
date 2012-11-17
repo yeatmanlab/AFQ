@@ -4,7 +4,7 @@
 <head>
   <title>Description of AFQ_MultiCompCorrection</title>
   <meta name="keywords" content="AFQ_MultiCompCorrection">
-  <meta name="description" content="Compute a multiple comparison correction for an AFQ data structure">
+  <meta name="description" content="Compute a multiple comparison correction for Tract Profile data">
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
   <meta name="robots" content="index, follow">
@@ -21,16 +21,30 @@
 </h1>
 
 <h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
-<div class="box"><strong>Compute a multiple comparison correction for an AFQ data structure</strong></div>
+<div class="box"><strong>Compute a multiple comparison correction for Tract Profile data</strong></div>
 
 <h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
-<div class="box"><strong>function [numcomp alpha numcompT alphaT] = AFQ_MultiCompCorrection(data, method) </strong></div>
+<div class="box"><strong>function [alphaFWE statFWE clusterFWE stats] = AFQ_MultiCompCorrection(data,y,alpha, method) </strong></div>
 
 <h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
-<div class="fragment"><pre class="comment"> Compute a multiple comparison correction for an AFQ data structure
+<div class="fragment"><pre class="comment"> Compute a multiple comparison correction for Tract Profile data
 
-   [numcomp alpha numcompT alphaT] = AFQ_MultiCompCorrection(data)
+   [alphaFWE statFWE clusterFWE] = AFQ_MultiCompCorrection(data,y,alpha, method)
 
+ There are 2 multiple comparison corrections implemented. Both account for
+ the correlation structure in the data but in different ways.
+
+ method = 'permutation' (default)
+ This is an implementation of the permutation method described by Nichols
+ and Holmes (2001). Nonparametric permutation tests for functional
+ neuroimaging: A primer with examples. Human Brain Mapping.  This will
+ return the faily wise error (FWE) corrected alpha value for pointwise
+ comparisons.  It will also compute the FWE corrected cluster size at the
+ user defined alpha.  This means that significant clusters of this size or
+ greater are pass the multiple comparison threshold and do not need 
+ further p-value adjustment.
+
+ method = 'chevrud'
  This is an implementation of the multiple comparison correction proposed
  in Cheverud, J. M. (2001). A simple correction for multiple comparisons
  in interval mapping genome scans. Heredity (Edinb), 87(Pt 1), 52-58.  It
@@ -44,24 +58,34 @@
  correction
 
  Inputs:
- data     = Either a matrix of data for a single tract, a matrix of data
-            for all the tracts combined, or a cell array of data where
-            each cell is the data for a single tract.
+ data     = Either a matrix of data for a single tract, or a matrix of data
+            for all the tracts combined.
+ y        = A vector of either behavioral measurements or a binary 
+            grouping variable for which pointwise statistics will be
+            computed on the Tract Profile and the p-value adjusted for
+            mulltiple comparisons will be determined.  If y is a
+            continuous variable the correlations will be computed. If y is
+            a binary vector then T-tests will be computed.
+ alpha    = The desired alpha (pvalue) to adjust
+ method   = 'permutation' or 'chevrud'. We strongly recomend 'permutation'
 
  Outputs:
- numcomp = This is the total number of independent comparisons for the
-           full dataset.  If the data is a cell array of data for
-           different fiber groups then numcomp represents the number of
-           comparisons for all the data concatinated together
- alpha   = This is the alpha (p value) that corresponds to a alpha of 0.05
-           after the correction for the number of independent comparisons.
-           If the data is a cell array of data for different fiber groups
-           then alpha represents the proper alpha if comparisons are done
-           for every location on every tract
- numcompT= The same as numcomp but done independently for each tract.
-           This is apropriate to use if statistics are only being done
-           for a single tract.
- alphaT  = This is the same as alpha but done independently for each tract</pre></div>
+ alphaFWE   = This is the alpha (p value) that corresponds after adjustment 
+              for multiple comparisons
+ statFWE    = This is the value of the statistic corresponding to alphaFWE.
+              statFWE will either be a correlation coeficient or T-statistic
+ clusterFWE = Clusters of points on a Tract Profile that are larger than
+              clusterFWE are significant at pvalue = alpha.
+ stats      = A structure containing the results of each permutation
+
+ Example:
+
+ % Get a matrix of Tract FA Profile values for all the tracts
+ data = AFQ_get(afq,'all vals', 'fa');
+ % Compute the corrected p-value for ttests along the tract
+ [alphaFWE statFWE] = AFQ_MultiCompCorrection(data,sub_group,0.05)
+ 
+ Written by Jason D. Yeatman, August 2012</pre></div>
 
 <!-- crossreference -->
 <h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
@@ -75,7 +99,210 @@ This function is called by:
 
 
 
-
-<hr><address>Generated on Thu 07-Jun-2012 16:00:13 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [alphaFWE statFWE clusterFWE stats] = AFQ_MultiCompCorrection(data,y,alpha, method)</a>
+0002 <span class="comment">% Compute a multiple comparison correction for Tract Profile data</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">%   [alphaFWE statFWE clusterFWE] = AFQ_MultiCompCorrection(data,y,alpha, method)</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% There are 2 multiple comparison corrections implemented. Both account for</span>
+0007 <span class="comment">% the correlation structure in the data but in different ways.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% method = 'permutation' (default)</span>
+0010 <span class="comment">% This is an implementation of the permutation method described by Nichols</span>
+0011 <span class="comment">% and Holmes (2001). Nonparametric permutation tests for functional</span>
+0012 <span class="comment">% neuroimaging: A primer with examples. Human Brain Mapping.  This will</span>
+0013 <span class="comment">% return the faily wise error (FWE) corrected alpha value for pointwise</span>
+0014 <span class="comment">% comparisons.  It will also compute the FWE corrected cluster size at the</span>
+0015 <span class="comment">% user defined alpha.  This means that significant clusters of this size or</span>
+0016 <span class="comment">% greater are pass the multiple comparison threshold and do not need</span>
+0017 <span class="comment">% further p-value adjustment.</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">% method = 'chevrud'</span>
+0020 <span class="comment">% This is an implementation of the multiple comparison correction proposed</span>
+0021 <span class="comment">% in Cheverud, J. M. (2001). A simple correction for multiple comparisons</span>
+0022 <span class="comment">% in interval mapping genome scans. Heredity (Edinb), 87(Pt 1), 52-58.  It</span>
+0023 <span class="comment">% calculates the number of independent variables in a dataset based on the</span>
+0024 <span class="comment">% varience in the eigenvalues of the correlation matrix for the data.  For</span>
+0025 <span class="comment">% Tract Diffusionp Profiles, values at nearby nodes are highly correlated</span>
+0026 <span class="comment">% and should not be treated as independent variables.  By taking into</span>
+0027 <span class="comment">% account the correlation between values at multiple points and on multiple</span>
+0028 <span class="comment">% tracts this alogorithm will determine a much more reasonable multiple</span>
+0029 <span class="comment">% comparison correction than the typical, overly conservative bonferroni</span>
+0030 <span class="comment">% correction</span>
+0031 <span class="comment">%</span>
+0032 <span class="comment">% Inputs:</span>
+0033 <span class="comment">% data     = Either a matrix of data for a single tract, or a matrix of data</span>
+0034 <span class="comment">%            for all the tracts combined.</span>
+0035 <span class="comment">% y        = A vector of either behavioral measurements or a binary</span>
+0036 <span class="comment">%            grouping variable for which pointwise statistics will be</span>
+0037 <span class="comment">%            computed on the Tract Profile and the p-value adjusted for</span>
+0038 <span class="comment">%            mulltiple comparisons will be determined.  If y is a</span>
+0039 <span class="comment">%            continuous variable the correlations will be computed. If y is</span>
+0040 <span class="comment">%            a binary vector then T-tests will be computed.</span>
+0041 <span class="comment">% alpha    = The desired alpha (pvalue) to adjust</span>
+0042 <span class="comment">% method   = 'permutation' or 'chevrud'. We strongly recomend 'permutation'</span>
+0043 <span class="comment">%</span>
+0044 <span class="comment">% Outputs:</span>
+0045 <span class="comment">% alphaFWE   = This is the alpha (p value) that corresponds after adjustment</span>
+0046 <span class="comment">%              for multiple comparisons</span>
+0047 <span class="comment">% statFWE    = This is the value of the statistic corresponding to alphaFWE.</span>
+0048 <span class="comment">%              statFWE will either be a correlation coeficient or T-statistic</span>
+0049 <span class="comment">% clusterFWE = Clusters of points on a Tract Profile that are larger than</span>
+0050 <span class="comment">%              clusterFWE are significant at pvalue = alpha.</span>
+0051 <span class="comment">% stats      = A structure containing the results of each permutation</span>
+0052 <span class="comment">%</span>
+0053 <span class="comment">% Example:</span>
+0054 <span class="comment">%</span>
+0055 <span class="comment">% % Get a matrix of Tract FA Profile values for all the tracts</span>
+0056 <span class="comment">% data = AFQ_get(afq,'all vals', 'fa');</span>
+0057 <span class="comment">% % Compute the corrected p-value for ttests along the tract</span>
+0058 <span class="comment">% [alphaFWE statFWE] = AFQ_MultiCompCorrection(data,sub_group,0.05)</span>
+0059 <span class="comment">%</span>
+0060 <span class="comment">% Written by Jason D. Yeatman, August 2012</span>
+0061 
+0062 
+0063 <span class="keyword">if</span> ~exist(<span class="string">'method'</span>,<span class="string">'var'</span>) || isempty(method)
+0064     method = <span class="string">'permutation'</span>;
+0065 <span class="keyword">end</span>
+0066 <span class="keyword">if</span> ~exist(<span class="string">'alpha'</span>,<span class="string">'var'</span>) || isempty(alpha)
+0067     alpha = 0.05;
+0068 <span class="keyword">end</span>
+0069 
+0070 <span class="comment">% If y is continues perform a correlation if binary perform a ttest</span>
+0071 <span class="keyword">if</span> ~exist(<span class="string">'y'</span>,<span class="string">'var'</span>) || isempty(y)
+0072     y = randn(size(data,1),1);
+0073     fprintf(<span class="string">'No behavioral data provided so randn will be used'</span>);
+0074     stattest = <span class="string">'corr'</span>;
+0075 <span class="keyword">elseif</span> length(y)==sum(y==0 | y==1) || length(y)==sum(y==1 | y==2)
+0076     y = logical(y);
+0077     stattest = <span class="string">'ttest'</span>;
+0078 <span class="keyword">end</span>
+0079 
+0080 <span class="keyword">switch</span>(method)
+0081     <span class="comment">%% Permutation method</span>
+0082     <span class="keyword">case</span> <span class="string">'permutation'</span>
+0083         <span class="comment">% number of permutations</span>
+0084         nperm = 1000;
+0085         
+0086         <span class="keyword">switch</span>(stattest)
+0087             <span class="keyword">case</span>(<span class="string">'corr'</span>)
+0088                 <span class="keyword">for</span> ii = 1:nperm
+0089                     <span class="comment">% Shuffle the rows of the data</span>
+0090                     rows = Shuffle(1:size(data,1));
+0091                     [stat(ii,:) p(ii,:)] = corr(y, data(rows,:), <span class="string">'rows'</span>, <span class="string">'pairwise'</span>);
+0092                 <span class="keyword">end</span>
+0093             <span class="keyword">case</span>(<span class="string">'ttest'</span>)
+0094                 <span class="keyword">for</span> ii = 1:nperm
+0095                     rows = Shuffle(y);
+0096                     [~,p(ii,:),~,tstats] = ttest2(data(rows,:),data(~rows,:));
+0097                     stat(ii,:) = tstats.tstat;
+0098                 <span class="keyword">end</span>
+0099         <span class="keyword">end</span>
+0100         <span class="comment">% Sort the pvals and associated statistics such that the first</span>
+0101         <span class="comment">% entry is the most significant</span>
+0102         stats.pMin = sort(min(p,[],2),<span class="string">'ascend'</span>);
+0103         stats.statMax = sort(max(stat,[],2),<span class="string">'descend'</span>);
+0104         <span class="comment">% Find the corrected alpha and statistic</span>
+0105         alphaFWE = stats.pMin(round(alpha.*nperm));
+0106         statFWE = stats.statMax(round(alpha.*nperm));
+0107         
+0108         <span class="comment">%% Cluster threshold</span>
+0109         <span class="comment">% If a cluster size is defined, also determine the significant</span>
+0110         <span class="comment">% cluster size at the specified alpha value</span>
+0111         
+0112         <span class="comment">% Threshold the pvalue</span>
+0113         pThresh = p &lt; alpha;
+0114         <span class="comment">% Compute cluster size for each permutation</span>
+0115         <span class="keyword">for</span> ii = 1:nperm
+0116             <span class="comment">% Find indices where significant clusters end</span>
+0117             clusEnd = find(pThresh(ii,:) == 0);
+0118             <span class="comment">% Compute the size of each cluster</span>
+0119             clusSiz = diff(clusEnd);
+0120             <span class="comment">% Find the maximum cluster size for permutation ii</span>
+0121             clusMax(ii) = max(clusSiz);
+0122         <span class="keyword">end</span>
+0123         <span class="comment">% Sort the clusters in descending order of significance</span>
+0124         stats.clusMax = sort(clusMax,<span class="string">'descend'</span>);
+0125         <span class="comment">% Find the corrected cluster size corresponding to alpha</span>
+0126         clusterFWE = stats.clusMax(round(alpha.*nperm))
+0127         
+0128     <span class="keyword">case</span> <span class="string">'chevrud'</span>
+0129         <span class="comment">%% PCA method (Chevrud et al.)</span>
+0130         <span class="comment">% If the data is a single matrix of data then there is only one correction</span>
+0131         <span class="comment">% to be done</span>
+0132         <span class="keyword">if</span> size(data,1) &gt; 2
+0133             
+0134             <span class="comment">% Compute the correlation matrix between the columns of the data</span>
+0135             <span class="keyword">if</span> sum(isnan(data(:))) == 0
+0136                 c = corr(data);
+0137             <span class="keyword">else</span>
+0138                 c = corr(data,<span class="string">'rows'</span>,<span class="string">'pairwise'</span>);
+0139             <span class="keyword">end</span>
+0140             <span class="comment">% Compute the eigenvalues of the correlation matrix</span>
+0141             s = eig(c);
+0142             <span class="comment">% Calculate the variance in the eigenvalues</span>
+0143             Vobs = var(s);
+0144             <span class="comment">% Count the number of colums in the data</span>
+0145             M = size(data,2);
+0146             <span class="comment">% This is the equation to calculate the number of independent</span>
+0147             <span class="comment">% observations.</span>
+0148             <span class="comment">%  See Chevrud (2000)</span>
+0149             numcomp = M*(1 - (M -1)*Vobs ./ (M^2));
+0150             <span class="comment">% This is the equation for the bonferroni correction with an alpha of</span>
+0151             <span class="comment">% .05</span>
+0152             alphaFWE = 1 - (1 - 0.05)^(1 ./ numcomp);
+0153             <span class="comment">% Since data was not sent in separately for each tract we can assume</span>
+0154             <span class="comment">% that the number of comparisons per tract is the same as the overall</span>
+0155             numcompT = numcomp; alphaTractFWE = alpha;
+0156             
+0157             <span class="comment">% If a cell array of data for multiple tracts was sent in then we will</span>
+0158             <span class="comment">% compute for each tract separately and then for the full dataset</span>
+0159         <span class="keyword">elseif</span> isstruct(data)
+0160             
+0161             <span class="comment">% Compute the number of independent comparisons for each tract</span>
+0162             <span class="comment">% separately</span>
+0163             <span class="keyword">for</span> ii = 1:length(data)
+0164                 <span class="comment">% Compute the correlation matrix between the columns of the data</span>
+0165                 c = corr(data(ii).FA,<span class="string">'rows'</span>,<span class="string">'pairwise'</span>);
+0166                 <span class="comment">% Compute the eigenvalues of the correlation matrix</span>
+0167                 s = eig(c);
+0168                 <span class="comment">% Calculate the variance in the eigenvalues</span>
+0169                 Vobs = var(s);
+0170                 <span class="comment">% Count the number of colums in the data</span>
+0171                 M = size(data(ii).FA,2);
+0172                 <span class="comment">% This is the equation to calculate the number of independent</span>
+0173                 <span class="comment">% observations.</span>
+0174                 <span class="comment">%  See Chevrud (2000)</span>
+0175                 numcompT(ii) = M*(1 - (M -1)*Vobs ./ (M^2));
+0176                 <span class="comment">% This is the equation for the bonferroni correction</span>
+0177                 alphaTractFWE(ii) = 1 - (1 - 0.05)^(1 ./ numcompT(ii));
+0178                 
+0179                 clear c s Vobs M
+0180             <span class="keyword">end</span>
+0181             <span class="comment">% No do the correction for the full dataset rather than each fiber</span>
+0182             <span class="comment">% group independently</span>
+0183             datall = horzcat(data(:).FA);
+0184             <span class="comment">% Compute the correlation matrix between the columns of the data</span>
+0185             c = corr(datall,<span class="string">'rows'</span>,<span class="string">'pairwise'</span>);
+0186             <span class="comment">% Compute the eigenvalues of the correlation matrix</span>
+0187             s = eig(c);
+0188             <span class="comment">% Calculate the variance in the eigenvalues</span>
+0189             Vobs = var(s);
+0190             <span class="comment">% Count the number of colums in the data</span>
+0191             M = size(datall,2);
+0192             <span class="comment">% This is the equation to calculate the number of independent</span>
+0193             <span class="comment">% observations.</span>
+0194             <span class="comment">%  See Chevrud (2000)</span>
+0195             numcomp = M*(1 - (M -1)*Vobs ./ (M^2));
+0196             <span class="comment">% This is the equation for the bonferroni correction</span>
+0197             alphaFWE = 1 - (1 - 0.05)^(1 ./ numcomp);
+0198         <span class="keyword">end</span>
+0199 <span class="keyword">end</span>
+0200 
+0201 <span class="keyword">return</span>
+0202 
+0203</pre></div>
+<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
 </body>
 </html>

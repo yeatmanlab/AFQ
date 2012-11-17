@@ -29,6 +29,8 @@
 <h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
 <div class="fragment"><pre class="comment"> Load the two ROIs used to define a fiber group
 
+ [roi1 roi2] = AFQ_LoadROIs(fgNumber,sub_dir)
+
  Inputs:
  fgNumber = The number of the fiber group. For example 1 is left ATR and
             20 is right arcuate.
@@ -47,12 +49,39 @@ This function calls:
 </ul>
 This function is called by:
 <ul style="list-style-image:url(../matlabicon.gif)">
-<li><a href="AFQ_ComputeTractProperties.html" class="code" title="function [fa md rd ad cl SuperFibersGroup] = AFQ_ComputeTractProperties(fg_classified,dt,numberOfNodes,clip2rois,subDir)">AFQ_ComputeTractProperties</a>	Compute diffusion properties along the trajectory of the fiber groups</li><li><a href="AFQ_Segment_PostArcuate.html" class="code" title="function [L_FG R_FG L_roi_2 L_roi_3 R_roi_2 R_roi_3] = AFQ_Segment_PostArcuate(dt, wholebrainFG, sub_dir, varargin)">AFQ_Segment_PostArcuate</a>	Define the posterior segment of the arcuate from a wholebrain fiber group</li><li><a href="AFQ_run.html" class="code" title="function [patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)">AFQ_run</a>	Run AFQ analysis on a set of subjects.</li></ul>
+<li><a href="AFQ_ComputeTractProperties.html" class="code" title="function [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,numberOfNodes,clip2rois,subDir, weighting)">AFQ_ComputeTractProperties</a>	Compute diffusion properties along the trajectory of the fiber groups.</li><li><a href="AFQ_Segment_PostArcuate.html" class="code" title="function [L_FG R_FG L_roi_2 L_roi_3 R_roi_2 R_roi_3] = AFQ_Segment_PostArcuate(dt, wholebrainFG, sub_dir, varargin)">AFQ_Segment_PostArcuate</a>	Define the posterior segment of the arcuate from a wholebrain fiber group</li><li><a href="AFQ_run.html" class="code" title="function [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)">AFQ_run</a>	Run AFQ analysis on a set of subjects to generate Tract Profiles of white</li></ul>
 <!-- crossreference -->
 
 
 
-
-<hr><address>Generated on Thu 07-Jun-2012 16:00:13 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [roi1 roi2] = AFQ_LoadROIs(fgNumber,sub_dir)</a>
+0002 <span class="comment">% Load the two ROIs used to define a fiber group</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% [roi1 roi2] = AFQ_LoadROIs(fgNumber,sub_dir)</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Inputs:</span>
+0007 <span class="comment">% fgNumber = The number of the fiber group. For example 1 is left ATR and</span>
+0008 <span class="comment">%            20 is right arcuate.</span>
+0009 <span class="comment">% sub_dir  = A path to the subjects directory</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% Outputs:</span>
+0012 <span class="comment">% roi1     = First roi defining the tract</span>
+0013 <span class="comment">% roi2     = Second roi defining the tract</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% Written by Jason D. Yeatman 1/31/2012</span>
+0016 
+0017 roi1Names={<span class="string">'ATR_roi1_L'</span>, <span class="string">'ATR_roi1_R'</span>,<span class="string">'CST_roi1_L'</span>,<span class="string">'CST_roi1_R'</span>,<span class="string">'CGC_roi1_L.mat'</span>,<span class="string">'CGC_roi1_R.mat'</span><span class="keyword">...</span>
+0018     <span class="string">'HCC_roi1_L'</span>,<span class="string">'HCC_roi1_R'</span>,<span class="string">'FP_L'</span>,<span class="string">'FA_L'</span>,<span class="string">'IFO_roi1_L'</span>,<span class="string">'IFO_roi1_R'</span>,<span class="string">'ILF_roi1_L'</span>,<span class="string">'ILF_roi1_R'</span><span class="keyword">...</span>
+0019     <span class="string">'SLF_roi1_L'</span>,<span class="string">'SLF_roi1_R'</span>,<span class="string">'UNC_roi1_L'</span>,<span class="string">'UNC_roi1_R'</span>,<span class="string">'SLF_roi1_L'</span>,<span class="string">'SLF_roi1_R'</span>};
+0020 roi2Names={<span class="string">'ATR_roi2_L'</span>, <span class="string">'ATR_roi2_R'</span>,<span class="string">'CST_roi2_L'</span>,<span class="string">'CST_roi2_R'</span>,<span class="string">'CGC_roi2_L.mat'</span>,<span class="string">'CGC_roi2_R.mat'</span><span class="keyword">...</span>
+0021     <span class="string">'HCC_roi2_L'</span>,<span class="string">'HCC_roi2_R'</span>,<span class="string">'FP_R'</span>,<span class="string">'FA_R'</span>,<span class="string">'IFO_roi2_L'</span>,<span class="string">'IFO_roi2_R'</span>,<span class="string">'ILF_roi2_L'</span>,<span class="string">'ILF_roi2_R'</span><span class="keyword">...</span>
+0022     <span class="string">'SLF_roi2_L'</span>,<span class="string">'SLF_roi2_R'</span>,<span class="string">'UNC_roi2_L'</span>,<span class="string">'UNC_roi2_R'</span>,<span class="string">'SLFt_roi2_L'</span>,<span class="string">'SLFt_roi2_R'</span>};
+0023 roiDir=fullfile(sub_dir,<span class="string">'ROIs'</span>);
+0024 roi1=dtiReadRoi(fullfile(roiDir,roi1Names{fgNumber}));
+0025 roi2=dtiReadRoi(fullfile(roiDir,roi2Names{fgNumber}));
+0026 
+0027 <span class="keyword">return</span></pre></div>
+<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
 </body>
 </html>

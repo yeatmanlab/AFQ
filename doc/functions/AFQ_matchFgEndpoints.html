@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of AFQ_matchFgEndpoints</title>
+  <meta name="keywords" content="AFQ_matchFgEndpoints">
+  <meta name="description" content="THIS FUNCTION IS STILL BEING DEVELOPED">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">functions</a> &gt; AFQ_matchFgEndpoints.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for functions&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>AFQ_matchFgEndpoints
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>THIS FUNCTION IS STILL BEING DEVELOPED</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [fg flipped] = AFQ_matchFgEndpoints(fg,startpoint,endpoint) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> THIS FUNCTION IS STILL BEING DEVELOPED
+ Reorder each fiber in a group so that they all go the same direction (eg
+ anterior-posteror). Each fiber within a fiber group will be reoriented so
+ that it's first coordinate is closer to the defined startpoint than it's
+ last coordinate is (and vice versa for endpoint).
+
+ [fg flipped] = AFQ_matchFgEndpoints(fg,startpoint,endpoint)
+
+ Imputs:
+ fg        - Fiber group structure containing 1 or more fiber groups
+ startpoint- A Nx3 matrix containing the desired startpoint for each fiber
+             in a fiber group. N is the number of fiber groups in fg
+ endpoint  - A Nx3 matrix containing the desired endpoints
+
+ Outputs:
+ fg     - Fiber group with all the fibers flipped
+ flipped- Which fibers were flipped
+
+ Copyright Jason D. Yeatman, October 2012</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function fibOut = flipfun(fibIn,ind)</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [fg flipped] = AFQ_matchFgEndpoints(fg,startpoint,endpoint)</a>
+0002 <span class="comment">% THIS FUNCTION IS STILL BEING DEVELOPED</span>
+0003 <span class="comment">% Reorder each fiber in a group so that they all go the same direction (eg</span>
+0004 <span class="comment">% anterior-posteror). Each fiber within a fiber group will be reoriented so</span>
+0005 <span class="comment">% that it's first coordinate is closer to the defined startpoint than it's</span>
+0006 <span class="comment">% last coordinate is (and vice versa for endpoint).</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% [fg flipped] = AFQ_matchFgEndpoints(fg,startpoint,endpoint)</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Imputs:</span>
+0011 <span class="comment">% fg        - Fiber group structure containing 1 or more fiber groups</span>
+0012 <span class="comment">% startpoint- A Nx3 matrix containing the desired startpoint for each fiber</span>
+0013 <span class="comment">%             in a fiber group. N is the number of fiber groups in fg</span>
+0014 <span class="comment">% endpoint  - A Nx3 matrix containing the desired endpoints</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% Outputs:</span>
+0017 <span class="comment">% fg     - Fiber group with all the fibers flipped</span>
+0018 <span class="comment">% flipped- Which fibers were flipped</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">% Copyright Jason D. Yeatman, October 2012</span>
+0021 
+0022 <span class="comment">%% Argument checking</span>
+0023 <span class="keyword">if</span> ~exist(<span class="string">'fg'</span>,<span class="string">'var'</span>) || isempty(fg)
+0024     error(<span class="string">'Please supply a fiber group'</span>)
+0025 <span class="keyword">end</span>
+0026 <span class="keyword">if</span> ~exist(<span class="string">'startpoint'</span>,<span class="string">'var'</span>) || isempty(startpoint)
+0027     startpoint =[];
+0028 <span class="keyword">elseif</span> size(startpoint,2) ~= 3
+0029     startpoint = startpoint';
+0030 <span class="keyword">end</span>
+0031 <span class="keyword">if</span> ~exist(<span class="string">'end'</span>,<span class="string">'var'</span>) || isempty(endpoint)
+0032     endpoint=[];
+0033 <span class="keyword">elseif</span> size(endpoint,2) ~=3
+0034     endpoint = endpoint';
+0035 <span class="keyword">end</span>
+0036 
+0037 <span class="comment">%% Reorient the fibers within each suplied fiber group</span>
+0038 <span class="comment">% Number of fiber groups</span>
+0039 nFG = length(fg);
+0040 <span class="keyword">for</span> jj = 1:nFG
+0041     <span class="comment">% Check if the fiber group is empty</span>
+0042     <span class="keyword">if</span> isempty(fg(jj).fibers)
+0043         <span class="keyword">continue</span>
+0044     <span class="keyword">end</span>
+0045     <span class="comment">% Make a function to compute the distance between fiber endpoints and</span>
+0046     <span class="comment">% the desired start and endpoint</span>
+0047     distfun = @(x) nearpoints([x(:,1) x(:,end)],[startpoint(jj,:)' endpoint(jj,:)']);
+0048     <span class="comment">% Compute distance for each fiber</span>
+0049     [ind, dist] = cellfun(distfun,fg(jj).fibers,<span class="string">'UniformOutput'</span>,false);
+0050     <span class="comment">% record which fibers need to be flipped</span>
+0051     flipped{jj} = cellfun(@(x) x(1)&gt;x(2), ind,<span class="string">'UniformOutput'</span>,false);
+0052     <span class="comment">% Flip fibers that need to be flipped CHECK THIS!!!</span>
+0053     fg(jj).fibers = cellfun(@<a href="#_sub1" class="code" title="subfunction fibOut = flipfun(fibIn,ind)">flipfun</a>,fg(jj).fibers,flipped{jj},<span class="string">'UniformOutput'</span>,false);
+0054 <span class="keyword">end</span>
+0055 
+0056 <span class="keyword">return</span>
+0057 
+0058 <a name="_sub1" href="#_subfunctions" class="code">function fibOut = flipfun(fibIn,ind)</a>
+0059 <span class="comment">% Function to flip fibers</span>
+0060 <span class="keyword">if</span>(ind ==1)
+0061     fibOut = fliplr(fibIn);
+0062 <span class="keyword">else</span>
+0063     fibOut = fibIn;
+0064 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

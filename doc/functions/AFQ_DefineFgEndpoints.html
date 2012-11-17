@@ -1,0 +1,191 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of AFQ_DefineFgEndpoints</title>
+  <meta name="keywords" content="AFQ_DefineFgEndpoints">
+  <meta name="description" content="THIS FUNCTION IS STILL BEING DEVELOPED">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">functions</a> &gt; AFQ_DefineFgEndpoints.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for functions&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>AFQ_DefineFgEndpoints
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>THIS FUNCTION IS STILL BEING DEVELOPED</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [fg keep flipped] = AFQ_DefineFgEndpoints(fg,startpoint,endpoint,dt6Path,dCrit,invDef) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> THIS FUNCTION IS STILL BEING DEVELOPED
+ Define the cortical endpoints of a fiber group, remove fibers that do not
+ terminate in the correct location and reorient each fiber in the group so
+ that it has consistent start and endpoints. Cortical regions are rough
+ definitions based on an MNI template
+
+ [fg keep flipped] = AFQ_DefineFgEndpoints(fg,startpoint,endpoint,dt6Path,[dCrit],[invDef])
+
+ Inputs:
+
+ Outputs:
+
+
+ Copyright Jason D. Yeatman October 2012</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="AFQ_directories.html" class="code" title="function [AFQbase AFQdata AFQfunc AFQutil AFQdoc AFQgui] = AFQ_directories">AFQ_directories</a>	Returns a path to the AFQ directories</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function fibOut = flipfun(fibIn,ind)</a></li><li><a href="#_sub2" class="code">function Lnum = getLabelNumber(Lname)</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [fg keep flipped] = AFQ_DefineFgEndpoints(fg,startpoint,endpoint,dt6Path,dCrit,invDef)</a>
+0002 <span class="comment">% THIS FUNCTION IS STILL BEING DEVELOPED</span>
+0003 <span class="comment">% Define the cortical endpoints of a fiber group, remove fibers that do not</span>
+0004 <span class="comment">% terminate in the correct location and reorient each fiber in the group so</span>
+0005 <span class="comment">% that it has consistent start and endpoints. Cortical regions are rough</span>
+0006 <span class="comment">% definitions based on an MNI template</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% [fg keep flipped] = AFQ_DefineFgEndpoints(fg,startpoint,endpoint,dt6Path,[dCrit],[invDef])</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Inputs:</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% Outputs:</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% Copyright Jason D. Yeatman October 2012</span>
+0016 
+0017 <span class="keyword">if</span> ~exist(<span class="string">'dt6Path'</span>,<span class="string">'var'</span>) || isempty(dt6Path)
+0018     error(<span class="string">'please input a dt6.mat file'</span>)
+0019 <span class="keyword">elseif</span> ischar(dt6Path)
+0020     dt = dtiLoadDt6(dt6Path);
+0021 <span class="keyword">elseif</span> isstruct(dt6Path)
+0022     dt = dt6Path;
+0023     dt6Path = dt.dataFile;
+0024 <span class="keyword">end</span>
+0025 <span class="comment">% Distance criteria for endpoints to match ROIs</span>
+0026 <span class="keyword">if</span> ~exist(<span class="string">'dCrit'</span>,<span class="string">'var'</span>) || isempty(dCrit)
+0027     dCritSq = 16;
+0028 <span class="keyword">else</span>
+0029     dCritSq = dCrit^2;
+0030 <span class="keyword">end</span>
+0031 <span class="comment">% Compute normalization if it was not passed in</span>
+0032 <span class="keyword">if</span> ~exist(<span class="string">'invDef'</span>,<span class="string">'var'</span>) || isempty(invDef)
+0033     <span class="comment">% MNI template</span>
+0034     template = fullfile(fileparts(which(<span class="string">'mrDiffusion.m'</span>)), <span class="string">'templates'</span>,<span class="string">'MNI_EPI.nii.gz'</span>);
+0035     <span class="comment">% Compute spatial normalization</span>
+0036     [~, ~, invDef] = mrAnatComputeSpmSpatialNorm(dt.b0, dt.xformToAcpc, template);
+0037 <span class="keyword">end</span>
+0038 <span class="comment">% Get the AFQ base directory</span>
+0039 AFQbase = <a href="AFQ_directories.html" class="code" title="function [AFQbase AFQdata AFQfunc AFQutil AFQdoc AFQgui] = AFQ_directories">AFQ_directories</a>;
+0040 <span class="comment">% Template directory</span>
+0041 tdir = fullfile(AFQbase,<span class="string">'templates'</span>,<span class="string">'labelMaps'</span>);
+0042 <span class="comment">% AAL template</span>
+0043 AAL = fullfile(tdir,<span class="string">'MNI_AAL.nii.gz'</span>);
+0044 
+0045 <span class="comment">%% Reorient the fibers within each suplied fiber group</span>
+0046 <span class="comment">% Number of fiber groups</span>
+0047 nFG = length(fg);
+0048 <span class="comment">% Pre allocate variables</span>
+0049 keep = cell(length(fg),1);
+0050 flipped = cell(length(fg),1);
+0051 <span class="keyword">for</span> jj = 1:nFG
+0052     <span class="comment">% Check if the fiber group is empty</span>
+0053     <span class="keyword">if</span> isempty(fg(jj).fibers)
+0054         <span class="keyword">continue</span>
+0055     <span class="keyword">end</span>
+0056     <span class="comment">% Get the numbers of numbers of the regions that define the desired ROI</span>
+0057     <span class="comment">% in the AAL template</span>
+0058     <span class="keyword">if</span> iscell(startpoint) &amp;&amp; iscell(endpoint)
+0059         Lnum1 = <a href="#_sub2" class="code" title="subfunction Lnum = getLabelNumber(Lname)">getLabelNumber</a>(startpoint{jj});
+0060         Lnum2 = <a href="#_sub2" class="code" title="subfunction Lnum = getLabelNumber(Lname)">getLabelNumber</a>(endpoint{jj});
+0061     <span class="keyword">else</span>
+0062         Lnum1 = <a href="#_sub2" class="code" title="subfunction Lnum = getLabelNumber(Lname)">getLabelNumber</a>(startpoint);
+0063         Lnum2 = <a href="#_sub2" class="code" title="subfunction Lnum = getLabelNumber(Lname)">getLabelNumber</a>(endpoint);
+0064     <span class="keyword">end</span>
+0065     <span class="comment">% Make ROIs in native space from the template ROIs Load the desired</span>
+0066     <span class="comment">% startpoint ROI from the AAL template and transform it</span>
+0067     <span class="comment">% into the individual's native space</span>
+0068     [~, invDef, roiStart] = dtiCreateRoiFromMniNifti(dt6Path,AAL,invDef,0,Lnum1);
+0069     [~,~, roiEnd]  = dtiCreateRoiFromMniNifti(dt6Path,AAL,invDef,0,Lnum2);
+0070     <span class="comment">% Make a function to compute the distance between fiber endpoints and</span>
+0071     <span class="comment">% the desired start and endpoint</span>
+0072     distfun1 = @(x) nearpoints([x(:,1) x(:,end)],roiStart.coords');
+0073     distfun2 = @(x) nearpoints([x(:,1) x(:,end)],roiEnd.coords');
+0074     <span class="comment">% Compute distance for each fiber to the start and end ROIs</span>
+0075     [~, dist1] = cellfun(distfun1,fg(jj).fibers,<span class="string">'UniformOutput'</span>,false);
+0076     [~, dist2] = cellfun(distfun2,fg(jj).fibers,<span class="string">'UniformOutput'</span>,false);
+0077     <span class="comment">% record which fibers need to be flipped</span>
+0078     flipped{jj} = cellfun(@(x) x(1)&gt;x(2), dist1,<span class="string">'UniformOutput'</span>,false);
+0079     <span class="comment">% Flip fibers that need to be flipped CHECK THIS!!!</span>
+0080     fg(jj).fibers = cellfun(@<a href="#_sub1" class="code" title="subfunction fibOut = flipfun(fibIn,ind)">flipfun</a>,fg(jj).fibers,flipped{jj},<span class="string">'UniformOutput'</span>,false);
+0081     <span class="comment">% Discard fibers that don't have a startpoint and endpoint within 4mm</span>
+0082     <span class="comment">% of the defining ROIs</span>
+0083     keep{jj} = cellfun(@(x1,x2) min(x1) &lt; dCritSq &amp;&amp; min(x2) &lt; dCritSq,dist1,dist2);
+0084     fg(jj).fibers = fg(jj).fibers(keep{jj});
+0085 <span class="keyword">end</span>
+0086 
+0087 
+0088 <span class="keyword">return</span>
+0089 
+0090 <a name="_sub1" href="#_subfunctions" class="code">function fibOut = flipfun(fibIn,ind)</a>
+0091 <span class="comment">% Function to flip fibers</span>
+0092 <span class="keyword">if</span>(ind ==1)
+0093     fibOut = fliplr(fibIn);
+0094 <span class="keyword">else</span>
+0095     fibOut = fibIn;
+0096 <span class="keyword">end</span>
+0097 
+0098 <span class="keyword">return</span>
+0099 
+0100 <a name="_sub2" href="#_subfunctions" class="code">function Lnum = getLabelNumber(Lname)</a>
+0101 
+0102 <span class="comment">% Get the AFQ base directory</span>
+0103 AFQbase = <a href="AFQ_directories.html" class="code" title="function [AFQbase AFQdata AFQfunc AFQutil AFQdoc AFQgui] = AFQ_directories">AFQ_directories</a>;
+0104 <span class="comment">% Template directory</span>
+0105 tdir = fullfile(AFQbase,<span class="string">'templates'</span>,<span class="string">'labelMaps'</span>);
+0106 <span class="comment">% Load template region names</span>
+0107 labels = readTab(fullfile(tdir,<span class="string">'MNI_AAL.txt'</span>),<span class="string">','</span>);
+0108 <span class="comment">% Get the desired label number for the startpoint</span>
+0109 Lnum = find(strcmpi(Lname,labels(:,2)));
+0110 <span class="comment">% If the name was not in the label file check if it is a composite region</span>
+0111 <span class="keyword">if</span> isempty(Lnum)
+0112     <span class="keyword">switch</span>(Lname)
+0113         <span class="keyword">case</span>'occipital'
+0114             <span class="comment">% We do not include the fusiform</span>
+0115             Lnum = 43:54;
+0116         <span class="keyword">case</span> <span class="string">'leftoccipital'</span>
+0117             Lnum = [43:2:53];
+0118         <span class="keyword">case</span> <span class="string">'rightoccipital'</span>
+0119             Lnum = [44:2:54];
+0120         <span class="keyword">case</span>'temporal'
+0121             <span class="comment">% We include the fusiform</span>
+0122             Lnum = [55, 56, 79:90];
+0123         <span class="keyword">case</span> <span class="string">'lefttemporal'</span>
+0124             [55 79:2:89];
+0125         <span class="keyword">case</span> <span class="string">'righttemporal'</span>
+0126             [56 80:2:90];
+0127     <span class="keyword">end</span>
+0128 <span class="keyword">end</span>
+0129</pre></div>
+<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

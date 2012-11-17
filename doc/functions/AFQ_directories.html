@@ -40,12 +40,25 @@ This function calls:
 </ul>
 This function is called by:
 <ul style="list-style-image:url(../matlabicon.gif)">
-<li><a href="AFQ_Segment_PostArcuate.html" class="code" title="function [L_FG R_FG L_roi_2 L_roi_3 R_roi_2 R_roi_3] = AFQ_Segment_PostArcuate(dt, wholebrainFG, sub_dir, varargin)">AFQ_Segment_PostArcuate</a>	Define the posterior segment of the arcuate from a wholebrain fiber group</li></ul>
+<li><a href="AFQ_DefineFgEndpoints.html" class="code" title="function [fg keep flipped] = AFQ_DefineFgEndpoints(fg,startpoint,endpoint,dt6Path,dCrit,invDef)">AFQ_DefineFgEndpoints</a>	THIS FUNCTION IS STILL BEING DEVELOPED</li><li><a href="AFQ_Segment_PostArcuate.html" class="code" title="function [L_FG R_FG L_roi_2 L_roi_3 R_roi_2 R_roi_3] = AFQ_Segment_PostArcuate(dt, wholebrainFG, sub_dir, varargin)">AFQ_Segment_PostArcuate</a>	Define the posterior segment of the arcuate from a wholebrain fiber group</li><li><a href="../test/AFQ_test.html" class="code" title="function AFQ_test">AFQ_test</a>	Perform unit testing on all the AFQ functions.</li></ul>
 <!-- crossreference -->
 
 
 
-
-<hr><address>Generated on Thu 07-Jun-2012 16:00:13 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [AFQbase AFQdata AFQfunc AFQutil AFQdoc AFQgui] = AFQ_directories</a>
+0002 <span class="comment">% Returns a path to the AFQ directories</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">%   [AFQbase AFQdata AFQfunc AFQutil AFQdoc AFQgui] = AFQ_directories</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Written by Jason D. Yeatman, May 2012</span>
+0007 
+0008 AFQfunc = fileparts(which(<span class="string">'AFQ_run'</span>));
+0009 AFQbase = fileparts(AFQfunc);
+0010 AFQdata = fullfile(AFQbase,<span class="string">'data'</span>);
+0011 AFQutil = fullfile(AFQbase,<span class="string">'utilities'</span>);
+0012 AFQdoc  = fullfile(AFQbase,<span class="string">'doc'</span>);
+0013 AFQgui  = fullfile(AFQbase,<span class="string">'gui'</span>);</pre></div>
+<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
 </body>
 </html>

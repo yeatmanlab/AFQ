@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of AFQ_AddNewFiberGroup</title>
+  <meta name="keywords" content="AFQ_AddNewFiberGroup">
+  <meta name="description" content="THIS FUNCTION IS STILL BEING DEVELOPED">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">functions</a> &gt; AFQ_AddNewFiberGroup.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for functions&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>AFQ_AddNewFiberGroup
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>THIS FUNCTION IS STILL BEING DEVELOPED</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function afq = AFQ_AddNewFiberGroup(afq,fgName,roi1Name,roi2Name,cleanFibers,computeVals) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> THIS FUNCTION IS STILL BEING DEVELOPED
+ Add new fiber groups from any segmentation proceedure to an afq structure
+
+ afq = AFQ_AddNewFiberGroup(afq, fgNaem, roi1Name, roi2Name, [cleanFibers = true],[computeVals = true])
+
+ By default AFQ_run will segment the 20 fiber groups defined in the Mori
+ white matter atlas and save all the relevant information in the afq
+ structure. Aditional groups defined manually or with other segmentation
+ algorithms can be added to the afq structure with AFQ_AddNewFiberGroup.
+ By default this function will take in (1) an afq strucutre that has already
+ been passed through AFQ_run (see AFQ_Create and AFQ_run), (2) the name of
+ the new fiber group which should be in each subject's fibers directory,
+ and (3) the name of two waypoint ROIs that the fiber group passes through
+ which should be in each subjects ROIs directory. The necesary fields in
+ the afq structure will be populated, TractProfiles will be calculated and
+ added to the structure (See AFQ_CreateTractProfile and
+ AFQ_ComputeTractProperties) and the new afq structure will be returned.
+ Feel free to take an already segmented fiber group and associate it with
+ 2 new ROIs in order to define the edges of the profile differently.
+
+ Inputs:
+ afq        - An afq structure output from <a href="AFQ_run.html" class="code" title="function [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)">AFQ_run</a> (see also AFQ_Create)
+ fgName     - A string containing the name of the fiber group. The fiber
+              group should be in each subject's fibers directory (with the
+              same name). This can be either a .mat file or a .pdb file.
+              If fgName is empty then the fiber group will be defined by
+              intersecting the subject's wholeBrainFG with the two ROIs.
+ roi1Name   - A string containing the name of the first waypoint ROI. The
+              ROI should be in each subject's ROIs directory
+ roi2Name   - A string containing the name of the second ROI
+ computeVals- Logical defining whether TractProfiles should be calculated
+              for the new fiber group for all of the diffusion (and other)
+              parameters that are  already contained in the afq structure
+
+ Copyright Jason D. Yeatman November 2012</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function afq = AFQ_AddNewFiberGroup(afq,fgName,roi1Name,roi2Name,cleanFibers,computeVals)</a>
+0002 <span class="comment">% THIS FUNCTION IS STILL BEING DEVELOPED</span>
+0003 <span class="comment">% Add new fiber groups from any segmentation proceedure to an afq structure</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% afq = AFQ_AddNewFiberGroup(afq, fgNaem, roi1Name, roi2Name, [cleanFibers = true],[computeVals = true])</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% By default AFQ_run will segment the 20 fiber groups defined in the Mori</span>
+0008 <span class="comment">% white matter atlas and save all the relevant information in the afq</span>
+0009 <span class="comment">% structure. Aditional groups defined manually or with other segmentation</span>
+0010 <span class="comment">% algorithms can be added to the afq structure with AFQ_AddNewFiberGroup.</span>
+0011 <span class="comment">% By default this function will take in (1) an afq strucutre that has already</span>
+0012 <span class="comment">% been passed through AFQ_run (see AFQ_Create and AFQ_run), (2) the name of</span>
+0013 <span class="comment">% the new fiber group which should be in each subject's fibers directory,</span>
+0014 <span class="comment">% and (3) the name of two waypoint ROIs that the fiber group passes through</span>
+0015 <span class="comment">% which should be in each subjects ROIs directory. The necesary fields in</span>
+0016 <span class="comment">% the afq structure will be populated, TractProfiles will be calculated and</span>
+0017 <span class="comment">% added to the structure (See AFQ_CreateTractProfile and</span>
+0018 <span class="comment">% AFQ_ComputeTractProperties) and the new afq structure will be returned.</span>
+0019 <span class="comment">% Feel free to take an already segmented fiber group and associate it with</span>
+0020 <span class="comment">% 2 new ROIs in order to define the edges of the profile differently.</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">% Inputs:</span>
+0023 <span class="comment">% afq        - An afq structure output from AFQ_run (see also AFQ_Create)</span>
+0024 <span class="comment">% fgName     - A string containing the name of the fiber group. The fiber</span>
+0025 <span class="comment">%              group should be in each subject's fibers directory (with the</span>
+0026 <span class="comment">%              same name). This can be either a .mat file or a .pdb file.</span>
+0027 <span class="comment">%              If fgName is empty then the fiber group will be defined by</span>
+0028 <span class="comment">%              intersecting the subject's wholeBrainFG with the two ROIs.</span>
+0029 <span class="comment">% roi1Name   - A string containing the name of the first waypoint ROI. The</span>
+0030 <span class="comment">%              ROI should be in each subject's ROIs directory</span>
+0031 <span class="comment">% roi2Name   - A string containing the name of the second ROI</span>
+0032 <span class="comment">% computeVals- Logical defining whether TractProfiles should be calculated</span>
+0033 <span class="comment">%              for the new fiber group for all of the diffusion (and other)</span>
+0034 <span class="comment">%              parameters that are  already contained in the afq structure</span>
+0035 <span class="comment">%</span>
+0036 <span class="comment">% Copyright Jason D. Yeatman November 2012</span></pre></div>
+<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

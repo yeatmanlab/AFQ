@@ -67,12 +67,91 @@ This function calls:
 </ul>
 This function is called by:
 <ul style="list-style-image:url(../matlabicon.gif)">
-<li><a href="AFQ_run.html" class="code" title="function [patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)">AFQ_run</a>	Run AFQ analysis on a set of subjects.</li></ul>
+<li><a href="AFQ_run.html" class="code" title="function [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)">AFQ_run</a>	Run AFQ analysis on a set of subjects to generate Tract Profiles of white</li></ul>
 <!-- crossreference -->
 
 
 
-
-<hr><address>Generated on Thu 07-Jun-2012 16:00:13 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [abn abnTracts] = AFQ_ComparePatientsToNorms(patient_data, norms, cutoff, property, comp)</a>
+0002 <span class="comment">% Determine which premies fall outside the defined percentile band for each</span>
+0003 <span class="comment">% tract</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% [abn abnTracts] = AFQ_ComparePatientsToNorms(patient_data, norms, cutoff, property, comp)</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Inputs:</span>
+0008 <span class="comment">% patient_data = Fiber tract diffusion profiles for the patients.  See</span>
+0009 <span class="comment">%                AFQ_ComputeTractProperties and AFQ_ComputeNorms</span>
+0010 <span class="comment">% norms        = Normative fiber tract diffusion profiles see AFQ_ComputeNorms</span>
+0011 <span class="comment">% cutoff       = Percentile bands that define the range to be considered</span>
+0012 <span class="comment">%                normal</span>
+0013 <span class="comment">% property     = String defining what property to analyze.  For example</span>
+0014 <span class="comment">%                'FA' or 'RD'</span>
+0015 <span class="comment">% comp         = Defines whether to compare tract means (comp = 'mean') or</span>
+0016 <span class="comment">%                compare pointwise along the tract profile</span>
+0017 <span class="comment">%                (comp ='profile').  The default is to compare along the</span>
+0018 <span class="comment">%                tract profiles.</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">% Outputs:</span>
+0022 <span class="comment">% abn          = A 1 x N vector where N is the number of patients.</span>
+0023 <span class="comment">%                Each patient that is abnormal on at least one tract is</span>
+0024 <span class="comment">%                marked with a 1 and each subject that is normal on every</span>
+0025 <span class="comment">%                tract is marked with a 0. The criteria for abnormal is</span>
+0026 <span class="comment">%                defined in afq.params.cutoff.  See AFQ create</span>
+0027 <span class="comment">%</span>
+0028 <span class="comment">% abnTracts    = An M by N matrix where M is the number of subjects and N</span>
+0029 <span class="comment">%                is the number of tracts. Each row is a subject and each</span>
+0030 <span class="comment">%                column is a tract.  1 means that tract was abnormal for</span>
+0031 <span class="comment">%                that subject and 0 means it was normal.</span>
+0032 <span class="comment">%</span>
+0033 <span class="comment">% Copyright Jason D. Yeatman. Vista Team 2011</span>
+0034 <span class="comment">%</span>
+0035 
+0036 <span class="keyword">if</span> ~exist(<span class="string">'comp'</span>,<span class="string">'var'</span>) || isempty(comp)
+0037     comp = <span class="string">'profile'</span>;
+0038 <span class="keyword">end</span>
+0039 cutZ=norminv(cutoff*.01);
+0040 <span class="keyword">for</span> ii=1:size(patient_data(1).FA,1)
+0041     <span class="keyword">for</span> jj=1:length(patient_data)
+0042         
+0043         <span class="comment">% Collect the property of interest and the relevant norms</span>
+0044         <span class="keyword">switch</span>(property)
+0045             <span class="keyword">case</span> {<span class="string">'FA'</span> <span class="string">'fa'</span> <span class="string">'fractional anisotropy'</span>}
+0046                 vals     = patient_data(jj).FA(ii,:)';
+0047                 val_mean = norms.meanFA(:,jj);
+0048                 val_sd   = norms.sdFA(:,jj);
+0049             <span class="keyword">case</span> {<span class="string">'MD'</span> <span class="string">'md'</span> <span class="string">'mean diffusivity'</span>}
+0050                 vals     = patient_data(jj).MD(ii,:)';
+0051                 val_mean = norms.meanMD(:,jj);
+0052                 val_sd   = norms.sdMD(:,jj);
+0053             <span class="keyword">case</span> {<span class="string">'RD'</span> <span class="string">'rd'</span> <span class="string">'radial diffusivity'</span>}
+0054                 vals     = patient_data(jj).RD(ii,:)';
+0055                 val_mean = norms.meanRD(:,jj);
+0056                 val_sd   = norms.sdRD(:,jj);
+0057             <span class="keyword">case</span> {<span class="string">'AD'</span> <span class="string">'ad'</span> <span class="string">'axial diffusivity'</span>}
+0058                 vals     = patient_data(jj).AD(ii,:)';
+0059                 val_mean = norms.meanAD(:,jj);
+0060                 val_sd   = norms.sdAD(:,jj);
+0061         <span class="keyword">end</span>
+0062         
+0063         <span class="comment">% Each subject gets a 0 or 1 to signify if any value for each</span>
+0064         <span class="comment">% tract falls outside the desired confidence interval</span>
+0065         <span class="keyword">if</span> strcmpi(comp, <span class="string">'mean'</span>)
+0066             <span class="comment">% Abnormality is defined based on tract mean</span>
+0067             abnTracts(ii,jj) = nanmean(vals) &gt; mean(val_mean + max(cutZ) .* val_sd) || <span class="keyword">...</span>
+0068                 nanmean(vals) &lt; mean(val_mean + min(cutZ) .* val_sd);
+0069         <span class="keyword">elseif</span> strcmpi(comp, <span class="string">'profile'</span>)
+0070             <span class="comment">% Abnormality is defined as any point on the tract profile</span>
+0071             <span class="comment">% passing outside the defined confidence interval</span>
+0072             locs = vals &gt; val_mean + max(cutZ) .* val_sd | <span class="keyword">...</span>
+0073                 vals &lt; val_mean + min(cutZ) .* val_sd;
+0074             abnTracts(ii,jj) = sum(locs) &gt; 0;
+0075         <span class="keyword">end</span>
+0076     <span class="keyword">end</span>
+0077 <span class="keyword">end</span>
+0078 <span class="comment">% Find subjects that are abnomral on at least 1 tract</span>
+0079 abn=sum(abnTracts,2)&gt;0;</pre></div>
+<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
 </body>
 </html>

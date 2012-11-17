@@ -4,7 +4,7 @@
 <head>
   <title>Description of AFQ_run</title>
   <meta name="keywords" content="AFQ_run">
-  <meta name="description" content="Run AFQ analysis on a set of subjects.">
+  <meta name="description" content="Run AFQ analysis on a set of subjects to generate Tract Profiles of white">
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
   <meta name="robots" content="index, follow">
@@ -21,15 +21,25 @@
 </h1>
 
 <h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
-<div class="box"><strong>Run AFQ analysis on a set of subjects.</strong></div>
+<div class="box"><strong>Run AFQ analysis on a set of subjects to generate Tract Profiles of white</strong></div>
 
 <h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
-<div class="box"><strong>function [patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq) </strong></div>
+<div class="box"><strong>function [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq) </strong></div>
 
 <h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
-<div class="fragment"><pre class="comment"> Run AFQ analysis on a set of subjects.
+<div class="fragment"><pre class="comment"> Run AFQ analysis on a set of subjects to generate Tract Profiles of white
+ matter properties.
 
- [patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, [afq])
+ [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs,
+ sub_group, [afq])
+
+ AFQ_run is the main function to run the AFQ analysis pipeline.  Each AFQ
+ function is an independent module that can be run on its own.  However
+ when AFQ_run is used to analyze data all the proceeding analyses are
+ organized into the afq data structure. The AFQ analysis pipeline is
+ described in Yeatman J.D., Dougherty R.F., Myall N.J., Wandell B.A.,
+ Feldman H.M. (2012). Tract Profiles of White Matter Properties:
+ Automating Fiber-Tract Quantification. PLoS One.
 
  Input arguments:
   sub_dirs  = 1 x N cell array where N is the number of subjects in the
@@ -44,6 +54,8 @@
               parameters.  See AFQ_Create.
 
  Outputs: 
+ afq          = afq structure containing all the results
+
  patient_data = A 1X20 structured array of tract diffusion profiles where
                 data for each tract is in a cell of the structure (eg.
                 patient_data(1) is data for the left thalamic radiation).
@@ -85,18 +97,20 @@
    % Create a vector of 0s and 1s defining who is a patient and a control
    sub_group = [1, 1, 1, 0, 0, 0]; 
    % Run AFQ in test mode to save time. No inputs are needed to run AFQ 
-   % with the default settings 
-   afq = AFQ_Create('run_mode','test'); 
-   [patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)
+   % with the default settings. AFQ_Create builds the afq structure. This
+   % will also be done automatically by AFQ_run if the user does not wish 
+   % to modify any parameters
+   afq = AFQ_Create('run_mode','test', 'sub_dirs', sub_dirs, 'sub_group', sub_group); 
+   [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)
 
- Copyright Stanford Vista Team 2011 Written by Jason D. Yeatman, Brian A.
- Wandell and Robert F. Dougherty</pre></div>
+ Copyright Stanford Vista Team, 2011. Written by Jason D. Yeatman,
+ Brian A. Wandell and Robert F. Dougherty</pre></div>
 
 <!-- crossreference -->
 <h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
 This function calls:
 <ul style="list-style-image:url(../matlabicon.gif)">
-<li><a href="AFQ_ComparePatientsToNorms.html" class="code" title="function [abn abnTracts] = AFQ_ComparePatientsToNorms(patient_data, norms, cutoff, property, comp)">AFQ_ComparePatientsToNorms</a>	Determine which premies fall outside the defined percentile band for each</li><li><a href="AFQ_ComputeNorms.html" class="code" title="function [norms patient_data control_data] = AFQ_ComputeNorms(groupFA, groupMD, groupRD, groupAD, groupCL, sub_group)">AFQ_ComputeNorms</a>	Compute tract diffusion profile norms from control group data</li><li><a href="AFQ_ComputeTractProperties.html" class="code" title="function [fa md rd ad cl SuperFibersGroup] = AFQ_ComputeTractProperties(fg_classified,dt,numberOfNodes,clip2rois,subDir)">AFQ_ComputeTractProperties</a>	Compute diffusion properties along the trajectory of the fiber groups</li><li><a href="AFQ_Create.html" class="code" title="function afq = AFQ_Create(varargin)">AFQ_Create</a>	Create AFQ structure and set default parameters</li><li><a href="AFQ_LoadROIs.html" class="code" title="function [roi1 roi2] = AFQ_LoadROIs(fgNumber,sub_dir)">AFQ_LoadROIs</a>	Load the two ROIs used to define a fiber group</li><li><a href="AFQ_SegmentFiberGroups.html" class="code" title="function [fg_classified,fg_unclassified]=AFQ_SegmentFiberGroups(dt6File, fg, Atlas,useRoiBasedApproach, useInterhemisphericSplit)">AFQ_SegmentFiberGroups</a>	Categorizes each fiber in a group based on Mori white matter atlas.</li><li><a href="AFQ_WholebrainTractography.html" class="code" title="function fg = AFQ_WholebrainTractography(dt,run_mode)">AFQ_WholebrainTractography</a>	Use STT to track every fiber starting from a mask of FA>0.3.</li><li><a href="AFQ_plot.html" class="code" title="function AFQ_plot(varargin)">AFQ_plot</a>	This function will plot AFQ results in a variety of ways</li><li><a href="AFQ_removeFiberOutliers.html" class="code" title="function [fg keep]=AFQ_removeFiberOutliers(fg,maxDist,maxLen,numNodes,M,count,maxIter,show)">AFQ_removeFiberOutliers</a>	Remove fibers from a fiber group that are differ substantially from the</li></ul>
+<li><a href="AFQ_ComparePatientsToNorms.html" class="code" title="function [abn abnTracts] = AFQ_ComparePatientsToNorms(patient_data, norms, cutoff, property, comp)">AFQ_ComparePatientsToNorms</a>	Determine which premies fall outside the defined percentile band for each</li><li><a href="AFQ_ComputeNorms.html" class="code" title="function [norms patient_data control_data afq] = AFQ_ComputeNorms(varargin)">AFQ_ComputeNorms</a>	Compute tract diffusion profile norms from control group data</li><li><a href="AFQ_ComputeTractProperties.html" class="code" title="function [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,numberOfNodes,clip2rois,subDir, weighting)">AFQ_ComputeTractProperties</a>	Compute diffusion properties along the trajectory of the fiber groups.</li><li><a href="AFQ_Create.html" class="code" title="function afq = AFQ_Create(varargin)">AFQ_Create</a>	Create AFQ structure and set default parameters</li><li><a href="AFQ_LoadROIs.html" class="code" title="function [roi1 roi2] = AFQ_LoadROIs(fgNumber,sub_dir)">AFQ_LoadROIs</a>	Load the two ROIs used to define a fiber group</li><li><a href="AFQ_ParamaterizeTractShape.html" class="code" title="function [curvWA torsWA TractProfile] = AFQ_ParamaterizeTractShape(fg, TractProfile)">AFQ_ParamaterizeTractShape</a>	Paramaterize curvature and torsion along a tract profile</li><li><a href="AFQ_SegmentFiberGroups.html" class="code" title="function [fg_classified,fg_unclassified,classification,fg] =AFQ_SegmentFiberGroups(dt6File, fg, Atlas,useRoiBasedApproach, useInterhemisphericSplit)">AFQ_SegmentFiberGroups</a>	Categorizes each fiber in a group into one of the 20 tracts defined in</li><li><a href="AFQ_TractProfileVolume.html" class="code" title="function [TractProfile V] = AFQ_TractProfileVolume(TractProfile)">AFQ_TractProfileVolume</a>	THIS FUNCTION IS STILL BEING DEVELOPED</li><li><a href="AFQ_WholebrainTractography.html" class="code" title="function fg = AFQ_WholebrainTractography(dt,run_mode,params)">AFQ_WholebrainTractography</a>	Perform whole brain deterministic tractography within a white matter mask</li><li><a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>	Get value from afq structure</li><li><a href="AFQ_plot.html" class="code" title="function AFQ_plot(varargin)">AFQ_plot</a>	This function will plot AFQ results in a variety of ways</li><li><a href="AFQ_removeFiberOutliers.html" class="code" title="function [fg keep]=AFQ_removeFiberOutliers(fg,maxDist,maxLen,numNodes,M,count,maxIter,show)">AFQ_removeFiberOutliers</a>	Remove fibers from a fiber group that differ substantially from the</li><li><a href="AFQ_set.html" class="code" title="function afq = AFQ_set(afq,param,varargin)">AFQ_set</a>	Set properties of afq object</li></ul>
 This function is called by:
 <ul style="list-style-image:url(../matlabicon.gif)">
 </ul>
@@ -104,7 +118,331 @@ This function is called by:
 
 
 
-
-<hr><address>Generated on Thu 07-Jun-2012 16:00:13 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)</a>
+0002 <span class="comment">% Run AFQ analysis on a set of subjects to generate Tract Profiles of white</span>
+0003 <span class="comment">% matter properties.</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs,</span>
+0006 <span class="comment">% sub_group, [afq])</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% AFQ_run is the main function to run the AFQ analysis pipeline.  Each AFQ</span>
+0009 <span class="comment">% function is an independent module that can be run on its own.  However</span>
+0010 <span class="comment">% when AFQ_run is used to analyze data all the proceeding analyses are</span>
+0011 <span class="comment">% organized into the afq data structure. The AFQ analysis pipeline is</span>
+0012 <span class="comment">% described in Yeatman J.D., Dougherty R.F., Myall N.J., Wandell B.A.,</span>
+0013 <span class="comment">% Feldman H.M. (2012). Tract Profiles of White Matter Properties:</span>
+0014 <span class="comment">% Automating Fiber-Tract Quantification. PLoS One.</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% Input arguments:</span>
+0017 <span class="comment">%  sub_dirs  = 1 x N cell array where N is the number of subjects in the</span>
+0018 <span class="comment">%              study. Each cell should contain the full path to a subjects</span>
+0019 <span class="comment">%              data directory where there dt6.mat file is.</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">%  sub_group = Binary vector defining each subject's group. 0 for control</span>
+0022 <span class="comment">%              and 1 for patient.</span>
+0023 <span class="comment">%</span>
+0024 <span class="comment">%  afq       = This is a structure that sets up all the parameters for the</span>
+0025 <span class="comment">%              analysis.  If it is blank AFQ_run will use the default</span>
+0026 <span class="comment">%              parameters.  See AFQ_Create.</span>
+0027 <span class="comment">%</span>
+0028 <span class="comment">% Outputs:</span>
+0029 <span class="comment">% afq          = afq structure containing all the results</span>
+0030 <span class="comment">%</span>
+0031 <span class="comment">% patient_data = A 1X20 structured array of tract diffusion profiles where</span>
+0032 <span class="comment">%                data for each tract is in a cell of the structure (eg.</span>
+0033 <span class="comment">%                patient_data(1) is data for the left thalamic radiation).</span>
+0034 <span class="comment">%                Each diffusion properties is stored as a different field</span>
+0035 <span class="comment">%                (eg. patient_data(1).FA is a matrix of FA profiles for the</span>
+0036 <span class="comment">%                left thalamic radiation). Within the data matrix each</span>
+0037 <span class="comment">%                subject is a row and each location is a column.  This</span>
+0038 <span class="comment">%                output variable contains all the data for the patients</span>
+0039 <span class="comment">%                defined by sub_group ==1.</span>
+0040 <span class="comment">%</span>
+0041 <span class="comment">% control_data = The same structure as for patient_data but this contains</span>
+0042 <span class="comment">%                data for the control subjects defined by sub_group==0.</span>
+0043 <span class="comment">%</span>
+0044 <span class="comment">% norms        = Means and standard deviations for each tract diffusion</span>
+0045 <span class="comment">%                profile calculated based on the control_data.</span>
+0046 <span class="comment">%</span>
+0047 <span class="comment">% abn          = A 1 x N vector where N is the number of patients.</span>
+0048 <span class="comment">%                Each patient that is abnormal on at least one tract is</span>
+0049 <span class="comment">%                marked with a 1 and each subject that is normal on every</span>
+0050 <span class="comment">%                tract is marked with a 0. The criteria for abnormal is</span>
+0051 <span class="comment">%                defined in afq.params.cutoff.  See AFQ create</span>
+0052 <span class="comment">%</span>
+0053 <span class="comment">% abnTracts    = An M by N matrix where M is the number of subjects and N</span>
+0054 <span class="comment">%                is the number of tracts. Each row is a subject and each</span>
+0055 <span class="comment">%                column is a tract.  1 means that tract was abnormal for</span>
+0056 <span class="comment">%                that subject and 0 means it was normal.</span>
+0057 <span class="comment">%</span>
+0058 <span class="comment">%  Web resources</span>
+0059 <span class="comment">%    http://white.stanford.edu/newlm/index.php/AFQ</span>
+0060 <span class="comment">%</span>
+0061 <span class="comment">%  Example:</span>
+0062 <span class="comment">%</span>
+0063 <span class="comment">%   % Get the path to the AFQ directories</span>
+0064 <span class="comment">%   [AFQbase AFQdata] = AFQ_directories;</span>
+0065 <span class="comment">%   % Create a cell array where each cell is the path to a data directory</span>
+0066 <span class="comment">%   sub_dirs = {[AFQdata '/patient_01/dti30'], [AFQdata '/patient_02/dti30']...</span>
+0067 <span class="comment">%   [AFQdata '/patient_03/dti30'], [AFQdata '/control_01/dti30']...</span>
+0068 <span class="comment">%   [AFQdata '/control_02/dti30'], [AFQdata '/control_03/dti30']};</span>
+0069 <span class="comment">%   % Create a vector of 0s and 1s defining who is a patient and a control</span>
+0070 <span class="comment">%   sub_group = [1, 1, 1, 0, 0, 0];</span>
+0071 <span class="comment">%   % Run AFQ in test mode to save time. No inputs are needed to run AFQ</span>
+0072 <span class="comment">%   % with the default settings. AFQ_Create builds the afq structure. This</span>
+0073 <span class="comment">%   % will also be done automatically by AFQ_run if the user does not wish</span>
+0074 <span class="comment">%   % to modify any parameters</span>
+0075 <span class="comment">%   afq = AFQ_Create('run_mode','test', 'sub_dirs', sub_dirs, 'sub_group', sub_group);</span>
+0076 <span class="comment">%   [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)</span>
+0077 <span class="comment">%</span>
+0078 <span class="comment">% Copyright Stanford Vista Team, 2011. Written by Jason D. Yeatman,</span>
+0079 <span class="comment">% Brian A. Wandell and Robert F. Dougherty</span>
+0080 
+0081 <span class="comment">%% Check Inputs</span>
+0082 <span class="keyword">if</span> notDefined(<span class="string">'sub_dirs'</span>), error(<span class="string">'No subject directories'</span>);  <span class="keyword">end</span>
+0083 <span class="keyword">if</span> ~iscell(sub_dirs), sub_dirs = cellstr(sub_dirs); <span class="keyword">end</span>
+0084 <span class="keyword">if</span> ~exist(<span class="string">'sub_group'</span>, <span class="string">'var'</span>) || isempty(sub_group), error(<span class="string">'Must define subject group'</span>); <span class="keyword">end</span>
+0085 <span class="keyword">if</span> length(sub_group) ~= size(sub_dirs,1) &amp;&amp; length(sub_group) ~= size(sub_dirs,2)
+0086     error(<span class="string">'Mis-match between subject group description and subject data directories'</span>);
+0087 <span class="keyword">end</span>
+0088 <span class="keyword">if</span> ~exist(<span class="string">'afq'</span>,<span class="string">'var'</span>) || isempty(afq)
+0089     <span class="comment">%if no parameters are defined use the defualts</span>
+0090     afq = <a href="AFQ_Create.html" class="code" title="function afq = AFQ_Create(varargin)">AFQ_Create</a>(<span class="string">'sub_dirs'</span>,sub_dirs,<span class="string">'sub_group'</span>,sub_group); 
+0091 <span class="keyword">end</span>
+0092 <span class="keyword">if</span> isempty(afq.sub_group)
+0093     afq = <a href="AFQ_set.html" class="code" title="function afq = AFQ_set(afq,param,varargin)">AFQ_set</a>(afq,<span class="string">'sub_group'</span>,sub_group);
+0094 <span class="keyword">end</span>
+0095 <span class="keyword">if</span> isempty(afq.sub_dirs)
+0096     afq = <a href="AFQ_set.html" class="code" title="function afq = AFQ_set(afq,param,varargin)">AFQ_set</a>(afq,<span class="string">'sub_dirs'</span>,sub_dirs);
+0097 <span class="keyword">end</span>
+0098 <span class="comment">%%  Loop over every subject</span>
+0099 <span class="keyword">for</span> ii=1:length(sub_dirs)
+0100     <span class="comment">% Define the current subject to process</span>
+0101     afq = <a href="AFQ_set.html" class="code" title="function afq = AFQ_set(afq,param,varargin)">AFQ_set</a>(afq,<span class="string">'current subject'</span>,ii);
+0102     
+0103     <span class="comment">%% Preprocess Data</span>
+0104     
+0105     <span class="keyword">if</span> ~exist(fullfile(sub_dirs{ii},<span class="string">'dt6.mat'</span>),<span class="string">'file'</span>)
+0106         error(<span class="string">'AFQ preprocessing has not yet been implemented'</span>)
+0107     <span class="keyword">end</span>
+0108     <span class="comment">% Load Dt6 File</span>
+0109     dtFile = fullfile(sub_dirs{ii},<span class="string">'dt6.mat'</span>);
+0110     dt     = dtiLoadDt6(dtFile);
+0111     
+0112     <span class="comment">%% Perform Whole Brain Streamlines Tractography</span>
+0113     
+0114     <span class="comment">%Check if there is a fibers directory, otherwise make one.</span>
+0115     fibDir = fullfile(sub_dirs{ii},<span class="string">'fibers'</span>);
+0116     <span class="keyword">if</span> ~exist(fibDir,<span class="string">'dir'</span>)
+0117         mkdir(fibDir);
+0118     <span class="keyword">end</span> 
+0119     <span class="comment">% Check if wholebrain tractography should be done</span>
+0120     <span class="keyword">if</span> <a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq, <span class="string">'do tracking'</span>,ii) == 1
+0121         <span class="comment">% Perform whole-brain tractography</span>
+0122         fprintf(<span class="string">'\nPerforming whole-brain tractograpy for subject %s\n'</span>,sub_dirs{ii});
+0123         fg = <a href="AFQ_WholebrainTractography.html" class="code" title="function fg = AFQ_WholebrainTractography(dt,run_mode,params)">AFQ_WholebrainTractography</a>(dt, afq.params.run_mode, afq);
+0124         <span class="comment">% Save fiber group to fibers directory</span>
+0125         dtiWriteFiberGroup(fg,fullfile(fibDir,<span class="string">'WholeBrainFG.mat'</span>));
+0126         <span class="comment">% Set the path to the fibers in the afq structure</span>
+0127         afq = <a href="AFQ_set.html" class="code" title="function afq = AFQ_set(afq,param,varargin)">AFQ_set</a>(afq,<span class="string">'wholebrain fg path'</span>,<span class="string">'subnum'</span>,ii,fullfile(fibDir,<span class="string">'WholeBrainFG.mat'</span>));
+0128         <span class="comment">% Wholebrain fiber group is already in memory and does not need to</span>
+0129         <span class="comment">% be loaded</span>
+0130         loadWholebrain = 0;
+0131     <span class="keyword">else</span>
+0132         fprintf(<span class="string">'\nWhole-brain tractography was already done for subject %s'</span>,sub_dirs{ii});
+0133         <span class="comment">% Wholebrain fiber group needs to be loaded</span>
+0134         loadWholebrain = 1;
+0135     <span class="keyword">end</span>
+0136     
+0137     <span class="comment">%% Segment 20 Fiber Groups</span>
+0138     
+0139     <span class="comment">% Check if fiber group segmentation was already done</span>
+0140     <span class="keyword">if</span> <a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq, <span class="string">'do segmentation'</span>,ii) == 1
+0141         <span class="comment">% Load the wholebrain fiber group if necessary</span>
+0142         <span class="keyword">if</span> loadWholebrain == 1
+0143             fg = <a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'wholebrain fiber group'</span>,ii);
+0144         <span class="keyword">end</span>
+0145         <span class="comment">% Segment fiber file</span>
+0146         fg_classified = <a href="AFQ_SegmentFiberGroups.html" class="code" title="function [fg_classified,fg_unclassified,classification,fg] =AFQ_SegmentFiberGroups(dt6File, fg, Atlas,useRoiBasedApproach, useInterhemisphericSplit)">AFQ_SegmentFiberGroups</a>(dtFile, fg);
+0147         <span class="comment">% Save segmented fiber group</span>
+0148         dtiWriteFiberGroup(fg_classified, fullfile(fibDir,<span class="string">'MoriGroups.mat'</span>));
+0149         <span class="comment">% Set the path to the fibers in the afq structure</span>
+0150         afq = <a href="AFQ_set.html" class="code" title="function afq = AFQ_set(afq,param,varargin)">AFQ_set</a>(afq, <span class="string">'segmented fg path'</span>, <span class="string">'subnum'</span>, ii, fullfile(fibDir,<span class="string">'MoriGroups.mat'</span>));
+0151         <span class="comment">% Segemented fiber group is already in memory and does not need to</span>
+0152         <span class="comment">% be loaded</span>
+0153         loadSegmentation = 0;
+0154         clear fg
+0155     <span class="keyword">else</span>
+0156         fprintf(<span class="string">'\nFiber tract segmentation was already done for subject %s'</span>,sub_dirs{ii});
+0157         <span class="comment">% Segmentation needs to be loaded</span>
+0158         loadSegmentation = 1;
+0159     <span class="keyword">end</span>
+0160     clear dtFile fgFile
+0161     
+0162     <span class="comment">%% Remove fiber outliers from each fiber tract so it is a compact bundle</span>
+0163     
+0164     <span class="comment">% Run AFQ cleaning proceedure if it is called for in</span>
+0165     <span class="comment">% afq.params.cleanFibers and if has not yet been done</span>
+0166     <span class="keyword">if</span> afq.params.cleanFibers == 1 &amp;&amp; <a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq, <span class="string">'do cleaning'</span>, ii) == 1
+0167         <span class="comment">% Load segmented fiber group if necessary</span>
+0168         <span class="keyword">if</span> loadSegmentation == 1
+0169             fg_classified = dtiLoadFiberGroup(fullfile(fibDir,<span class="string">'MoriGroups.mat'</span>));
+0170         <span class="keyword">end</span>
+0171         <span class="comment">% Remove all fibers that are too long and too far from the core of</span>
+0172         <span class="comment">% the group.  This algorithm will constrain the fiber group to</span>
+0173         <span class="comment">% something that can be reasonable represented as a 3d gaussian</span>
+0174         fg_clean = fg2Array(fg_classified); <span class="comment">% fiber groups into an array</span>
+0175         <span class="comment">% remove fiber outliers</span>
+0176         <span class="keyword">for</span> jj = 1:20
+0177             <span class="comment">% only clean if there are enough fibers for it to be worthwhile</span>
+0178             <span class="keyword">if</span>  length(fg_clean(jj).fibers) &gt; 20
+0179                 <span class="comment">% clean clipped fiber group if computations are to be done</span>
+0180                 <span class="comment">% on clipped group</span>
+0181                 <span class="keyword">if</span> afq.params.cleanClippedFibers == 1;
+0182                     <span class="comment">% load ROIs</span>
+0183                     [roi1 roi2] = <a href="AFQ_LoadROIs.html" class="code" title="function [roi1 roi2] = AFQ_LoadROIs(fgNumber,sub_dir)">AFQ_LoadROIs</a>(jj,sub_dirs{ii});
+0184                     <span class="comment">% clip fiber group</span>
+0185                     fg_clip     = dtiClipFiberGroupToROIs(fg_clean(jj),roi1,roi2);
+0186                     <span class="keyword">if</span> length(fg_clip.fibers) &gt; 20
+0187                         <span class="comment">% clean clipped fiber group</span>
+0188                         [~, keep]   = <a href="AFQ_removeFiberOutliers.html" class="code" title="function [fg keep]=AFQ_removeFiberOutliers(fg,maxDist,maxLen,numNodes,M,count,maxIter,show)">AFQ_removeFiberOutliers</a>(fg_clip,afq.params.maxDist,afq.params.maxLen,afq.params.numberOfNodes,<span class="string">'mean'</span>,0);
+0189                         <span class="comment">% remove fibers from unclipped group that do no</span>
+0190                         <span class="comment">% survive the clipping</span>
+0191                         fg_clean(jj).fibers =fg_clean(jj).fibers(keep);
+0192                     <span class="keyword">end</span>
+0193                 <span class="keyword">else</span>
+0194                     <span class="comment">% clean un-clipped fiber group</span>
+0195                     fg_clean(jj) = <a href="AFQ_removeFiberOutliers.html" class="code" title="function [fg keep]=AFQ_removeFiberOutliers(fg,maxDist,maxLen,numNodes,M,count,maxIter,show)">AFQ_removeFiberOutliers</a>(fg_clean(jj),afq.params.maxDist,afq.params.maxLen,afq.params.numberOfNodes,<span class="string">'mean'</span>,0,afq.params.cleanIter);
+0196                 <span class="keyword">end</span>
+0197             <span class="keyword">end</span>
+0198         <span class="keyword">end</span>
+0199         <span class="comment">% Save cleaned fibers</span>
+0200         cleanFgName = fullfile(fibDir,[<span class="string">'MoriGroups_clean_D'</span> num2str(afq.params.maxDist) <span class="string">'_L'</span>  num2str(afq.params.maxLen) <span class="string">'.mat'</span>]);
+0201         dtiWriteFiberGroup(fg_clean, cleanFgName);
+0202         <span class="comment">% Set the path to the fibers in the afq structure</span>
+0203         afq = <a href="AFQ_set.html" class="code" title="function afq = AFQ_set(afq,param,varargin)">AFQ_set</a>(afq, <span class="string">'clean fg path'</span>, <span class="string">'subnum'</span>, ii, cleanFgName);
+0204         <span class="comment">% Convert fiber group back to a 1 cell structure for future</span>
+0205         <span class="comment">% computations</span>
+0206         fg_classified = dtiFgArrayToFiberGroup(fg_clean, <span class="string">'MoriGroups'</span>);
+0207         
+0208     <span class="keyword">elseif</span> afq.params.cleanFibers == 1
+0209         <span class="comment">% If cleaning was already done then load the cleaned fiber group</span>
+0210         fprintf(<span class="string">'\nFiber tract cleaning was already done for subject %s'</span>,sub_dirs{ii});
+0211         fg_classified = <a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq, <span class="string">'cleaned fibers'</span>,ii);
+0212         fg_classified = dtiFgArrayToFiberGroup(fg_classified, <span class="string">'MoriGroups'</span>);  
+0213     <span class="keyword">end</span>
+0214     
+0215     <span class="comment">%% Compute Tract Profiles</span>
+0216     
+0217     <span class="keyword">if</span> <a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'compute profiles'</span>,ii)
+0218         fprintf(<span class="string">'\nComputing Tract Profiles for subject %s'</span>,sub_dirs{ii});
+0219         <span class="comment">% Determine how much to weight each fiber's contribution to the</span>
+0220         <span class="comment">% measurement at the tract core. Higher values mean steaper falloff</span>
+0221         fWeight = <a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'fiber weighting'</span>);
+0222         <span class="comment">% By default Tract Profiles of diffusion properties will always be</span>
+0223         <span class="comment">% calculated</span>
+0224         [fa md rd ad cl TractProfile] = <a href="AFQ_ComputeTractProperties.html" class="code" title="function [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,numberOfNodes,clip2rois,subDir, weighting)">AFQ_ComputeTractProperties</a>(fg_classified, dt, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii}, fWeight);
+0225         
+0226         <span class="comment">% Parameterize the shape of each fiber group with calculations of</span>
+0227         <span class="comment">% curvature and torsion at each point and add it to the tract</span>
+0228         <span class="comment">% profile</span>
+0229         [curv, tors, TractProfile] = <a href="AFQ_ParamaterizeTractShape.html" class="code" title="function [curvWA torsWA TractProfile] = AFQ_ParamaterizeTractShape(fg, TractProfile)">AFQ_ParamaterizeTractShape</a>(fg_classified, TractProfile);
+0230         
+0231         <span class="comment">% Calculate the volume of each Tract Profile</span>
+0232         TractProfile = <a href="AFQ_TractProfileVolume.html" class="code" title="function [TractProfile V] = AFQ_TractProfileVolume(TractProfile)">AFQ_TractProfileVolume</a>(TractProfile);
+0233         
+0234         <span class="comment">% Take the stats that were calculated in the previous function and add</span>
+0235         <span class="comment">% them to a sructure for the full sample of subjects.  Each fiber group</span>
+0236         <span class="comment">% has its own cell. Within each cell there is a row for each subject with</span>
+0237         <span class="comment">% numberofnodes columns</span>
+0238         <span class="comment">% TODO: make object oriented and get rid of this</span>
+0239         <span class="keyword">for</span> jj = 1:20
+0240             groupFA{jj}(ii,:) = fa(:, jj);
+0241             groupMD{jj}(ii,:) = md(:, jj);
+0242             groupRD{jj}(ii,:) = rd(:, jj);
+0243             groupAD{jj}(ii,:) = ad(:, jj);
+0244             groupCL{jj}(ii,:) = cl(:, jj);
+0245         <span class="keyword">end</span>
+0246         <span class="comment">% Add values to the afq structure</span>
+0247         afq = <a href="AFQ_set.html" class="code" title="function afq = AFQ_set(afq,param,varargin)">AFQ_set</a>(afq,<span class="string">'vals'</span>,<span class="string">'subnum'</span>,ii,<span class="string">'fa'</span>,fa,<span class="string">'md'</span>,md,<span class="string">'rd'</span>,rd,<span class="keyword">...</span>
+0248             <span class="string">'ad'</span>,ad,<span class="string">'cl'</span>,cl,<span class="string">'curvature'</span>,curv,<span class="string">'torsion'</span>,tors);
+0249         <span class="comment">% Add Tract Profiles to the afq structure</span>
+0250         afq = <a href="AFQ_set.html" class="code" title="function afq = AFQ_set(afq,param,varargin)">AFQ_set</a>(afq,<span class="string">'tract profile'</span>,TractProfile);
+0251         
+0252         <span class="comment">% If any other images were supplied calculate a Tract Profile for that</span>
+0253         <span class="comment">% parameter</span>
+0254         numimages = <a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq, <span class="string">'numimages'</span>);
+0255         <span class="keyword">if</span> numimages &gt; 0;
+0256             <span class="keyword">for</span> jj = 1:numimages
+0257                 <span class="comment">% Read the image file</span>
+0258                 image = readFileNifti(afq.files.images(jj).path{ii});
+0259                 <span class="comment">% Compute a Tract Profile for that image</span>
+0260                 imagevals = <a href="AFQ_ComputeTractProperties.html" class="code" title="function [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,numberOfNodes,clip2rois,subDir, weighting)">AFQ_ComputeTractProperties</a>(fg_classified, image, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii}, fWeight);
+0261                 <span class="comment">% Add values to the afq structure</span>
+0262                 afq = <a href="AFQ_set.html" class="code" title="function afq = AFQ_set(afq,param,varargin)">AFQ_set</a>(afq,<span class="string">'vals'</span>,<span class="string">'subnum'</span>,ii,afq.files.images(jj).name, imagevals);
+0263                 clear imagevals
+0264             <span class="keyword">end</span>
+0265         <span class="keyword">end</span>
+0266     <span class="keyword">else</span>
+0267         fprintf(<span class="string">'\nTract Profiles already computed for subject %s'</span>,sub_dirs{ii});
+0268     <span class="keyword">end</span>
+0269 <span class="keyword">end</span>
+0270 
+0271 <span class="comment">%% Generate Control Group Norms</span>
+0272 
+0273 <span class="comment">% If no control group was entered then norms will only contain nans.</span>
+0274 [norms patient_data control_data afq] = <a href="AFQ_ComputeNorms.html" class="code" title="function [norms patient_data control_data afq] = AFQ_ComputeNorms(varargin)">AFQ_ComputeNorms</a>(afq);
+0275 
+0276 <span class="comment">%% Identify Patients With Abnormal Diffusion Measurements</span>
+0277 
+0278 property = <span class="string">'FA'</span>;
+0279 <span class="comment">% Only run AFQ_ComparePatientsToNorms if norms were computed for the</span>
+0280 <span class="comment">% property of interest for each tract</span>
+0281 <span class="keyword">if</span> sum(isnan(eval([<span class="string">'norms.mean'</span> property <span class="string">'(1,:)'</span>]))) == 20
+0282     fprintf(<span class="string">'\nnorms are empty. skipping AFQ_ComparePatientsToNorms\n'</span>)
+0283     <span class="comment">% If there are no norms than we can not identify which subjects are</span>
+0284     <span class="comment">% abnormal.  Hence these variables will be set to nan.</span>
+0285     abn       = nan(length(sub_dirs),1);
+0286     abnTracts = nan(length(sub_dirs),20);
+0287 <span class="keyword">elseif</span> <a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'number of patients'</span>) &gt;=1
+0288     [abn abnTracts] = <a href="AFQ_ComparePatientsToNorms.html" class="code" title="function [abn abnTracts] = AFQ_ComparePatientsToNorms(patient_data, norms, cutoff, property, comp)">AFQ_ComparePatientsToNorms</a>(patient_data, norms, afq.params.cutoff, property);
+0289 <span class="keyword">else</span>
+0290     abn = nan;
+0291     abnTracts = nan;
+0292 <span class="keyword">end</span>
+0293 <span class="comment">%% Plot Abnormal Patients Against Control Population</span>
+0294 
+0295 <span class="comment">% Only plot if norms were computed for each tract</span>
+0296 <span class="keyword">if</span> sum(isnan(eval([<span class="string">'norms.mean'</span> property <span class="string">'(1,:)'</span>]))) == 20
+0297     fprintf(<span class="string">'\nnorms are empty. Skipping AFQ_plot\n'</span>)
+0298 <span class="keyword">elseif</span> ~exist(<span class="string">'abn'</span>,<span class="string">'var'</span>) || sum(isnan(abn))==1
+0299     fprintf(<span class="string">'\nNo patients. Skipping AFQ_plot\n'</span>)
+0300 <span class="keyword">elseif</span> <a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'showfigs'</span>);
+0301     <span class="comment">% percentiles to define normal range</span>
+0302     ci = afq.params.cutoff;
+0303     <span class="comment">% loop over tracts and plot abnormal subjects</span>
+0304     <span class="keyword">for</span> jj = 1:20
+0305         <span class="comment">% Find subjects that show an abnormality on tract jj</span>
+0306         sub_nums = find(abnTracts(:,jj));
+0307         <span class="comment">% Generate a structure for a legend</span>
+0308         L = {};
+0309         <span class="keyword">for</span> ii = 1:length(sub_nums)
+0310             L{ii} = num2str(sub_nums(ii));
+0311         <span class="keyword">end</span>
+0312         <a href="AFQ_plot.html" class="code" title="function AFQ_plot(varargin)">AFQ_plot</a>(norms, patient_data,<span class="string">'individual'</span>,<span class="string">'ci'</span>,ci,<span class="string">'subjects'</span>,sub_nums,<span class="string">'tracts'</span>,jj,<span class="string">'legend'</span>,L)
+0313         <span class="comment">% AFQ_PlotResults(patient_data, norms, abn, afq.params.cutoff,property, afq.params.numberOfNodes, afq.params.outdir, afq.params.savefigs);</span>
+0314     <span class="keyword">end</span>
+0315 <span class="keyword">end</span>
+0316 
+0317 <span class="comment">%% Plot group means for the patients and the controls</span>
+0318 
+0319 <span class="comment">% Only plot if there is data for patients and controls</span>
+0320 <span class="keyword">if</span> sum(sub_group == 1) &gt; 2 &amp;&amp; sum(sub_group == 0) &gt; 2 &amp;&amp; <a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'showfigs'</span>)
+0321     <a href="AFQ_plot.html" class="code" title="function AFQ_plot(varargin)">AFQ_plot</a>(<span class="string">'Patients'</span>, patient_data, <span class="string">'Controls'</span>, control_data, <span class="string">'group'</span>);
+0322 <span class="keyword">elseif</span> sum(sub_group == 1) &lt;= 2 &amp;&amp; sum(sub_group == 0) &lt;= 2
+0323     fprintf(<span class="string">'\nNot enough subjects for a group comparison\n'</span>)
+0324 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
 </body>
 </html>

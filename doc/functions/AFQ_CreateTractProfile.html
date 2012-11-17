@@ -35,15 +35,41 @@
 <h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
 This function calls:
 <ul style="list-style-image:url(../matlabicon.gif)">
-</ul>
+<li><a href="../utilities/afqVarargin.html" class="code" title="function yourStruct = afqVarargin(yourStruct,varArgIn)">afqVarargin</a>	</li></ul>
 This function is called by:
 <ul style="list-style-image:url(../matlabicon.gif)">
-<li><a href="AFQ_Create.html" class="code" title="function afq = AFQ_Create(varargin)">AFQ_Create</a>	Create AFQ structure and set default parameters</li><li><a href="AFQ_RenderFibers.html" class="code" title="function lightH = AFQ_RenderFibers(fg,varargin)">AFQ_RenderFibers</a>	Render a fiber group and tract profile in 3-D</li></ul>
+<li><a href="AFQ_ComputeTractProperties.html" class="code" title="function [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,numberOfNodes,clip2rois,subDir, weighting)">AFQ_ComputeTractProperties</a>	Compute diffusion properties along the trajectory of the fiber groups.</li><li><a href="AFQ_Create.html" class="code" title="function afq = AFQ_Create(varargin)">AFQ_Create</a>	Create AFQ structure and set default parameters</li><li><a href="AFQ_ParamaterizeTractShape.html" class="code" title="function [curvWA torsWA TractProfile] = AFQ_ParamaterizeTractShape(fg, TractProfile)">AFQ_ParamaterizeTractShape</a>	Paramaterize curvature and torsion along a tract profile</li><li><a href="AFQ_RenderFibers.html" class="code" title="function lightH = AFQ_RenderFibers(fg,varargin)">AFQ_RenderFibers</a>	Render a fiber group and tract profile in 3-D</li></ul>
 <!-- crossreference -->
 
 
 
-
-<hr><address>Generated on Thu 07-Jun-2012 16:00:13 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function TractProfile = AFQ_CreateTractProfile(varargin)</a>
+0002 <span class="comment">% Create the AFQ Tract Profile structure</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% TractProfile = AFQ_CreateTractProfile(varargin)</span>
+0005     
+0006 <span class="comment">%% Create the afq tract profile structure</span>
+0007 TractProfile.name    = <span class="string">'name'</span>;
+0008 TractProfile.nfibers = [];
+0009 TractProfile.vals    = struct(<span class="string">'fa'</span>,[],<span class="string">'md'</span>,[],<span class="string">'rd'</span>,[],<span class="string">'ad'</span>,[],<span class="string">'cl'</span>,[]);
+0010 TractProfile.xform   = struct(<span class="string">'acpc2mni'</span>,[],<span class="string">'mni2acpc'</span>,[],<span class="string">'acpc2dt6'</span>,[],<span class="string">'dt62acpc'</span>,[]);
+0011 TractProfile.coords  = struct(<span class="string">'acpc'</span>,[],<span class="string">'mni'</span>,[],<span class="string">'dt6'</span>,[]);
+0012 TractProfile.fibercov     = [];
+0013 TractProfile.fiberCurvature = [];
+0014 TractProfile.fiberTorsion = [];
+0015 TractProfile.fiberVolume = [];
+0016 <span class="comment">%% Set fields</span>
+0017 TractProfile = <a href="../utilities/afqVarargin.html" class="code" title="function yourStruct = afqVarargin(yourStruct,varArgIn)">afqVarargin</a>(TractProfile,varargin);
+0018 <span class="comment">%% Check if the old super fiber structure was passed in</span>
+0019 <span class="keyword">if</span> nargin &gt; 0 &amp;&amp; sum(strcmpi(<span class="string">'superfiber'</span>,varargin)) == 1
+0020     idx = find(strcmpi(<span class="string">'superfiber'</span>,varargin));
+0021     TractProfile.fibercov = varargin{idx+1}.fibervarcovs{1};
+0022     TractProfile.coords.acpc = varargin{idx+1}.fibers{1};
+0023     TractProfile.nfibers = varargin{idx+1}.n;
+0024 <span class="keyword">end</span>
+0025     
+0026</pre></div>
+<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
 </body>
 </html>
