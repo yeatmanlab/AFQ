@@ -119,11 +119,28 @@ if isempty(Lnum)
             Lnum = [44:2:54];
         case'temporal'
             % We include the fusiform
-            Lnum = [55, 56, 79:90];
+            Lnum = [37:42 55, 56, 79:90];
         case 'lefttemporal'
-            [55 79:2:89];
+            [37:2:41 55 79:2:89];
         case 'righttemporal'
-            [56 80:2:90];
+            [38:2:42 56 80:2:90];
+        case 'leftanttemporal'
+            % 41 = amygdala
+            [41 83 87];
+        case 'rightanttemporal'
+            [42 84 88];
+        case 'leftfrontal'
+            [1:2:25];
+        case 'rightfrontal'
+            [2:2:26];
+        case 'leftparietal'
+            [57:67];
+        case 'rightparietal'
+            [58:68];
+        case 'leftinfparietal'
+            [61 63 65];
+        case 'rightinfparietal'
+            [62 64 65];
     end
 end
 
