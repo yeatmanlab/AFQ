@@ -2,6 +2,24 @@ function p = AFQ_RenderCorticalSurface(segIm, color, a)
 % Render the cortical surface from a binary segmentation image
 %
 % h = AFQ_RenderCorticalSurface(segIm)
+%
+% This function takes in a segmentation image and renders it in 3d. It is
+% optimized to look good for the cortical surface but any image will work.
+% The rendering will be added to the current figure window so you can add
+% the cortex to a rendering of fiber groups and adjust it's transparency
+%
+% Inputs:
+% segIm   - A path to a nifti image to render. It must be a binary mask
+% color   - RGB value for the surface of the rendering. Default is "brain"
+%           color
+% a       - The transparency of the surface (alpha). 0 is completely
+%           transparent and 1 is completely opaque
+%
+% Outputs:
+% p       - Handel for the patch object that was added to the figure
+%           window. The rendering can be deleted with delete(p)
+%
+% Copyright Jason D. Yeatman November 2012
 
 if ~exist('color','var') || isempty(color)
     color = [.8 .7 .6];
