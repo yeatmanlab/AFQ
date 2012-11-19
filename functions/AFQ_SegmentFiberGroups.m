@@ -395,6 +395,11 @@ end
 classification.index = fiberIndex;
 classification.names = names;
 
+% Flip fibers so that each fiber in a fiber group has the same start and
+% endponts
+
+fg_classified = AFQ_DefineFgEndpoints(fg_classified,[],[],dt,[],invDef);
+
 return;
 
 
