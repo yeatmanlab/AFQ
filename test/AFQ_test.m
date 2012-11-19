@@ -23,14 +23,15 @@ try
 catch ME
     ME.stack
 end
-load(fullfile(AFQbase,'test','AFQtestdata'));
+testData = load(fullfile(AFQdata,'afq.mat'));
 
 %% Test AFQ_Create.m
 sub_dirs = {[AFQdata '/patient_01/dti30'], [AFQdata '/patient_02/dti30']...
     [AFQdata '/patient_03/dti30'], [AFQdata '/control_01/dti30']...
     [AFQdata '/control_02/dti30'], [AFQdata '/control_03/dti30']};
+    sub_group = [1, 1, 1, 0, 0, 0]; 
 try
-    fprint('\nTesting AFQ_Create.m')
+    fprintf('\nTesting AFQ_Create.m')
 	afq = AFQ_Create('run_mode','test', 'sub_dirs', sub_dirs, 'sub_group', sub_group, 'showfigs', 0); 
 catch ME
     ME.stack
@@ -39,15 +40,15 @@ end
 %% Test AFQ_run.m
 try
 	fprintf('\nTesting AFQ_run.m')
-	[afqT patient_dataT control_dataT normsT abnT abnTractsT] = AFQ_run(sub_dirs, sub_group, afq);
+	[afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq);
 catch ME
 	ME.stack
 end
 
 %% Compare values to saved data
-valsT = AFQ_get(afqT,'vals','fa');
 vals = AFQ_get(afq,'vals','fa');
-t = (valsT - vals) < .001;
+valsTest = AFQ_get(testData.afq,'vals','fa');
+t = (valsTest - vals) < .001;
 eq = find(t ==0);
 if isempty(eq)
 	fprintf('\nNew FA values match saved FA values');
