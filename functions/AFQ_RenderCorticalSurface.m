@@ -29,7 +29,8 @@ if ~exist('a','var') || isempty(alpha)
 end
 % Load the image
 im = readFileNifti(segIm);
-% permute the image dimensions
+% permute the image dimensions (This is because the x,y and z dimensions in
+% matlab do not correspond to left-right, anterior-posterior, up-down.
 data = permute(im.data, [2 1 3]);
 % smooth the image
 data = smooth3(data,'box',5);
@@ -41,4 +42,4 @@ tr.vertices = mrAnatXformCoords(im.qto_xyz,tr.vertices);
 p = patch(tr,'facecolor',color,'edgecolor','none');
 alpha(p,a);
 axis('image');axis('vis3d');
-set(p,'specularstrength',.5,'diffusestrength',.75)
+set(p,'specularstrength',.5,'diffusestrength',.75);
