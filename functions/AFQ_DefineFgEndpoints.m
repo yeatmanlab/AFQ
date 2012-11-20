@@ -32,11 +32,12 @@ nFG = length(fg);
 % were defined then assume it is the moriGroups and handle apropriately
 if nFG == 20 && (~exist('startpoint','var') || isempty(startpoint)) && ...
         (~exist('endpoint','var') || isempty(endpoint))
-    startpoint = {'Thalamus_L' 'Thalamus_R' 'bcerebellum' 'cerebellum' ...
+    startpoint = {'Thalamus_L' 'Thalamus_R' 'cerebellum' 'cerebellum' ...
         'Cingulum_Post_L' 'Cingulum_Post_R' 'Hippocampus_L' 'Hippocampus_R'...
         'leftoccipital' 'leftfrontal' 'leftoccipital' 'rightoccipital' ...
         'leftoccipital' 'rightoccipital' 'leftinfparietal' 'rightinfparietal'...
         'leftanttemporal' 'rightanttemporal' 'leftfrontal' 'rightfrontal'};
+    endpoint = {'leftfrontal' 'rightfrontal' 'leftmotor' 'rightmotor'}
 end
 
 if ~exist('dt6Path','var') || isempty(dt6Path)
@@ -97,32 +98,43 @@ for jj = 1:nFG
     % Make ROIs in native space from the template ROIs Load the desired
     % startpoint ROI from the AAL template and transform it
     % into the individual's native space
-    [~, invDef, roiStart] = dtiCreateRoiFromMniNifti(dt6Path,AAL,invDef,0,Lnum1);
+    if ~isempty(Lnum1)
+        [~, invDef, roiStart] = dtiCreateRoiFromMniNifti(dt6Path,AAL,invDef,0,Lnum1);
+    end
     % Only create an endpoint ROI if endpoints were defined
     if ~isempty(Lnum2)
         [~,~, roiEnd]  = dtiCreateRoiFromMniNifti(dt6Path,AAL,invDef,0,Lnum2);
     end
-    % Make a function to compute the distance between fiber endpoints and
+    % Make a function to compute the distance between fibers endpoints and
     % the desired start and endpoint
-    distfun1 = @(x) nearpoints([x(:,1) x(:,end)],roiStart.coords');
-    % Compute distance for each fiber to the start and end ROIs
-    [~, dist1] = cellfun(distfun1,fg(jj).fibers,'UniformOutput',false);
+    if ~isempty(Lnum1)
+        distfun1 = @(x) nearpoints([x(:,1) x(:,end)],roiStart.coords');
+        % Compute distance for each fiber to the start and end ROIs
+        [~, dist1] = cellfun(distfun1,fg(jj).fibers,'UniformOutput',false);
+    end
     % Do the same for the endpoints if they were defined
     if ~isempty(Lnum2)
         distfun2 = @(x) nearpoints([x(:,1) x(:,end)],roiEnd.coords');
         [~, dist2] = cellfun(distfun2,fg(jj).fibers,'UniformOutput',false);
     end
     % record which fibers need to be flipped. We flip any fiber who's
-    % las node is closer to the starting ROI than its first node
-    flipped{jj} = cellfun(@(x) x(1)>x(2), dist1,'UniformOutput',false);
-    % Flip fibers that need to be flipped CHECK THIS!!!
+    % last node is closer to the starting ROI than its first node
+    if ~isempty(Lnum1)
+        flipped{jj} = cellfun(@(x) x(1)>x(2), dist1,'UniformOutput',false);
+    elseif ~isempty(Lnum2)
+        % Do it for the endpoint if the startpoint was not defined
+        flipped{jj} = cellfun(@(x) x(1)>x(2), dist2,'UniformOutput',false);
+    end
+    % Flip fibers that need to be flipped 
     fg(jj).fibers = cellfun(@flipfun,fg(jj).fibers,flipped{jj},'UniformOutput',false);
-    % Identify fibers that don't have a startpoint and endpoint within 4mm
-    % of the defining ROIs
-    if ~isempty(Lnum2)
+    % Identify fibers that don't have a startpoint and endpoint within
+    % dCrit mm of the defining ROIs
+    if ~isempty(Lnum2) && ~isempty(Lnum1)
         keep{jj} = cellfun(@(x1,x2) min(x1) < dCritSq && min(x2) < dCritSq,dist1,dist2);
-    else
+    elseif ~isempty(Lnum1)
         keep{jj} = cellfun(@(x1) min(x1) < dCritSq, dist1);
+    elseif ~isempty(Lnum2)
+        keep{jj} = cellfun(@(x1) min(x1) < dCritSq, dist2);
     end
     % Discard the fibers
     fg(jj).fibers = fg(jj).fibers(keep{jj});
@@ -165,9 +177,9 @@ if isempty(Lnum)
         case'occipital'
             % We do not include the fusiform
             Lnum = 43:54;
-        case 'leftoccipital'
+        case {'leftoccipital' 'leftilfocc' 'leftifofocc'}
             Lnum = [43:2:53];
-        case 'rightoccipital'
+        case {'rightoccipital' 'rightilfocc' 'rightifofocc'}
             Lnum = [44:2:54];
         case'temporal'
             % We include the fusiform
@@ -176,11 +188,19 @@ if isempty(Lnum)
             Lnum = [37:2:41 55 79:2:89];
         case 'righttemporal'
             Lnum = [38:2:42 56 80:2:90];
-        case 'leftanttemporal'
+        case {'leftanttemporal' 'leftuncinatetemp' 'leftilftemp'}
             % 41 = amygdala
             Lnum = [41 83 87];
-        case 'rightanttemporal'
+        case {'rightanttemporal' 'rightuncinatetemp' 'rightilftemp'}
             Lnum = [42 84 88];
+        case 'leftuncinatefront'
+            Lnum = [5 9 15 25];
+        case 'rightuncinatefront'
+            Lnum = [6 10 16 26];
+        case 'leftifoffront'
+            Lnum = [3 5 7 9 13 15 25]; 
+        case 'rightifoffront'
+            Lnum = [4 6 8 10 14 16 26];
         case 'leftfrontal'
             Lnum = [1:2:25];
         case 'rightfrontal'
@@ -189,12 +209,24 @@ if isempty(Lnum)
             Lnum =  [57:67];
         case 'rightparietal'
             Lnum = [58:68];
-        case 'leftinfparietal'
+        case {'leftinfparietal' 'leftslfpar'}
             Lnum = [61 63 65];
-        case 'rightinfparietal'
+        case {'rightinfparietal' 'rightslfpar'}
             Lnum = [62 64 65];
         case 'cerebellum'
-            Lnum =   91:116;
+            Lnum = 91:116;
+        case {'leftarcfront' 'leftslffront'}
+            Lnum = [1 11 13];
+        case 'rightarcfront' 'rightslffront'}
+            Lnum = [2 12 14];
+        case 'leftarctemp'
+            Lnum = [79 81 85  89];
+        case 'rightarctemp'
+            Lnum = [80 82 86 90];
+        case 'leftcstsuperior'
+            Lnum = [1 19 23 57 59 69];
+        case 'rightcstsuperior'
+            Lnum = [2 20 24 58 60 70];
     end
 end
 
