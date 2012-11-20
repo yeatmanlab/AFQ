@@ -166,7 +166,14 @@ switch(param)
             val = false;
         end
     case{'dt6path'}
-        val = afq.files.dt6{varargin{1}};
+        % If a subject number was input then get the dt6path for that
+        % subject
+        if nargin == 3
+            val = afq.files.dt6{varargin{1}};
+            % Otherwise return a cell array of paths for all subjects
+        else
+            val  = afq.files.dt6;
+        end
     case{'trackingparameters'}
         val = afq.params.track;
     case{'mrtrixpath' 'mrtrixpaths'}
