@@ -21,7 +21,9 @@ elseif isfield(fg,'subgroup') && isfield(fg,'subgroupNames')
     fgName = fg.name;
     % Convert to an array if necessary
     fg = fg2Array(fg);
-end 
+else 
+    array = 1;
+end
 
 % Number of fiber groups
 nFG = length(fg);
@@ -34,7 +36,7 @@ if nFG == 20 && (~exist('startpoint','var') || isempty(startpoint)) && ...
         'Cingulum_Post_L' 'Cingulum_Post_R' 'Hippocampus_L' 'Hippocampus_R'...
         'leftoccipital' 'leftfrontal' 'leftoccipital' 'rightoccipital' ...
         'leftoccipital' 'rightoccipital' 'leftinfparietal' 'rightinfparietal'...
-        'leftanttemporal' 'rightanttemporal' 'leftfrontal' 'rightfrontal'};       
+        'leftanttemporal' 'rightanttemporal' 'leftfrontal' 'rightfrontal'};
 end
 
 if ~exist('dt6Path','var') || isempty(dt6Path)
@@ -47,7 +49,7 @@ elseif isstruct(dt6Path)
 end
 % Distance criteria for endpoints to match ROIs
 if ~exist('dCrit','var') || isempty(dCrit)
-    if isempty(endpoint)
+    if ~exist('endpoint','var') || isempty(endpoint)
         % If no endoint rois were defined then assume that fibers should
         % just be flipped but not removed
         dCritSq = 1000000;
@@ -171,28 +173,28 @@ if isempty(Lnum)
             % We include the fusiform
             Lnum = [37:42 55, 56, 79:90];
         case 'lefttemporal'
-            [37:2:41 55 79:2:89];
+            Lnum = [37:2:41 55 79:2:89];
         case 'righttemporal'
-            [38:2:42 56 80:2:90];
+            Lnum = [38:2:42 56 80:2:90];
         case 'leftanttemporal'
             % 41 = amygdala
-            [41 83 87];
+            Lnum = [41 83 87];
         case 'rightanttemporal'
-            [42 84 88];
+            Lnum = [42 84 88];
         case 'leftfrontal'
-            [1:2:25];
+            Lnum = [1:2:25];
         case 'rightfrontal'
             [2:2:26];
         case 'leftparietal'
-            [57:67];
+            Lnum =  [57:67];
         case 'rightparietal'
-            [58:68];
+            Lnum = [58:68];
         case 'leftinfparietal'
-            [61 63 65];
+            Lnum = [61 63 65];
         case 'rightinfparietal'
-            [62 64 65];
+            Lnum = [62 64 65];
         case 'cerebellum'
-            91:116;
+            Lnum =   91:116;
     end
 end
 
