@@ -91,7 +91,7 @@ function [fg_classified,fg_unclassified,classification,fg] = ...
 % fg              - This is the origional pre-segmented fiber group.  It
 %                   may differ slightly from the input due to preprocessing
 %                   (eg splitting fibers that cross at the pons, removing 
-%                   fibers that a too short)
+%                   fibers that are too short)
 %                    
 % Example:
 %    AFQdata = '/home/jyeatman/matlab/svn/vistadata/AFQ';
@@ -149,9 +149,6 @@ if ~exist('fg','var') || isempty(fg)
 end
 % Load fiber group - Can be filename or the data
 if ischar(fg), fg = dtiLoadFiberGroup(fg); end
-% Create an array that will denote which fiber group each of these fibers
-% was assigned to.
-fiberIndex = zeros(length(fg.fibers),1);
 % Set the directory where templates can be found
 tdir = fullfile(fileparts(which('mrDiffusion.m')), 'templates');
 % Initialize spm defualts for normalization
@@ -382,8 +379,14 @@ for(ii=1:numel(curAtlasFibers))
     fg_classified.subgroupNames(ii)=struct('subgroupIndex', ii, 'subgroupName', labels(ii));
     %fghandle.subgroupNames(ii)=struct('subgroupIndex', ii, 'subgroupName', labels(ii));
 end
+% The number of fibers in the origional preprocessed fiber group (fg) is
+% equalt to the number of fibers in fg_classified + fg_unclassified. To
+% create a new structure denoting the classification of each fiber group in
+% the origional structure first preallocate an array the length of the
+% origional (preprocessed) fiber group.
+fiberIndex = zeros(length(fg.fibers),1);
 
-% Create a structure denoting the fiber group number that each fiber in
+% Populate the structure denoting the fiber group number that each fiber in
 % the origional wholebrain group was assigned to
 for ii = 1 : length(curAtlasFibers)
     fiberIndex(curAtlasFibers{ii}) = ii;
