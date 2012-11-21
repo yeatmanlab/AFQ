@@ -35,17 +35,21 @@ elseif ischar(fgPaths)
         % Get the fiber group names from the afq structure and make them
         % lower case
         fgnames = AFQ_get(dtPaths,'fgnames');
+        % Format the name of the fiber group to remove spaces etc
+        name = mrvParamFormat(fgPaths);
         for jj = 1:length(fgnames)
             fgnames{jj} = mrvParamFormat(dtPaths.fgnames{jj});
         end
         % Check if the desired fiber group is in the structure and get it's
         % number if it is
-        fgnum = find(strcmpi(fgPaths,fgnames));
+        fgnum = find(strcmpi(name,fgnames));
     else
        error('Please provide an afq structure or paths to the fiber groups') 
     end
 end
 
+% Check the dtPaths. If an afq structure was passed in the get the paths
+% out of it
 if ~exist('dtPaths','var') || isempty(dtPaths)
     error('please provide paths to each subjects dt6 file');
 elseif isafq(dtPaths)
@@ -66,6 +70,8 @@ if exist('fgnum','var') && ~isempty(fgnum)
     for ii = 1:length(dtPaths)
         fgPaths{ii} = fullfile(fileparts(dtPaths{ii}),'fibers', 'MoriGroups.mat');
     end
+    % If the fiber group was not in the afq structure then assume it is the
+    % name of another fiber group within each subject's fibers directory
 elseif exist('fgnum','var') && isempty(fgnum)
     name = fgPaths;
     fgnum = 1;
@@ -118,6 +124,11 @@ for ii = 1:length(dtPaths)
     for jj=1:length(fg_sn.fibers)
         fcEnd = vertcat(fcEnd,[fg_sn.fibers{jj}(:,1) fg_sn.fibers{jj}(:,end)]');
     end
+    % Remove any coordinates that are nans. This can happen if the
+    % coordinates are outside of the MNI image
+    fc = fc(~isnan(fc(:,1)),:);
+    fcEnd = fcEnd(~isnan(fcEnd(:,1)),:);
+    
     % Transform the fiber coordinates to image indices by applying the
     % affine stored in the header of the MNI template image used for
     % normalization. This will shift, scale and rotate the coordinates if
