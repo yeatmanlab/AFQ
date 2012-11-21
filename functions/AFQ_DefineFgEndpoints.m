@@ -71,8 +71,10 @@ end
 AFQbase = AFQ_directories;
 % Template directory
 tdir = fullfile(AFQbase,'templates','labelMaps');
-% AAL template
-AAL = fullfile(tdir,'MNI_AAL.nii.gz');
+% Path to the template
+Tpath = fullfile(tdir,'MNI_AAL.nii.gz');
+% Load the template
+Timg = readFileNifti(Tpath);
 
 %% Reorient the fibers within each suplied fiber group
 % Pre allocate variables
@@ -99,11 +101,11 @@ for jj = 1:nFG
     % startpoint ROI from the AAL template and transform it
     % into the individual's native space
     if ~isempty(Lnum1)
-        [~, invDef, roiStart] = dtiCreateRoiFromMniNifti(dt6Path,AAL,invDef,0,Lnum1);
+        [~, invDef, roiStart] = dtiCreateRoiFromMniNifti(dt6Path,Timg,invDef,0,Lnum1);
     end
     % Only create an endpoint ROI if endpoints were defined
     if ~isempty(Lnum2)
-        [~,~, roiEnd]  = dtiCreateRoiFromMniNifti(dt6Path,AAL,invDef,0,Lnum2);
+        [~,~, roiEnd]  = dtiCreateRoiFromMniNifti(dt6Path,Timg,invDef,0,Lnum2);
     end
     % Make a function to compute the distance between fibers endpoints and
     % the desired start and endpoint
@@ -157,10 +159,11 @@ end
 
 return
 
-function Lnum = getLabelNumber(Lname)
-
+function [Lnum Vnum] = getLabelNumber(Lname)
+% Return the label number and volume number for the desired region
 if isempty(Lname)
     Lnum = [];
+    Vnum = [];
     return
 end
 % Get the AFQ base directory
@@ -171,6 +174,10 @@ tdir = fullfile(AFQbase,'templates','labelMaps');
 labels = readTab(fullfile(tdir,'MNI_AAL.txt'),',');
 % Get the desired label number for the startpoint
 Lnum = find(strcmpi(Lname,labels(:,2)));
+% Set the volume number to 1 and change it below if necessary. Volume 1 is
+% the AAL template
+Vnum = 1;
+
 % If the name was not in the label file check if it is a composite region
 if isempty(Lnum)
     switch(Lname)
@@ -217,7 +224,7 @@ if isempty(Lnum)
             Lnum = 91:116;
         case {'leftarcfront' 'leftslffront'}
             Lnum = [1 11 13];
-        case 'rightarcfront' 'rightslffront'}
+        case {'rightarcfront' 'rightslffront'}
             Lnum = [2 12 14];
         case 'leftarctemp'
             Lnum = [79 81 85  89];
