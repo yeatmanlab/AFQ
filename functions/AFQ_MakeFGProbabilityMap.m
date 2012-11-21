@@ -1,5 +1,4 @@
 function [fgPmap, fgEndPmap] = AFQ_MakeFGProbabilityMap(dtPaths,fgPaths,writeImage)
-% THIS FUNCTION IS STILL BEING DEVELOPED
 % Make a fiber tract probability map from fiber group segmentations
 %
 % [fgPmap, fgEndPmap] = AFQ_MakeFGProbabilityMap(dtPaths, fgPaths, [writeImage = false])
