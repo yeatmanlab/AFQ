@@ -72,7 +72,7 @@ AFQbase = AFQ_directories;
 % Template directory
 tdir = fullfile(AFQbase,'templates','labelMaps');
 % Path to the template
-Tpath = fullfile(tdir,'MNI_AAL.nii.gz');
+Tpath = fullfile(tdir,'MNI_AAL_AndMore.nii.gz');
 % Load the template
 Timg = readFileNifti(Tpath);
 
