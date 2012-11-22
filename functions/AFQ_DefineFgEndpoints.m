@@ -32,12 +32,12 @@ nFG = length(fg);
 % were defined then assume it is the moriGroups and handle apropriately
 if nFG == 20 && (~exist('startpoint','var') || isempty(startpoint)) && ...
         (~exist('endpoint','var') || isempty(endpoint))
-    startpoint = {'Thalamus_L' 'Thalamus_R' 'cerebellum' 'cerebellum' ...
+    startpoint = {'Thalamus_L' 'Thalamus_R' 'cstinferior' 'cstinferior' ...
         'Cingulum_Post_L' 'Cingulum_Post_R' 'Hippocampus_L' 'Hippocampus_R'...
         'leftoccipital' 'leftfrontal' 'leftoccipital' 'rightoccipital' ...
         'leftoccipital' 'rightoccipital' 'leftinfparietal' 'rightinfparietal'...
         'leftanttemporal' 'rightanttemporal' 'leftfrontal' 'rightfrontal'};
-    endpoint = {'leftfrontal' 'rightfrontal' 'leftmotor' 'rightmotor'}
+    endpoint = {'leftfrontal' 'rightfrontal' 'cstsuperior' 'cstsuperior'}
 end
 
 if ~exist('dt6Path','var') || isempty(dt6Path)
@@ -88,24 +88,29 @@ for jj = 1:nFG
     % Get the numbers of numbers of the regions that define the desired ROI
     % in the AAL template
     if iscell(startpoint)
-        Lnum1 = getLabelNumber(startpoint{jj});
+        [Lnum1, Vnum1] = getLabelNumber(startpoint{jj});
     else
-        Lnum1 = getLabelNumber(startpoint);
+        [Lnum1, Vnum1] = getLabelNumber(startpoint);
     end
     if iscell(endpoint)
-        Lnum2 = getLabelNumber(endpoint{jj});
+        [Lnum2, Vnum2] = getLabelNumber(endpoint{jj});
     else
-        Lnum2 = getLabelNumber(endpoint);
+        [Lnum2, Vnum2] = getLabelNumber(endpoint);
     end
+    
     % Make ROIs in native space from the template ROIs Load the desired
     % startpoint ROI from the AAL template and transform it
     % into the individual's native space
     if ~isempty(Lnum1)
-        [~, invDef, roiStart] = dtiCreateRoiFromMniNifti(dt6Path,Timg,invDef,0,Lnum1);
+        % Pull the specified volume number out of the template image
+        Tvol = extractVolume(Timg,Vnum1);
+        [~, invDef, roiStart] = dtiCreateRoiFromMniNifti(dt6Path,Tvol,invDef,0,Lnum1);
     end
     % Only create an endpoint ROI if endpoints were defined
     if ~isempty(Lnum2)
-        [~,~, roiEnd]  = dtiCreateRoiFromMniNifti(dt6Path,Timg,invDef,0,Lnum2);
+        % Pull the specified volume number out of the template image
+        Tvol = extractVolume(Timg,Vnum2);
+        [~,~, roiEnd]  = dtiCreateRoiFromMniNifti(dt6Path,Tvol,invDef,0,Lnum2);
     end
     % Make a function to compute the distance between fibers endpoints and
     % the desired start and endpoint
@@ -159,7 +164,7 @@ end
 
 return
 
-function [Lnum Vnum] = getLabelNumber(Lname)
+function [Lnum, Vnum] = getLabelNumber(Lname)
 % Return the label number and volume number for the desired region
 if isempty(Lname)
     Lnum = [];
@@ -230,10 +235,22 @@ if isempty(Lnum)
             Lnum = [79 81 85  89];
         case 'rightarctemp'
             Lnum = [80 82 86 90];
-        case 'leftcstsuperior'
-            Lnum = [1 19 23 57 59 69];
-        case 'rightcstsuperior'
-            Lnum = [2 20 24 58 60 70];
+        case 'cstinferior'
+            Lnum = 1; Vnum = 2;
+        case 'cstsuperior'
+            Lnum = 1; Vnum = 3;
     end
 end
 
+return
+
+function v = extractVolume(img, vnum)
+% Extract a given volume from a nifti image
+
+v = img;
+v.data = squeeze(img.data(:,:,:,vnum));
+v.dim = v.dim(1:3);
+v.ndim = 3;
+v.pixdim = v.pixdim(1:3);
+
+return
