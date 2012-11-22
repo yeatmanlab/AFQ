@@ -1,7 +1,7 @@
-function p = AFQ_RenderCorticalSurface(segIm, color, a, overlay, thresh, crange, cmap, newfig)
+function [p, msh] = AFQ_RenderCorticalSurface(segIm, color, a, overlay, thresh, crange, cmap, newfig)
 % Render the cortical surface from a binary segmentation image
 %
-% p = AFQ_RenderCorticalSurface(segIm, color, a, overlay, thresh, crange, cmap, newfig)
+% [p, msh] = AFQ_RenderCorticalSurface(segIm, color, a, overlay, thresh, crange, cmap, newfig)
 %
 % This function takes in a segmentation image and renders it in 3d. It is
 % optimized to look good for the cortical surface but any image will work.
@@ -32,6 +32,7 @@ function p = AFQ_RenderCorticalSurface(segIm, color, a, overlay, thresh, crange,
 % Outputs:
 % p       - Handel for the patch object that was added to the figure
 %           window. The rendering can be deleted with delete(p)
+% msh     - The mesh object of the cortical surface.
 %
 % Example:
 %
@@ -75,9 +76,9 @@ data = permute(im.data, [2 1 3]);
 % smooth the image
 data = smooth3(data,'box',5);
 % make a mesh
-tr = isosurface(data,.1);
+msh = isosurface(data,.1);
 % transform the vertices to acpc space
-tr.vertices = mrAnatXformCoords(im.qto_xyz,tr.vertices);
+msh.vertices = mrAnatXformCoords(im.qto_xyz,msh.vertices);
 
 %% Color the mesh vertices
 
@@ -85,7 +86,7 @@ tr.vertices = mrAnatXformCoords(im.qto_xyz,tr.vertices);
 % color it all a uniform color
 if exist('overlay','var') && ~isempty(overlay)
     % Interpolate overlay values at each vertex of the mesh
-    cvals = dtiGetValFromImage(overlay.data, tr.vertices, overlay.qto_ijk, 'spline');
+    cvals = dtiGetValFromImage(overlay.data, msh.vertices, overlay.qto_ijk, 'spline');
     % Find which vertices do not surpass the overlay threshold
     if exist('thresh','var') && ~isempty(thresh) && length(thresh) == 1
         subthresh = FaceVertexCData < thresh;
@@ -94,22 +95,22 @@ if exist('overlay','var') && ~isempty(overlay)
     end
     % Convert the values to rgb colors by associating each value with a
     % location on the colormap
-    tr.FaceVertexCData = vals2colormap(cvals,cmap,crange);
+    msh.FaceVertexCData = vals2colormap(cvals,cmap,crange);
     % If a threshold was passed in then reasign the default cortex color to
     % vertices that are outside the range defined by threh
     if exist('subthresh','var')
-        tr.FaceVertexCData(subthresh,:) = color;
+        msh.FaceVertexCData(subthresh,:) = color;
     end
 else
-    tr.FaceVertexCData = repmat(color,size(tr.vertices,1),1);
+    msh.FaceVertexCData = repmat(color,size(msh.vertices,1),1);
 end
 %% Render the cortical surface
 if newfig == 1
     figure;
 end
 % Use patch to render the mesh
-p = patch(tr);
-%p = patch(tr,'facecolor',color,'edgecolor','none');
+p = patch(msh);
+%p = patch(msh,'facecolor',color,'edgecolor','none');
 
 % Interpolate the coloring along the surface
 shading('interp'); 
