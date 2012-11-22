@@ -33,6 +33,15 @@ function p = AFQ_RenderCorticalSurface(segIm, color, a, overlay, thresh, crange,
 % p       - Handel for the patch object that was added to the figure
 %           window. The rendering can be deleted with delete(p)
 %
+% Example:
+%
+% % Get data
+% [~, AFQdata] = AFQ_directories; 
+% segIm = fullfile(AFQdata,'mesh','segmentation.nii.gz');
+% overlay = fullfile(AFQdata,'mesh','t1.nii.gz');
+% % Render the cortical surface colored by the T1 values at each vertex
+% p = AFQ_RenderCorticalSurface(segIm, [], [], overlay)
+%
 % Copyright Jason D. Yeatman November 2012
 
 if ~exist('color','var') || isempty(color)
