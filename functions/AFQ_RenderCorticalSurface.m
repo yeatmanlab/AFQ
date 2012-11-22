@@ -1,7 +1,7 @@
 function p = AFQ_RenderCorticalSurface(segIm, color, a, overlay, thresh, crange, cmap, newfig)
 % Render the cortical surface from a binary segmentation image
 %
-% h = AFQ_RenderCorticalSurface(segIm)
+% p = AFQ_RenderCorticalSurface(segIm, color, a, overlay, thresh, crange, cmap, newfig)
 %
 % This function takes in a segmentation image and renders it in 3d. It is
 % optimized to look good for the cortical surface but any image will work.
