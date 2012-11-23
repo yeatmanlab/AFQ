@@ -68,17 +68,28 @@ if ~exist('newfig','var') || isempty(newfig)
 end
 %% Build a mesh of the cortical surface
 
-% Load the image
-im = readFileNifti(segIm);
-% permute the image dimensions (This is because the x,y and z dimensions in
-% matlab do not correspond to left-right, anterior-posterior, up-down.
-data = permute(im.data, [2 1 3]);
-% smooth the image
-data = smooth3(data,'box',5);
-% make a mesh
-msh = isosurface(data,.1);
-% transform the vertices to acpc space
-msh.vertices = mrAnatXformCoords(im.qto_xyz,msh.vertices);
+% If a msh structure was sent in then get the triangles. If an image was
+% sent in then build a mesh
+if ismesh(segIm)
+    tr = AFQ_meshGet(segIm,'triangles');
+else
+    msh = AFQ_meshCreate(segIm);
+    tr = AFQ_meshGet(msh, 'triangles');
+end
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+% % Load the image
+% im = readFileNifti(segIm);
+% % permute the image dimensions (This is because the x,y and z dimensions in
+% % matlab do not correspond to left-right, anterior-posterior, up-down.
+% data = permute(im.data, [2 1 3]);
+% % smooth the image
+% data = smooth3(data,'box',5);
+% % make a mesh
+% msh = isosurface(data,.1);
+% % transform the vertices to acpc space
+% msh.vertices = mrAnatXformCoords(im.qto_xyz,msh.vertices);
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 
 %% Color the mesh vertices
 
@@ -86,7 +97,7 @@ msh.vertices = mrAnatXformCoords(im.qto_xyz,msh.vertices);
 % color it all a uniform color
 if exist('overlay','var') && ~isempty(overlay)
     % Interpolate overlay values at each vertex of the mesh
-    cvals = dtiGetValFromImage(overlay.data, msh.vertices, overlay.qto_ijk, 'spline');
+    cvals = dtiGetValFromImage(overlay.data, tr.vertices, overlay.qto_ijk, 'spline');
     % Find which vertices do not surpass the overlay threshold
     if exist('thresh','var') && ~isempty(thresh) && length(thresh) == 1
         subthresh = FaceVertexCData < thresh;
@@ -95,22 +106,22 @@ if exist('overlay','var') && ~isempty(overlay)
     end
     % Convert the values to rgb colors by associating each value with a
     % location on the colormap
-    msh.FaceVertexCData = vals2colormap(cvals,cmap,crange);
+    tr.FaceVertexCData = vals2colormap(cvals,cmap,crange);
     % If a threshold was passed in then reasign the default cortex color to
     % vertices that are outside the range defined by threh
     if exist('subthresh','var')
-        msh.FaceVertexCData(subthresh,:) = color;
+        tr.FaceVertexCData(subthresh,:) = color;
     end
 else
-    msh.FaceVertexCData = repmat(color,size(msh.vertices,1),1);
+    tr.FaceVertexCData = repmat(color,size(tr.vertices,1),1);
 end
 %% Render the cortical surface
 if newfig == 1
     figure;
 end
 % Use patch to render the mesh
-p = patch(msh);
-%p = patch(msh,'facecolor',color,'edgecolor','none');
+p = patch(tr);
+%p = patch(tr,'facecolor',color,'edgecolor','none');
 
 % Interpolate the coloring along the surface
 shading('interp'); 
