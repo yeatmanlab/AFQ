@@ -7,6 +7,10 @@ switch(param)
     case('vertices')
         if nargin < 3, fprintf('Please supply vertex name'); end
         if isfield(msh.vertex, varargin{1})
-           msh.vertices = msh.vertex.(varargin{1});
+           msh.tr.vertices = msh.vertex.(varargin{1});
         end  
+    case 'color'
+        if nargin < 3 && size(msh.tr.FaceVertexCData,1) == 1
+            msh.tr.FaceVertexCData = repmat(msh.tr.FaceVertexCData,size(msh.tr.vertices,1),1);
+        end
 end

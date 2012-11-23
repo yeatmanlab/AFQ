@@ -5,9 +5,13 @@ function msh = AFQ_meshCreate(im, varargin)
 % msh = AFQ_meshCreate(im, 'smooth')
 
 %% Allocate the fields of the mesh structure
-msh.vertices         = [];
-msh.faces            = [];
-msh.FaceVertexCData  = [];
+
+% mesh.tr corresponds to the structure expected by matlab's patch function.
+msh.tr.vertices         = [];
+msh.tr.faces            = [];
+msh.tr.FaceVertexCData  = [.8 .7 .6];
+% mesh.vertex saves the various vertices with different smoothing
+% parameters
 msh.vertex.origin    = [];
 msh.vertex.smooth20  = [];
 msh.vertex.smooth40  = [];
@@ -33,17 +37,17 @@ if exist('im','var') && ~isempty(im)
     % msh structure. These are the original vertices and will be used in
     % the future to referece coordinates of overlay images
     msh.vertex.origin = mrAnatXformCoords(im.qto_xyz,tr.vertices);
+    msh.tr.vertices = msh.vertex.origin;
     
     % Add the faces to the msh structure
-    msh.faces = tr.faces;
+    msh.tr.faces = tr.faces;
     
     % Smooth the vertices and add them to the structure. Start with 20
     % smoothing iterations and work our way up. The smooth mesh function
     % will act on the vertices stored in msh.vertices. So after each
     % smoothing iteration we add the new vertices to this field and the
     % perform the operation again
-    msh.vertices = msh.vertex.origin;
-    tmp = smoothpatch(msh, [], 20);
+    tmp = smoothpatch(msh.tr, [], 20);
     msh.vertex.smooth20 = tmp.vertices; 
     
     % Only continue smoothing if desired
@@ -58,6 +62,8 @@ if exist('im','var') && ~isempty(im)
     % Set the default vertices to render as the vertices with 20 smoothing
     % iterations
     msh = AFQ_meshSet(msh, 'vertices', 'smooth20');
+    % Set the mesh color
+    msh = AFQ_meshSet(msh, 'color');
     
     end
 end
