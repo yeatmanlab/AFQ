@@ -1,7 +1,7 @@
-function [p, msh] = AFQ_RenderCorticalSurface(segIm, color, a, overlay, thresh, crange, cmap, newfig)
+function [p, msh] = AFQ_RenderCorticalSurface(cortex, varargin)
 % Render the cortical surface from a binary segmentation image
 %
-% [p, msh] = AFQ_RenderCorticalSurface(segIm, color, a, overlay, thresh, crange, cmap, newfig)
+% [p, msh] = AFQ_RenderCorticalSurface(cortex, color, a, overlay, thresh, crange, cmap, newfig)
 %
 % This function takes in a segmentation image and renders it in 3d. It is
 % optimized to look good for the cortical surface but any image will work.
@@ -9,10 +9,11 @@ function [p, msh] = AFQ_RenderCorticalSurface(segIm, color, a, overlay, thresh, 
 % the cortex to a rendering of fiber groups and adjust it's transparency
 %
 % Inputs:
-% segIm   - A path to a nifti image to render. It must be a binary mask
+% cortex  - A msh, mesh structure (see AFQ_meshCreate) or a path to a 
+%           nifti image to render. It must be a binary mask.
 % color   - RGB value for the surface of the rendering. Default is "brain"
 %           color
-% a       - The transparency of the surface (alpha). 0 is completely
+% alpha   - The transparency of the surface (alpha). 0 is completely
 %           transparent and 1 is completely opaque
 % overlay - Another image to use to color the surface (for example an fMRI
 %           contrast).
@@ -38,48 +39,37 @@ function [p, msh] = AFQ_RenderCorticalSurface(segIm, color, a, overlay, thresh, 
 %
 % % Get data
 % [~, AFQdata] = AFQ_directories; 
-% segIm = fullfile(AFQdata,'mesh','segmentation.nii.gz');
+% cortex = fullfile(AFQdata,'mesh','segmentation.nii.gz');
 % overlay = fullfile(AFQdata,'mesh','t1.nii.gz');
 % % Render the cortical surface colored by the T1 values at each vertex
-% p = AFQ_RenderCorticalSurface(segIm, [], [], overlay)
+% p = AFQ_RenderCorticalSurface(cortex, [], [], overlay)
 %
 % Copyright Jason D. Yeatman November 2012
 
-if ~exist('color','var') || isempty(color)
-    color = [.8 .7 .6];
+% Create a parameters structure from any parameters that were defined
+params = CreateParamsStruct(varargin);
+
+if ~isfield(params,'alpha')
+    params.alpha = 1;
 end
-if ~exist('a','var') || isempty(a)
-    a = 1;
-end
-% Read the overlay image if a path was provided
-if exist('overlay','var') && ~isempty(overlay) && ischar(overlay)
-    overlay = readFileNifti(overlay);
-end   
-% Default color map is jet
-if ~exist('cmap','var') || isempty(cmap)
-    cmap = 'jet';
-end
-% Default color range is defined by the values in the overlay
-if ~exist('crange','var') || isempty(crange)
-    crange = [];
-end
-if ~exist('newfig','var') || isempty(newfig)
-    newfig = 1;
+
+if ~isfield(params,'newfig')
+    params.newfig = 1;
 end
 %% Build a mesh of the cortical surface
 
 % If a msh structure was sent in then get the triangles. If an image was
-% sent in then build a mesh
-if ismesh(segIm)
-    tr = AFQ_meshGet(segIm,'triangles');
+% sent in then build a mesh with the defined parameters
+if ismesh(cortex)
+    tr = AFQ_meshGet(cortex,'triangles');
 else
-    msh = AFQ_meshCreate(segIm);
+    msh = AFQ_meshCreate(cortex, params);
     tr = AFQ_meshGet(msh, 'triangles');
 end
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 % % Load the image
-% im = readFileNifti(segIm);
+% im = readFileNifti(cortex);
 % % permute the image dimensions (This is because the x,y and z dimensions in
 % % matlab do not correspond to left-right, anterior-posterior, up-down.
 % data = permute(im.data, [2 1 3]);
@@ -91,32 +81,8 @@ end
 % msh.vertices = mrAnatXformCoords(im.qto_xyz,msh.vertices);
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 
-%% Color the mesh vertices
-
-% If an overlay image was provided use that to color the mesh, otherwise
-% color it all a uniform color
-if exist('overlay','var') && ~isempty(overlay)
-    % Interpolate overlay values at each vertex of the mesh
-    cvals = dtiGetValFromImage(overlay.data, tr.vertices, overlay.qto_ijk, 'spline');
-    % Find which vertices do not surpass the overlay threshold
-    if exist('thresh','var') && ~isempty(thresh) && length(thresh) == 1
-        subthresh = FaceVertexCData < thresh;
-    elseif exist('thresh','var') && ~isempty(thresh) && length(thresh) == 2
-        subthresh = FaceVertexCData < thresh(1) || FaceVertexCData > thresh(2);
-    end
-    % Convert the values to rgb colors by associating each value with a
-    % location on the colormap
-    tr.FaceVertexCData = vals2colormap(cvals,cmap,crange);
-    % If a threshold was passed in then reasign the default cortex color to
-    % vertices that are outside the range defined by threh
-    if exist('subthresh','var')
-        tr.FaceVertexCData(subthresh,:) = color;
-    end
-else
-    tr.FaceVertexCData = repmat(color,size(tr.vertices,1),1);
-end
 %% Render the cortical surface
-if newfig == 1
+if params.newfig == 1
     figure;
 end
 % Use patch to render the mesh
@@ -128,13 +94,13 @@ shading('interp');
 % Set the type of lighting
 lighting('gouraud');
 % Set the alpha
-alpha(p,a);
+alpha(p,params.alpha);
 % Set axis size
 axis('image');axis('vis3d');
 % Set lighiting options of the cortex
 set(p,'specularstrength',.5,'diffusestrength',.75);
 
 % If it was a new figure window add a light to it
-if newfig == 1
+if params.newfig == 1
     camlight('right');
 end
