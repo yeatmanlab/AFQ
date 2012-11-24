@@ -38,20 +38,26 @@ switch(param)
         if size(AFQ_meshGet(msh,'FaceVertexCData'),1) == 1
             msh.tr.FaceVertexCData = repmat(AFQ_meshGet(msh,'FaceVertexCData'),size(msh.tr.vertices,1),1);
         end
-    case 'vals'
+    case {'vals' 'val'}
         if nargin < 4
             fprintf('Please provide the value name and associated vector of values\n')
-        elseif ischar(varargin{3}) && isvector(varargin{4})
-            msh.vals.(varargin{3}) = varargin{4};
+        elseif ischar(varargin{1}) && isvector(varargin{2})
+            msh.vals.(varargin{1}) = varargin{2};
         else
-            fprintf('Correct call: msh = AFQ_meshSet(msh,''val'',''valname'',values\n')
+            fprintf('Correct call: msh = AFQ_meshSet(msh,''vals'',''valname'',values)\n');
         end
     case 'colors'
         if nargin < 4
-            fprintf('Please provide the color name and associated vector of color values\n')
-        elseif ischar(varargin{3}) && isvector(varargin{4})
-            msh.colors.(varargin{3}) = varargin{4};
+            fprintf('Please provide the color name and associated vector of color values)\n')
+        elseif ischar(varargin{1}) && ismatrix(varargin{2}) && size(varargin{2},2) == 3;
+            msh.colors.(varargin{1}) = varargin{2};
         else
-            fprintf('Correct call: msh = AFQ_meshSet(msh,''val'',''valname'',values\n')
+            fprintf('Correct call: msh = AFQ_meshSet(msh,''colors'',''valname'',values)\n');
+        end
+    case {'basecolor' 'color'}
+        if length(varargin) == 1 && size(varargin{1},2) == 3
+            msh.colors.base = varargin{1};
+        else 
+            fprintf('Correct call: msh = AFQ_meshSet(msh,''basecolor'',rgbValue)\n');
         end
 end

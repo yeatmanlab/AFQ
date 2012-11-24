@@ -7,7 +7,7 @@ function msh = AFQ_meshCreate(im, varargin)
 %% Allocate the fields of the mesh structure
 
 % mesh.tr corresponds to the structure expected by matlab's patch function.
-msh.type                = 'afq mesh v1';
+msh.type                = 'afq mesh version 1';
 msh.tr.vertices         = [];
 msh.tr.faces            = [];
 msh.tr.FaceVertexCData  = [.8 .7 .6];
@@ -19,6 +19,13 @@ msh.vertex.smooth20  = [];
 msh.vals             = [];
 % Colors associated with mesh vertices
 msh.colors.base      = [.8 .7 .6]; % Base color of mesh
+
+%% Colect parameters from varargin and put them in a structure
+if length(varargin) == 1 && isparams(varargin{1})
+    params = varargin{1};
+else
+    params = CreateParamsStruct(varargin);
+end
 
 %% Build a mesh if an image was passed in
 if exist('im','var') && ~isempty(im)
@@ -63,11 +70,29 @@ if exist('im','var') && ~isempty(im)
     
     % If an overlay image was provided use that to color the mesh, otherwise
     % color it all a uniform color
-    if exist('overlay','var') && ~isempty(overlay)
+    if isfield(params,'overlay') && ~isempty(params.overlay)
+        % Load the image if overlay is a path
+        if ischar(params.overlay)
+            overlayIm = readFileNifti(params.overlay);
+        else
+            overlayIm = params.overlay;
+        end
+        % Default color map is jet
+        if ~isfield(params,'cmap')
+            cmap = 'jet';
+        else
+            cmap = params.cmap;
+        end
+        % Default color range is defined by the values in the overlay
+        if ~isfield(params,'crange')
+            crange = [];
+        else 
+            crange = params.crange;
+        end
         % Interpolate overlay values at each vertex of the mesh
-        cvals = dtiGetValFromImage(overlay.data, AFQ_meshGet(msh, 'vertexorigin'), overlay.qto_ijk, 'spline');
+        cvals = dtiGetValFromImage(overlayIm.data, AFQ_meshGet(msh, 'vertexorigin'), overlayIm.qto_ijk, 'spline');
         % Remove file extensions to get the name of the image
-        valname = prefix(prefix(overlay.fname))
+        valname = prefix(prefix(overlayIm.fname));
         % Set these values to the vals field of the msh structure
         msh = AFQ_meshSet(msh, 'vals', valname, cvals);
         % Find which vertices do not surpass the overlay threshold
@@ -86,7 +111,10 @@ if exist('im','var') && ~isempty(im)
         end
         % Add these colors to the msh structure
         msh = AFQ_meshSet(msh, 'colors', valname, FaceVertexCData);
-
+        
+    elseif isfield(params,'color')
+        % Or if a color was defined for the mesh set that as the base color
+        msh = AFQ_meshSet(msh,'basecolor', params.color);
     end
     
     %% Set the default vertices and color for mesh rendering
@@ -94,13 +122,12 @@ if exist('im','var') && ~isempty(im)
     % By default we render with 20 smoothing iterations
     msh = AFQ_meshSet(msh, 'vertices', 'smooth20');
     % Set the color to be that of the overlay
-    if exist('overaly','var') && ~isempty(overlay)
+    if exist('overlayIm','var') && ~isempty(overlayIm)
         msh = AFQ_meshSet(msh, 'FaceVertexCData', valname);
     else
         % If no overlay was sent in the set the default color to every
         % vertex
         msh = AFQ_meshSet(msh, 'FaceVertexCData', 'base');
     end
-    
     
 end

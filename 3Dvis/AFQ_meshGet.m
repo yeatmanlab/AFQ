@@ -1,17 +1,18 @@
 function val = AFQ_meshGet(msh, param, varargin)
 % Get parameters from an AFQ msh, mesh structure
 
+param = mrvParamFormat(param);
 
 switch(param)
     case {'triangles' 'tr'}
         val = msh.tr;
-    case 'FaceVertexCData'
+    case 'facevertexcdata'
         val = msh.tr.FaceVertexCData;
     case {'vertexorigin' 'originalvertices'}
         val = msh.vertex.origin;
     case 'basecolor'
         val = msh.colors.base;
     otherwise
-        fprint('\nNot an AFQ msh, mesh parameter')
+        fprintf('\nNot an AFQ msh, mesh parameter');
        
 end
