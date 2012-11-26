@@ -4,7 +4,7 @@ function msh = AFQ_meshCreate(im, varargin)
 % msh = AFQ_meshCreate(im)
 % msh = AFQ_meshCreate(im ,'boxfilter', 5)
 % msh = AFQ_meshCreate(im, 'smooth', [20 40 80 200])
-% msh = AFQ_meshCreate(im, 'overlay', overlayImage)
+% msh = AFQ_meshCreate(im, 'overlay', overlayImage, 'thresh', [min max], 'crange', [min max])
 % msh = AFQ_meshCreate(im, 'color', [.8 .7 .6])
 
 %% Allocate the fields of the mesh structure
@@ -15,10 +15,14 @@ msh.image               = [];
 msh.tr.vertices         = [];
 msh.tr.faces            = [];
 msh.tr.FaceVertexCData  = [.8 .7 .6];
-% mesh.vertex saves the various vertices with different smoothing
+% msh.vertex saves the various vertices with different smoothing
 % parameters
 msh.vertex.origin    = [];
 msh.vertex.smooth20  = [];
+% msh.face saves the faces corresponding to each set of vertices. These are
+% generally the same
+msh.face.origin      = [];
+msh.face.smooth20    = 'origin';
 % Values associated with mesh vertices
 msh.vals             = [];
 % Colors associated with mesh vertices
@@ -47,14 +51,14 @@ if exist('im','var') && ~isempty(im)
     % Build the mesh
     tr = isosurface(data,.1);
     
-    % Transform the vertices of the mesh to acpc space and add them to our
-    % msh structure. These are the original vertices and will be used in
-    % the future to referece coordinates of overlay images
-    msh.vertex.origin = mrAnatXformCoords(im.qto_xyz,tr.vertices);
-    msh.tr.vertices = msh.vertex.origin;
+    % Transform the vertices of the mesh to acpc space. 
+    tr.vertices = mrAnatXformCoords(im.qto_xyz,tr.vertices);
     
-    % Add the faces to the msh structure
-    msh.tr.faces = tr.faces;
+    % Add these vertices and faces to the mesh structure. These are the
+    % original vertices and will be used in the future to referece
+    % coordinates of overlay images
+    msh = AFQ_meshSet(msh,'vertex','origin',tr.vertices,tr.faces);
+    msh = AFQ_meshSet(msh, 'vertices','origin');
     
     %% Smooth the mesh
     
@@ -68,28 +72,37 @@ if exist('im','var') && ~isempty(im)
         params.smooth = 20;
     end
     numiter = 0;
+    % Get the triangle mesh so we can start smoothing it
+    tmp = AFQ_meshGet(msh,'triangles');
     for ii = params.smooth
-        % keep track of the number of iterations that have already been
+        % Keep track of the number of iterations that have already been
         % done so we don't have to recompute what was already finished
         numiter = ii - numiter;
+        % Perform the smoothing
         tmp = smoothpatch(tmp, [], numiter);
-        eval(sprintf('msh.vertex.smooth%d = tmp.vertices;',ii))
+        % Add these data to the mesh structure in a properly named field
+        name = sprintf('smooth%d', ii);
+        msh = AFQ_meshSet(msh, 'vertex', name, tmp.vertices)
     end
     
     %% Create a mesh from a smoothed version of the segmentation image
-    if isfield(params, 'boxfilter') || ~iesmpty(params.boxfilter)
+    if isfield(params, 'boxfilter') && ~isempty(params.boxfilter)
         fname = sprintf('box%d',params.boxfilter);
         % smooth the image with the desired filter size
         data = smooth3(data,'box',params.boxfilter);
         % make a mesh
         tr = isosurface(data,.1);
         % transform the vertices to acpc space
-        tr.vertices = mrAnatXformCoords(im.qto_xyz,msh.vertices);
+        tr.vertices = mrAnatXformCoords(im.qto_xyz, tr.vertices);
+        % smooth the vertices with 20 smoothing iterations
+        tr = smoothpatch(tr,[],20);
         % Find the correspoding vertices in the unfiltered image. This is
         % essential for propperly mapping data to the surface of this mesh
-        tr.map2origin = nearpoints(tr.vertices, msh.vertex.origin);
+        tr.map2origin = nearpoints(tr.vertices', msh.vertex.origin');
         % Save this within the mesh structure
-        AFQ_meshSet(msh, 'filter',fname, tr)     
+        msh = AFQ_meshSet(msh, 'filtered',fname, tr); 
+        % Set these to be the vertices that are rendered
+        msh = AFQ_meshSet(msh, 'vertices', ['filtered' fname]);
     end
     
     %% Color the mesh vertices
@@ -100,61 +113,64 @@ if exist('im','var') && ~isempty(im)
         msh = AFQ_meshSet(msh,'basecolor', params.color);
     end
     
-    % If an overlay image was provided use that to color the mesh, otherwise
-    % color it all a uniform color
+    % If an overlay image was provided then use that to color the mesh
     if isfield(params,'overlay') && ~isempty(params.overlay)
-        % Load the image if overlay is a path
-        if ischar(params.overlay)
-            overlayIm = readFileNifti(params.overlay);
-        else
-            overlayIm = params.overlay;
-        end
-        % Default color map is jet
-        if ~isfield(params,'cmap')
-            cmap = 'jet';
-        else
-            cmap = params.cmap;
-        end
-        % Default color range is defined by the values in the overlay
-        if ~isfield(params,'crange')
-            crange = [];
-        else 
-            crange = params.crange;
-        end
-        % Interpolate overlay values at each vertex of the mesh
-        cvals = dtiGetValFromImage(overlayIm.data, AFQ_meshGet(msh, 'vertexorigin'), overlayIm.qto_ijk, 'spline');
-        % Remove file extensions to get the name of the image
-        valname = prefix(prefix(overlayIm.fname));
-        % Set these values to the vals field of the msh structure
-        msh = AFQ_meshSet(msh, 'vals', valname, cvals);
-        % Find which vertices do not surpass the overlay threshold
-        if exist('thresh','var') && ~isempty(thresh) && length(thresh) == 1
-            subthresh = cvals < thresh;
-        elseif exist('thresh','var') && ~isempty(thresh) && length(thresh) == 2
-            subthresh = cvals < thresh(1) || cvals > thresh(2);
-        end
-        % Convert the values to rgb colors by associating each value with a
-        % location on the colormap
-        FaceVertexCData = vals2colormap(cvals,cmap,crange);
-        % If a threshold was passed in then reasign the default cortex color to
-        % vertices that are outside the range defined by threh
-        if exist('subthresh','var')
-            FaceVertexCData(subthresh,:) = AFQ_meshGet(msh, 'basecolor');
-        end
-        % Add these colors to the msh structure
-        msh = AFQ_meshSet(msh, 'colors', valname, FaceVertexCData);
+        msh = AFQ_meshColor(msh, params);
     end
+    
+%     % If an overlay image was provided use that to color the mesh, otherwise
+%     % color it all a uniform color
+%     if isfield(params,'overlay') && ~isempty(params.overlay)
+%         % Load the image if overlay is a path
+%         if ischar(params.overlay)
+%             overlayIm = readFileNifti(params.overlay);
+%         else
+%             overlayIm = params.overlay;
+%         end
+%         % Default color map is jet
+%         if ~isfield(params,'cmap')
+%             cmap = 'jet';
+%         else
+%             cmap = params.cmap;
+%         end
+%         % Default color range is defined by the values in the overlay
+%         if ~isfield(params,'crange')
+%             crange = [];
+%         else 
+%             crange = params.crange;
+%         end
+%         % Interpolate overlay values at each vertex of the mesh
+%         cvals = dtiGetValFromImage(overlayIm.data, AFQ_meshGet(msh, 'vertexorigin'), overlayIm.qto_ijk, 'spline');
+%         % Remove file extensions to get the name of the image
+%         valname = prefix(prefix(overlayIm.fname));
+%         % Set these values to the vals field of the msh structure
+%         msh = AFQ_meshSet(msh, 'vals', valname, cvals);
+%         % Find which vertices do not surpass the overlay threshold
+%         if exist('thresh','var') && ~isempty(thresh) && length(thresh) == 1
+%             subthresh = cvals < thresh;
+%         elseif exist('thresh','var') && ~isempty(thresh) && length(thresh) == 2
+%             subthresh = cvals < thresh(1) || cvals > thresh(2);
+%         end
+%         % Convert the values to rgb colors by associating each value with a
+%         % location on the colormap
+%         FaceVertexCData = vals2colormap(cvals,cmap,crange);
+%         % If a threshold was passed in then reasign the default cortex color to
+%         % vertices that are outside the range defined by threh
+%         if exist('subthresh','var')
+%             FaceVertexCData(subthresh,:) = AFQ_meshGet(msh, 'basecolor');
+%         end
+%         % Add these colors to the msh structure
+%         msh = AFQ_meshSet(msh, 'colors', valname, FaceVertexCData);
+%     end
     
     %% Set the default vertices and color for mesh rendering
     
     % By default we render with 20 smoothing iterations
-    msh = AFQ_meshSet(msh, 'vertices', 'smooth20');
-    % Set the color to be that of the overlay
-    if exist('overlayIm','var') && ~isempty(overlayIm)
-        msh = AFQ_meshSet(msh, 'FaceVertexCData', valname);
-    else
-        % If no overlay was sent in the set the default color to every
-        % vertex
+    if ~isfield(params, 'boxfilter') || isempty(params.boxfilter)
+        msh = AFQ_meshSet(msh, 'vertices', 'smooth20');
+    end
+    % If no overlay was sent in then color each vertex the base color
+    if ~isfield(params,'overlay') || isempty(params.overlay) 
         msh = AFQ_meshSet(msh, 'FaceVertexCData', 'base');
     end
     
