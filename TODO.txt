@@ -1,0 +1,2 @@
+1. Switch coloring properly when is switched
+2. AFQ_DefineFgEndpoints
