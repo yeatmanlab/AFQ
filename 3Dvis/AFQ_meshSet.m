@@ -1,14 +1,14 @@
 function msh = AFQ_meshSet(msh, param, varargin)
 % Set fields in the AFQ msh mesh structure
 %
-%
+% msh = AFQ_meshSet(msh, 'filter', 'box5', tr)
 
 switch(param)
     case('vertices')
         % Set which vertices to render
         if nargin < 3, fprintf('Please supply vertex name'); end
         % If that vertex type is a field then set it to tr.vertices. If
-        % it's not a field but can be computed the compute it and add it to
+        % it's not a field but can be computed then compute it and add it to
         % tr.vertices
         if isfield(msh.vertex, varargin{1})
             msh.tr.vertices = msh.vertex.(varargin{1});
@@ -60,4 +60,6 @@ switch(param)
         else 
             fprintf('Correct call: msh = AFQ_meshSet(msh,''basecolor'',rgbValue)\n');
         end
+    case 'filter'
+        msh.filter.(varargin{1}) = varargin{2};
 end

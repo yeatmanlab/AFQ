@@ -2,12 +2,16 @@ function msh = AFQ_meshCreate(im, varargin)
 % Create a mesh structure and build a 3d mesh from a nifti image
 %
 % msh = AFQ_meshCreate(im)
-% msh = AFQ_meshCreate(im, 'smooth')
+% msh = AFQ_meshCreate(im ,'boxfilter', 5)
+% msh = AFQ_meshCreate(im, 'smooth', [20 40 80 200])
+% msh = AFQ_meshCreate(im, 'overlay', overlayImage)
+% msh = AFQ_meshCreate(im, 'color', [.8 .7 .6])
 
 %% Allocate the fields of the mesh structure
 
 % mesh.tr corresponds to the structure expected by matlab's patch function.
 msh.type                = 'afq mesh version 1';
+msh.image               = [];
 msh.tr.vertices         = [];
 msh.tr.faces            = [];
 msh.tr.FaceVertexCData  = [.8 .7 .6];
@@ -33,6 +37,9 @@ if exist('im','var') && ~isempty(im)
     % Load the image
     if ischar(im), im = readFileNifti(im); end
     
+    % Save the image path in the mesh structure
+    msh.image = im.fname;
+    
     % permute the image dimensions (This is because the x,y and z dimensions in
     % matlab do not correspond to left-right, anterior-posterior, up-down.
     data = permute(im.data, [2 1 3]);
@@ -49,24 +56,49 @@ if exist('im','var') && ~isempty(im)
     % Add the faces to the msh structure
     msh.tr.faces = tr.faces;
     
+    %% Smooth the mesh
+    
     % Smooth the vertices and add them to the structure. Start with 20
     % smoothing iterations and work our way up. The smooth mesh function
     % will act on the vertices stored in msh.vertices. So after each
     % smoothing iteration we add the new vertices to this field and the
-    % perform the operation again
-    tmp = smoothpatch(msh.tr, [], 20);
-    msh.vertex.smooth20 = tmp.vertices;
+    % perform the operation again.
+    if ~isfield(params,'smooth') || isempty(params.smooth)
+        % 20 smoothing iterations is the default
+        params.smooth = 20;
+    end
+    numiter = 0;
+    for ii = params.smooth
+        % keep track of the number of iterations that have already been
+        % done so we don't have to recompute what was already finished
+        numiter = ii - numiter;
+        tmp = smoothpatch(tmp, [], numiter);
+        eval(sprintf('msh.vertex.smooth%d = tmp.vertices;',ii))
+    end
     
-    % Only continue smoothing if desired
-    sm = find(strcmpi('smooth',varargin));
-    if ~isempty(sm)
-        for ii = [20 40 80 160 320]
-            tmp = smoothpatch(tmp, [], ii);
-            eval(sprintf('msh.vertex.smooth%d = tmp.vertices;',ii*2))
-        end
+    %% Create a mesh from a smoothed version of the segmentation image
+    if isfield(params, 'boxfilter') || ~iesmpty(params.boxfilter)
+        fname = sprintf('box%d',params.boxfilter);
+        % smooth the image with the desired filter size
+        data = smooth3(data,'box',params.boxfilter);
+        % make a mesh
+        tr = isosurface(data,.1);
+        % transform the vertices to acpc space
+        tr.vertices = mrAnatXformCoords(im.qto_xyz,msh.vertices);
+        % Find the correspoding vertices in the unfiltered image. This is
+        % essential for propperly mapping data to the surface of this mesh
+        tr.map2origin = nearpoints(tr.vertices, msh.vertex.origin);
+        % Save this within the mesh structure
+        AFQ_meshSet(msh, 'filter',fname, tr)     
     end
     
     %% Color the mesh vertices
+    
+    % Set the base color of the mesh if it was defined
+    if isfield(params,'color')
+        % Or if a color was defined for the mesh set that as the base color
+        msh = AFQ_meshSet(msh,'basecolor', params.color);
+    end
     
     % If an overlay image was provided use that to color the mesh, otherwise
     % color it all a uniform color
@@ -111,10 +143,6 @@ if exist('im','var') && ~isempty(im)
         end
         % Add these colors to the msh structure
         msh = AFQ_meshSet(msh, 'colors', valname, FaceVertexCData);
-        
-    elseif isfield(params,'color')
-        % Or if a color was defined for the mesh set that as the base color
-        msh = AFQ_meshSet(msh,'basecolor', params.color);
     end
     
     %% Set the default vertices and color for mesh rendering
