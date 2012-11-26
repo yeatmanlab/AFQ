@@ -118,51 +118,6 @@ if exist('im','var') && ~isempty(im)
         msh = AFQ_meshColor(msh, params);
     end
     
-%     % If an overlay image was provided use that to color the mesh, otherwise
-%     % color it all a uniform color
-%     if isfield(params,'overlay') && ~isempty(params.overlay)
-%         % Load the image if overlay is a path
-%         if ischar(params.overlay)
-%             overlayIm = readFileNifti(params.overlay);
-%         else
-%             overlayIm = params.overlay;
-%         end
-%         % Default color map is jet
-%         if ~isfield(params,'cmap')
-%             cmap = 'jet';
-%         else
-%             cmap = params.cmap;
-%         end
-%         % Default color range is defined by the values in the overlay
-%         if ~isfield(params,'crange')
-%             crange = [];
-%         else 
-%             crange = params.crange;
-%         end
-%         % Interpolate overlay values at each vertex of the mesh
-%         cvals = dtiGetValFromImage(overlayIm.data, AFQ_meshGet(msh, 'vertexorigin'), overlayIm.qto_ijk, 'spline');
-%         % Remove file extensions to get the name of the image
-%         valname = prefix(prefix(overlayIm.fname));
-%         % Set these values to the vals field of the msh structure
-%         msh = AFQ_meshSet(msh, 'vals', valname, cvals);
-%         % Find which vertices do not surpass the overlay threshold
-%         if exist('thresh','var') && ~isempty(thresh) && length(thresh) == 1
-%             subthresh = cvals < thresh;
-%         elseif exist('thresh','var') && ~isempty(thresh) && length(thresh) == 2
-%             subthresh = cvals < thresh(1) || cvals > thresh(2);
-%         end
-%         % Convert the values to rgb colors by associating each value with a
-%         % location on the colormap
-%         FaceVertexCData = vals2colormap(cvals,cmap,crange);
-%         % If a threshold was passed in then reasign the default cortex color to
-%         % vertices that are outside the range defined by threh
-%         if exist('subthresh','var')
-%             FaceVertexCData(subthresh,:) = AFQ_meshGet(msh, 'basecolor');
-%         end
-%         % Add these colors to the msh structure
-%         msh = AFQ_meshSet(msh, 'colors', valname, FaceVertexCData);
-%     end
-    
     %% Set the default vertices and color for mesh rendering
     
     % By default we render with 20 smoothing iterations
