@@ -82,7 +82,7 @@ if exist('im','var') && ~isempty(im)
         tmp = smoothpatch(tmp, [], numiter);
         % Add these data to the mesh structure in a properly named field
         name = sprintf('smooth%d', ii);
-        msh = AFQ_meshSet(msh, 'vertex', name, tmp.vertices)
+        msh = AFQ_meshSet(msh, 'vertex', name, tmp.vertices);
     end
     
     %% Create a mesh from a smoothed version of the segmentation image

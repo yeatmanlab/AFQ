@@ -44,11 +44,11 @@ function [p, msh] = AFQ_RenderCorticalSurface(cortex, varargin)
 %           overlay image that get mapped to any mesh vertex.
 %           im = 'Left_Arcuate_Endpoints.nii.gz'
 %           AFQ_RenderCorticalSurface('segmentation.nii.gz', ...
-%           'overlay', im, 'thresh', 0.01, 'crange', [.02 .04])
+%           'overlay', im, 'thresh', 0.01, 'crange', [.02 .2])
 % cmap    - Name of the colormap to use. For example 'jet' or 'autumn'
 %           im = 'Left_Arcuate_Endpoints.nii.gz'
 %           AFQ_RenderCorticalSurface('segmentation.nii.gz', ...
-%           'overlay',im, 'thresh',0.01, 'crange',[.02 .04], 'cmap','hot')
+%           'overlay',im, 'thresh',0.01, 'crange',[.02 .2], 'cmap','hot')
 % newfig  - Whether or not to open a new figure window
 %           AFQ_RenderCorticalSurface('segmentation.nii.gz','newfig',true);
 %
