@@ -2,10 +2,47 @@ function msh = AFQ_meshCreate(im, varargin)
 % Create a mesh structure and build a 3d mesh from a nifti image
 %
 % msh = AFQ_meshCreate(im)
+%
+% AFQ_meshCreat will create the AFQ msh mesh structure from a nifti image.
+% The variable im can either be a path to a nifti image or a nifti image
+% file. If no image is passed in then an empty strucure will be returned.
+% The mesh can then be rendered with AFQ_RenderCorticalSurface. There are a
+% number of parameters that can be set with the form of:
+% msh = AFQ_meshCreate(im, 'param', value)
+%
+% Examples:
+%
+% % Create a mesh structure where the cortex is colored a solid color (other
+% % than "brain" color)
+% msh = AFQ_meshCreate(im, 'color', [color = [.8 .7 .6]])
+%
+% % Create a mesh structure with a set of vertices that are constructed from 
+% % a filtered version of the image ('box' is the only implimented filter).
+% % This will create a cortical surface that looks fuller -- like the gray 
+% % matter is thicker 
 % msh = AFQ_meshCreate(im ,'boxfilter', 5)
+% 
+% % Create a mesh structure and compute vertices with various numbers of
+% % smoothing iterations. More smoothing iterations makes a more inflated,
+% % less gyrified cortical surface. Set of vertices with all of the listed
+% % numbers of smoothing iterations will be saved in the mesh structure. This
+% % way you can render the mesh with a different amount of smoothing by
+% % simply setting those to be the default vertices with a call like:
+% % AFQ_meshSet(msh, 'vertices', 200)
 % msh = AFQ_meshCreate(im, 'smooth', [20 40 80 200])
-% msh = AFQ_meshCreate(im, 'overlay', overlayImage, 'thresh', [min max], 'crange', [min max])
-% msh = AFQ_meshCreate(im, 'color', [.8 .7 .6])
+% 
+% % Create a mesh structure with a set of mesh vertice colors computed from
+% % an overlay image. The coloring can be computed with various thresholds
+% % ('thresh') meaning that values below the defined min and above the
+% % defined max will be colored "cortex" color and not heatmapped based on
+% % the overlay image. The color range ('crange') can also be set if you want
+% % to have the heatmap saturate below the maximum value or above the minimum
+% % value. You can also change the colormap ('cmap'). 
+% % The default is jet (see doc colormap).
+% msh = AFQ_meshCreate(im, 'overlay', overlayImage, 'thresh', [min max],...
+% 'crange', [min max], 'cmap', [cmap = 'jet'])
+%
+% Copyright Jason D. Yeatman November 2012
 
 %% Allocate the fields of the mesh structure
 
