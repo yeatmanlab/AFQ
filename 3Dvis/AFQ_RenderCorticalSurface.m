@@ -67,20 +67,6 @@ else
     tr = AFQ_meshGet(msh, 'triangles');
 end
 
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
-% % Load the image
-% im = readFileNifti(cortex);
-% % permute the image dimensions (This is because the x,y and z dimensions in
-% % matlab do not correspond to left-right, anterior-posterior, up-down.
-% data = permute(im.data, [2 1 3]);
-% % smooth the image
-% data = smooth3(data,'box',5);
-% % make a mesh
-% msh = isosurface(data,.1);
-% % transform the vertices to acpc space
-% msh.vertices = mrAnatXformCoords(im.qto_xyz,msh.vertices);
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
-
 %% Render the cortical surface
 if params.newfig == 1
     figure;
