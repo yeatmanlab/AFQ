@@ -1,34 +1,56 @@
 function [p, msh] = AFQ_RenderCorticalSurface(cortex, varargin)
 % Render the cortical surface from a binary segmentation image
 %
-% [p, msh] = AFQ_RenderCorticalSurface(cortex, color, a, overlay, thresh, crange, cmap, newfig)
+% [p, msh] = AFQ_RenderCorticalSurface(cortex, 'param', value ...)
 %
 % This function takes in a segmentation image and renders it in 3d. It is
 % optimized to look good for the cortical surface but any image will work.
 % The rendering will be added to the current figure window so you can add
-% the cortex to a rendering of fiber groups and adjust it's transparency
+% the cortex to a rendering of fiber groups and adjust it's transparency.
+% The only input that is required is a segmentation image. There are also a
+% number of parameters that can be set in the form of 'parameter', value,
+% combinations. All the examples below will run if the AFQ mesh directory
+% is your working directory: 
+% [~, AFQdata] = AFQ_directories; cd(fullfile(AFQdata,'mesh'))
 %
 % Inputs:
 % cortex  - A msh, mesh structure (see AFQ_meshCreate) or a path to a 
 %           nifti image to render. It must be a binary mask.
+%           AFQ_RenderCorticalSurface('segmentation.nii.gz');
 % color   - RGB value for the surface of the rendering. Default is "brain"
-%           color
+%           color. For example to render the cortex in orange:
+%           AFQ_RenderCorticalSurface('segmentation.nii.gz', 'color', [1, 0.5, 0])
 % alpha   - The transparency of the surface (alpha). 0 is completely
-%           transparent and 1 is completely opaque
+%           transparent and 1 is completely opaque. For example to render
+%           the cortex half way transparent:
+%           AFQ_RenderCorticalSurface('segmentation.nii.gz', 'alpha', 0.5)
 % overlay - Another image to use to color the surface (for example an fMRI
-%           contrast).
-% thresh  - A threshold above/below which now overlay values will be
+%           contrast or fiber endpoint image). For example to render the
+%           cortex with a heatmap of arcuate fasciculus endpoints:
+%           im = 'Left_Arcuate_Endpoints.nii.gz'
+%           AFQ_RenderCorticalSurface('segmentation.nii.gz', 'overlay', im)
+% thresh  - A threshold above/below which overlay values will be
 %           painted on the cortex and the cortex will be left cortex
 %           colored. Thresh can be a single number (minumum) or a vector of
 %           2 numbers (minimum and maximum).
+%           im = 'Left_Arcuate_Endpoints.nii.gz'
+%           AFQ_RenderCorticalSurface('segmentation.nii.gz', ...
+%           'overlay', im, 'thresh', 0.01)
 % crange  - Define which overlay values should be mapped to the minimum and
 %           maximum values of the color map. All values below crange(1)
 %           will be colored the minimum value and all values above
 %           crange(2) will be colored the maximum value. The default color
 %           range is defined by the minimum and maximum values of the
 %           overlay image that get mapped to any mesh vertex.
+%           im = 'Left_Arcuate_Endpoints.nii.gz'
+%           AFQ_RenderCorticalSurface('segmentation.nii.gz', ...
+%           'overlay', im, 'thresh', 0.01, 'crange', [.02 .04])
 % cmap    - Name of the colormap to use. For example 'jet' or 'autumn'
+%           im = 'Left_Arcuate_Endpoints.nii.gz'
+%           AFQ_RenderCorticalSurface('segmentation.nii.gz', ...
+%           'overlay',im, 'thresh',0.01, 'crange',[.02 .04], 'cmap','hot')
 % newfig  - Whether or not to open a new figure window
+%           AFQ_RenderCorticalSurface('segmentation.nii.gz','newfig',true);
 %
 % Outputs:
 % p       - Handel for the patch object that was added to the figure
@@ -42,7 +64,7 @@ function [p, msh] = AFQ_RenderCorticalSurface(cortex, varargin)
 % cortex = fullfile(AFQdata,'mesh','segmentation.nii.gz');
 % overlay = fullfile(AFQdata,'mesh','t1.nii.gz');
 % % Render the cortical surface colored by the T1 values at each vertex
-% p = AFQ_RenderCorticalSurface(cortex, [], [], overlay)
+% p = AFQ_RenderCorticalSurface(cortex, 'overlay' , overlay)
 %
 % Copyright Jason D. Yeatman November 2012
 
