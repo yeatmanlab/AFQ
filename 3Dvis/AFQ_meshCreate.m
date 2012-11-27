@@ -54,15 +54,18 @@ msh.tr.faces            = [];
 msh.tr.FaceVertexCData  = [.8 .7 .6];
 % msh.vertex saves the various vertices with different smoothing
 % parameters
+msh.vertex.current   = 'origin';
 msh.vertex.origin    = [];
 msh.vertex.smooth20  = [];
 % msh.face saves the faces corresponding to each set of vertices. These are
 % generally the same
+msh.face.current     = 'origin';
 msh.face.origin      = [];
 msh.face.smooth20    = 'origin';
 % Values associated with mesh vertices
 msh.vals             = [];
 % Colors associated with mesh vertices
+msh.colors.current   = 'base';
 msh.colors.base      = [.8 .7 .6]; % Base color of mesh
 
 %% Colect parameters from varargin and put them in a structure
@@ -124,7 +127,7 @@ if exist('im','var') && ~isempty(im)
     
     %% Create a mesh from a smoothed version of the segmentation image
     if isfield(params, 'boxfilter') && ~isempty(params.boxfilter)
-        fname = sprintf('box%d',params.boxfilter);
+        fname = sprintf('filteredbox%d',params.boxfilter);
         % smooth the image with the desired filter size
         data = smooth3(data,'box',params.boxfilter);
         % make a mesh
@@ -137,9 +140,9 @@ if exist('im','var') && ~isempty(im)
         % essential for propperly mapping data to the surface of this mesh
         tr.map2origin = nearpoints(tr.vertices', msh.vertex.origin');
         % Save this within the mesh structure
-        msh = AFQ_meshSet(msh, 'filtered',fname, tr); 
+        msh = AFQ_meshSet(msh, 'vertex',fname, tr.vertices, tr.faces, tr.map2origin); 
         % Set these to be the vertices that are rendered
-        msh = AFQ_meshSet(msh, 'vertices', ['filtered' fname]);
+        msh = AFQ_meshSet(msh, 'vertices', fname);
     end
     
     %% Color the mesh vertices

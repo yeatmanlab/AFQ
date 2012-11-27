@@ -13,21 +13,26 @@ switch(param)
         % If that vertex type is a field then set it to tr.vertices. If
         % it's not a field but can be computed then compute it and add it to
         % tr.vertices
-        if isfield(msh.vertex, varargin{1}) && isempty(strfind(varargin{1}, 'filtered')) 
+        if isfield(msh.vertex, varargin{1})
+            % Set the name of the current vertices
+            msh.vertex.current = varargin{1};
+            % Add them to the current vertices location
             msh.tr.vertices = msh.vertex.(varargin{1});
-            % if the faces are not set properly then set them
+            % if there are unique faces saved for these vertices then use
+            % them.
             if isnumeric(msh.face.(varargin{1}))
+                % If the faces are changed the set the current faces field
+                % to reflect that
+                msh.face.current = varargin{1};
+                % And add these faces to the current faces location
                 msh.tr.faces = msh.face.(varargin{1});
+                % Otherwise if they use the same faces as the origin that
+                % set the origin faces to be rendered
             elseif ischar(msh.face.(varargin{1})) && ...
                     strcmp(msh.face.(varargin{1}), 'origin')
+                msh.face.current = 'origin';
                 msh.tr.faces = msh.face.origin;
             end
-            
-        elseif  isfield(msh.vertex, varargin{1}) && strfind(varargin{1}, 'filtered') == 1
-            % The filtered vertices are stored slightly differntly
-            msh.tr.vertices = msh.vertex.(varargin{1}).vertices;
-            msh.tr.faces     = msh.vertex.(varargin{1}).faces;
-
         elseif strfind(varargin{1},'smooth') == 1
             % If the desired vertices do not exist then compute them
             sIter = str2num(varargin{1}(7:end));
@@ -42,17 +47,34 @@ switch(param)
             % Set these new vertices to the ones that will be rendered
             msh = AFQ_meshSet(msh,'vertices',vName);
         end
+        
+        % Now finally set the coloring to be consistent with the new set of
+        % vertices. If the new vertices are the same length as the old ones
+        % then the coloring can remain the same. Otherwise we need to reset
+        % it
+        if size(msh.tr.FaceVertexCData,1) ~= size(msh.tr.vertices,1)
+            msh = AFQ_meshSet(msh,'FaceVertexCData',msh.colors.current);
+        end
+        
     case 'FaceVertexCData'
-        % If a single color value is in the color field and no color name
-        % was specified then replicate it for al the vertices
-        if nargin < 3 && size(AFQ_meshGet(msh,'FaceVertexCData'),1) == 1
-            msh.tr.FaceVertexCData = repmat(msh.tr.FaceVertexCData,size(msh.tr.vertices,1),1);
-        else
-            msh.tr.FaceVertexCData = msh.colors.(varargin{1});
+        % If a single color value is in the base color field and no other
+        % color name was specified then replicate the base color for al the
+        % vertices
+        if nargin < 3 && size(AFQ_meshGet(msh,'basecolor'),1) == 1
+            msh.colors.current = 'base';
+            msh.tr.FaceVertexCData = repmat(AFQ_meshGet(msh,'basecolor'),size(msh.tr.vertices,1),1);
+        elseif nargin == 3 && size(AFQ_meshGet(msh,'colors',varargin{1}),1) == size(msh.tr.vertices,1);
+            % If the color exists then get it from the mesh structure and
+            % assign it to the current color. This call to AFQ_meshGet will
+            % handle mapping the correct colors to the correct vertices as
+            % long as there is a map2origin field in the mesh structure.
+            msh.colors.current = varargin{1};
+            msh.tr.FaceVertexCData = AFQ_meshGet(msh,'colors',varargin{1});
         end
         % If there was only a single color provided then replicate it for
         % all vertices
         if size(AFQ_meshGet(msh,'FaceVertexCData'),1) == 1
+            % I THINK THIS CAN BE REMOVED
             msh.tr.FaceVertexCData = repmat(AFQ_meshGet(msh,'FaceVertexCData'),size(msh.tr.vertices,1),1);
         end
     case {'vals' 'val'}
