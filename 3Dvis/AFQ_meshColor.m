@@ -7,7 +7,9 @@ function msh = AFQ_meshColor(msh, varargin)
 % to it that specifies an rgb value for each mesh vertex. The colors can be
 % computed from an overlay image to heatmap the mesh based on fMRI signal
 % or quantitative MRI parameters. Other options are to color the mesh based
-% on surface curvature.
+% on surface curvature. See help AFQ_RenderCorticalSurface and 
+% help AFQ_meshCreate for a full description of all the parameters that can
+% be set.
 %
 % Arguments can be passed in in one of 2 ways. (1) In the form:
 %'parameter', [value] - where the parameter is defined and then the
