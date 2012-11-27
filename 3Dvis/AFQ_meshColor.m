@@ -51,7 +51,7 @@ if isfield(params,'overlay') && ~isempty(params.overlay)
     if isfield(params,'thresh') && ~isempty(params.thresh) && length(params.thresh) == 1
         subthresh = cvals < params.thresh;
     elseif isfield(params,'thresh') && ~isempty(params.thresh) && length(params.thresh) == 2
-        subthresh = cvals < params.thresh(1) || cvals > params.thresh(2);
+        subthresh = cvals < params.thresh(1) | cvals > params.thresh(2);
     end
     % Convert the values to rgb colors by associating each value with a
     % location on the colormap
@@ -59,7 +59,10 @@ if isfield(params,'overlay') && ~isempty(params.overlay)
     % If a threshold was passed in then reasign the default cortex color to
     % vertices that are outside the range defined by threh
     if exist('subthresh','var')
-        FaceVertexCData(subthresh,:) = AFQ_meshGet(msh, 'basecolor');
+        basecolor = AFQ_meshGet(msh, 'basecolor');
+        FaceVertexCData(subthresh,1) = basecolor(1);
+        FaceVertexCData(subthresh,2) = basecolor(2);
+        FaceVertexCData(subthresh,3) = basecolor(3);
     end
     % Add these colors to the msh structure
     msh = AFQ_meshSet(msh, 'colors', valname, FaceVertexCData);
