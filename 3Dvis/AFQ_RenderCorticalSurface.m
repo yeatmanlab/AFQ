@@ -110,5 +110,6 @@ set(p,'specularstrength',.5,'diffusestrength',.75);
 
 % If it was a new figure window add a light to it
 if params.newfig == 1
+    view([270 0])
     camlight('right');
 end

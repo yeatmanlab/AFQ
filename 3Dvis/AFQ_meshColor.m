@@ -1,7 +1,7 @@
 function msh = AFQ_meshColor(msh, varargin)
 % Color the a mesh based on an overlay image or surface curvature
 %
-% msh = AFQ_meshColor(msh, 'overlay', overlayIm, 'thresh', [min max], 'crange', [min max])
+% msh = AFQ_meshColor(msh, 'overlay', overlayIm, 'thresh', [min max], 'crange', [min max], 'cmap', [cmap = 'jet'])
 %
 % AFQ_meshColor takes in a msh mesh structure and adds a new colors field
 % to it that specifies an rgb value for each mesh vertex. The colors can be
