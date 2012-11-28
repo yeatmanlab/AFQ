@@ -4,7 +4,7 @@ function val = AFQ_meshGet(msh, param, varargin)
 % val = AFQ_meshGet(msh, param, varargin)
 %
 % AFQ_meshGet will get various parameters and values from the AFQ msh mesh
-% structure. Examples:
+% structure. All the different calls to AFQ_meshGet are listed below.
 %
 % val = AFQ_meshGet('triangles') -- Get the the current faces, vertices and
 % colors and return them in a structure that can be rendered with the
@@ -17,11 +17,22 @@ function val = AFQ_meshGet(msh, param, varargin)
 % any smoothing. These correspond to acpc coordinates of the original
 % segmentaion image.
 %
-% val = AFQ_meshGet('basecolor' 
-% val = AFQ_meshGet('colors', colorname
-% val = AFQ_meshGet('currentvertexname'
+% val = AFQ_meshGet('basecolor') -- Get the base color that is used to
+% color the mesh surface (without any overlay colors).
+%
+% val = AFQ_meshGet('colors', colorname) -- Get the vertex colors with the
+% name 'colorname'. These will be returned with respect to the current
+% vertices. The colors may need to be remapped because all coloring is
+% saved with respect to the original vertices. This is handled within this
+% call to AFQ_meshGet by referencing the msh.map2origin field. Therefor
+% colors will always be returned with respect to the current vertices.
+%
+% val = AFQ_meshGet('currentvertexname') -- Return the name of the current
+% vertices. These are the ones that will be rendered.
 %
 % Copyright Jason D. Yeatman, November 2012
+
+% Format the parameter by removing spaces and capital letters
 param = mrvParamFormat(param);
 
 switch(param)

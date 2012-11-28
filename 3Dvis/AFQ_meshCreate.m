@@ -8,7 +8,10 @@ function msh = AFQ_meshCreate(im, varargin)
 % file. If no image is passed in then an empty strucure will be returned.
 % The mesh can then be rendered with AFQ_RenderCorticalSurface. There are a
 % number of parameters that can be set with the form of:
-% msh = AFQ_meshCreate(im, 'param', value)
+% msh = AFQ_meshCreate(im, 'param', value). 
+% All the examples should run if you first run:
+% [~, AFQdata] = AFQ_directories; cd(fullfile(AFQdata,'mesh'));
+% im = 'segmentation.nii.gz'; overlayIm = 'Left_Arcuate_Endpoints.nii.gz';
 %
 % Examples:
 %
