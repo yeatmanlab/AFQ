@@ -66,6 +66,11 @@ function lightH = AFQ_RenderFibers(fg,varargin)
 % vals = dtiGetValFromFibers(dt.dt6,fg,inv(dt.xformToAcpc),'fa');
 % rgb = vals2colormap(vals);
 % AFQ_RenderFibers(fg,'color',rgb);
+% To color each point on each fiber based on values from any nifti image:
+% im = readFileNifti('pathToImage.nii.gz');
+% vals = dtiGetValFromFibers(im.data,fg,im.qto_ijk)
+% rgb = vals2colormap(vals);
+% AFQ_RenderFibers(fg,'color',rgb)
 %
 % AFQ_RenderFibers(fg,'camera', view) - Render the fiber group and view
 % from a specific plane.  The options for view are 'sagittal', 'coronal' or
