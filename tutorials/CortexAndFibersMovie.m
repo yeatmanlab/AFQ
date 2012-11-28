@@ -40,7 +40,7 @@ AFQ_RenderFibers(ilf,'color',[1 .5 0],'numfibers',500,'newfig',0);
 % Add a rendering of the cortical surface to the same figure.
 % segmentation.nii.gz is a binary image with ones in every voxel that is
 % white matter and zeros everywhere else
-p = AFQ_RenderCorticalSurface('segmentation.nii.gz');
+p = AFQ_RenderCorticalSurface('segmentation.nii.gz', 'boxfilter', 5, 'newfig', 0);
 
 % Delete the light object and put a new light to the right of the camera
 delete(lightH);
@@ -54,9 +54,9 @@ axis('off');
 % and capture each rotation as a frame in the video. After each rotation we
 % move the light so that it follows the camera and we set the camera view
 % angle so that matlab maintains the same camera distance.
-for ii = 1:18
+for ii = 1:45
     % Rotate the camera 5 degrees down
-    camorbit(0,-5);
+    camorbit(0, -2);
     % Set the view angle so that the image stays the same size
     set(gca,'cameraviewangle',8);
     % Move the light to follow the camera
@@ -66,24 +66,24 @@ for ii = 1:18
 end
 
 % Now rotate along the diagonal axis
-for ii = 19:36
-    camorbit(5,5);
+for ii = 46:90
+    camorbit(2,2);
     set(gca,'cameraviewangle',8);
     camlight(lightH,'right');
     mov(ii)=getframe(gcf);
 end
 
 % Rotate to see the top of the brain
-for ii = 37:56
-    camorbit(0,5);
+for ii = 91:135
+    camorbit(0,2);
     set(gca,'cameraviewangle',8);
     camlight(lightH,'right');
     mov(ii)=getframe(gcf);
 end
 
 % And rotate back to our starting position
-for ii = 57:76
-    camorbit(-5,-5);
+for ii = 136:181
+    camorbit(-2,-2);
     set(gca,'cameraviewangle',8);
     camlight(lightH,'right');
     mov(ii)=getframe(gcf);
@@ -92,31 +92,31 @@ end
 % begin to appear.
 
 a = 1; % Start off with an alpha of 1
-for ii = 77:80
+for ii = 182:192
     % Slowly make the cortex fade away
-    a = a-.1;
+    a = a-.03;
     alpha(p,a);
     % Caputure the frame
     mov(ii)=getframe(gcf);
 end
 
 % Continue making the cortex slowly fade and rotate the white matter tracts
-for ii = 81:157
-    a = a -. 03;
+for ii = 193:373
+    a = a -0.015;
     % Don't let the alpha go below 0 (causes an error)
     if a < 0
         a = 0;
     end
     alpha(p,a);
-    camorbit(5,0);
+    camorbit(2,0);
     camlight(lightH,'right');
     set(gca,'cameraviewangle',8);
     mov(ii)=getframe(gcf);
 end
 
 % Now that we are back to our starting point bring the cortex back
-for ii = 158:168
-    a = a+.1;
+for ii = 374:408
+    a = a+.03;
     if a > 1
         a = 1;
     end
@@ -126,7 +126,7 @@ end
 
 %% Save the movie as a .avi file to be played by any movie program
 
-movie2avi(mov,'WhiteMatter.avi','compression','none','fps',10)
+movie2avi(mov,'WhiteMatter.avi','compression','none','fps',15)
 
 
 return
