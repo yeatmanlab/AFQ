@@ -36,7 +36,7 @@ function val = AFQ_get(afq, param, varargin)
 % 'tracking parameters'
 % 'mrtrixpaths'           - [subject number]
 % 'show figures'
-% 
+%
 % To get any of the parameters save in the afq structure (see AFQ_Create),
 % enter the name of the parameter. Some have not been implimented yet, but
 % will be soon.
@@ -81,7 +81,7 @@ switch(param)
             isempty(afq.files.fibers.wholebrain{varargin{1}}) || ...
             ~ischar(afq.files.fibers.wholebrain{varargin{1}});
     case{'wholebrainfibergroup' 'wholebrain' 'wholebrainfg'}
-            val = dtiReadFibers(afq.files.fibers.wholebrain{varargin{1}});
+        val = dtiReadFibers(afq.files.fibers.wholebrain{varargin{1}});
     case{'dosegmentation'}
         % Check if user wants to overwrite segmented fibers or
         % Fibers have not yet been segmented
@@ -89,15 +89,15 @@ switch(param)
             isempty(afq.files.fibers.segmented{varargin{1}}) || ...
             ~ischar(afq.files.fibers.segmented{varargin{1}});
     case{'segmentedfibers' 'morigroups'}
-            val = dtiReadFibers(afq.files.fibers.segmented{varargin{1}});
+        val = dtiReadFibers(afq.files.fibers.segmented{varargin{1}});
     case{'docleaning'}
         % Check if user wants to overwrite cleaned fibers for this subject or
-        % Fibers have not yet been cleaned 
+        % Fibers have not yet been cleaned
         val = logical(afq.overwrite.fibers.clean(varargin{1})) || ...
             isempty(afq.files.fibers.clean{varargin{1}}) || ...
             ~ischar(afq.files.fibers.clean{varargin{1}});
     case{'cleanfibers' 'cleanedfibers' 'cleanfg'}
-            val = dtiReadFibers(afq.files.fibers.clean{varargin{1}});
+        val = dtiReadFibers(afq.files.fibers.clean{varargin{1}});
     case{'computevals' 'computeprofiles' 'computetractprofiles' 'compute'}
         % Check if user wants to overwrite values for this subject or
         % No values have been computed yet or
@@ -106,6 +106,9 @@ switch(param)
             isempty(afq.vals.fa) || ...
             size(afq.vals.fa{1},1) < varargin{1};
     case{'vals' 'allvals' 'valsall' fgnames{:}}
+        % Check if the user defined a specific fiber group and if so get
+        % that fiber group number
+        fgNum = find(strcmpi(param,fgnames));
         if ~exist('varargin' ,'var') || isempty(varargin)
             error('Need to define which value: AFQ_get(afq,''vals'',''fa'')');
             % Three arguments means that the user defined the value they
@@ -114,8 +117,6 @@ switch(param)
             % First argument is the value name
             valnames = fieldnames(afq.vals);
             v = find(strcmpi(varargin{1},valnames));
-            % Check if the user defined a specific fiber group
-            fgNum = find(strcmpi(param,fgnames));
             if ~isempty(v)
                 valname = valnames{v};
                 % If a specific fiber group was defined get vals for that
@@ -140,7 +141,16 @@ switch(param)
                     v = find(strcmpi(varargin{1},valnames));
                     if ~isempty(v)
                         valname = valnames{v};
-                        val = horzcat(afq.patient_data(:).(valname));
+                        % If a specific fiber group was defined get vals for that
+                        % group
+                        if ~isempty(fgNum) && length(afq.patient_data) >= fgNum
+                            val = afq.patient_data(fgNum).(valname);
+                        elseif ~isempty(fgNum)
+                            error('%s values do not exist',fgnames{fgNum});
+                        else
+                            % Otherwise get vals for all groups
+                            val = horzcat(afq.patient_data(:).(valname));
+                        end
                     else
                         error('%s values do not exist',varargin{1})
                     end
@@ -149,7 +159,16 @@ switch(param)
                     v = find(strcmpi(varargin{1},valnames));
                     if ~isempty(v)
                         valname = valnames{strcmpi(varargin{1},valnames)};
-                        val = horzcat(afq.control_data(:).(valname));
+                        % If a specific fiber group was defined get vals for that
+                        % group
+                        if ~isempty(fgNum) && length(afq.control_data) >= fgNum
+                            val = afq.control_data(fgNum).(valname);
+                        elseif ~isempty(fgNum)
+                            error('%s values do not exist',fgnames{fgNum});
+                        else
+                            % Otherwise get vals for all groups
+                            val = horzcat(afq.control_data(:).(valname));
+                        end
                     else
                         error('%s values do not exist',varargin{1})
                     end
