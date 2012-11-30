@@ -1,9 +1,9 @@
-function [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,numberOfNodes,clip2rois,subDir, weighting)
+function [fa, md, rd, ad, cl, TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,numberOfNodes,clip2rois,subDir, weighting, afq)
 % Compute diffusion properties along the trajectory of the fiber groups.
 % The function returns vectors of diffusion properties and TractProfile
 % structure for each fiber group
 %
-% [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,[numberOfNodes=30],[clip2rois=1],[subDir], [weighting = 1])
+% [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,[numberOfNodes=30],[clip2rois=1],[subDir], [weighting = 1], afq)
 %
 % The input fiber group can either be a single fiber group or an array of
 % fiber groups (See fg2Array). Each fiber group is clipped to its 2
@@ -121,11 +121,24 @@ for jj=1:numfg
     % fgtmp=dtiNewFiberGroup(fg_classified.subgroupNames(jj).subgroupName);
     %  fgtmp.fibers=fg_classified.fibers(fg_classified.subgroup==jj);
 
-
+    % Figure out the fiber group number if an afq structure was passed in
+    if exist('afq','var') && ~isempty(afq)
+        fgnames = AFQ_get(afq,'fgnames');
+        fgnum = find(strcmpi(fgtmp.name, fgnames));
+        if isempty(fgnum)
+            fgnum = jj;
+            fprintf('\n%s does not match any fiber group name in the afq structure.', fgtmp.name);
+            fprintf('\n Assuming that it is equivalent to %s',fgnames{jj});
+        end
+    else 
+        fgnum = jj;
+    end
     % clip the fiber group to the portion spanning between the two ROIs if
     % desired
-    if clip2rois==1
-        [roi1 roi2] = AFQ_LoadROIs(jj,subDir);
+    if clip2rois==1 && exist('afq','var') && ~isempty(afq)
+        [roi1, roi2] = AFQ_LoadROIs(fgnum,subDir,afq);
+    elseif clip2rois==1
+        [roi1, roi2] = AFQ_LoadROIs(fgnum,subDir);
     else
         roi1=[]; roi2=[];
     end
