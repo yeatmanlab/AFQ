@@ -36,7 +36,9 @@ function val = AFQ_get(afq, param, varargin)
 % 'tracking parameters'
 % 'mrtrixpaths'           - [subject number]
 % 'show figures'
-%
+% 'roi1 path'             - [fg number], [subject number]
+% 'roi2 path'             - [fg number], [subject number]
+% 'current subject'
 % To get any of the parameters save in the afq structure (see AFQ_Create),
 % enter the name of the parameter. Some have not been implimented yet, but
 % will be soon.
@@ -202,6 +204,22 @@ switch(param)
         val = logical(afq.params.showfigs);
     case{'fiberweighting'}
         val = afq.params.fiberWeighting;
+    case {'roi1' 'roi1path'}
+        if nargin~=4
+            error('correct call: AFQ_get(afq, ''roi1'',[roi number], [subject number])')
+        else
+            % varargin{1} is the roi number varargin{2} is the subject number
+            val = fullfile(afq.sub_dirs{varargin{2}},'ROIs',afq.roi1names{varargin{1}});
+        end
+    case {'roi2' 'roi2path'}
+        if nargin~=4
+            error('correct call: AFQ_get(afq, ''roi1'',[roi number], [subject number])')
+        else
+            % varargin{1} is the roi number varargin{2} is the subject number
+            val = fullfile(afq.sub_dirs{varargin{2}},'ROIs',afq.roi2names{varargin{1}});
+        end
+    case {'currentsubject' 'cursub'}
+        val = afq.currentsub;
     otherwise
         error('Uknown afq parameter');
 end
