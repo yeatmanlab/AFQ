@@ -48,7 +48,11 @@ function afq = AFQ_set(afq,param,varargin)
 %                    This should be a structure with each of the AFQ fiber
 %                    groups in it.  See AFQ_CreateTractProfile
 %                    varargin = 'subnum', [subject number], TractProfiles
-%
+% 'new fiber group - Add a new fiber group to the afq structure.
+%                    varargin = 'fiber group name'
+% 'new roi'        - Add the rois that define a new fiber group to the AFQ
+%                    structure
+%                    varargin = 'roi 1 name', 'roi 2 name'
 % Example:
 %
 % afq = AFQ_set(afq, 'segemented fg path','subnum',10,'/data/sub10/fibers/'Morigroups.mat')
@@ -151,6 +155,7 @@ switch(param)
             val1 = 1;
         end
         afq.files.fibers.wholebrain{subnum} = varargin{val1};
+        
     case {'segmentedfgpath' 'segmentedpath' 'segmentedfg' 'segmentedfibergroup'}
         % Add the values to the correct row of the data matrix
         if strcmp('subnum',varargin{1})
@@ -166,6 +171,7 @@ switch(param)
             val1 = 1;
         end
         afq.files.fibers.segmented{subnum} = varargin{val1};
+        
     case {'cleanfgpath' 'cleanpath' 'cleanfg' 'cleanfibergroup'}
         % Add the values to the correct row of the data matrix
         if strcmp('subnum',varargin{1})
@@ -181,6 +187,7 @@ switch(param)
             val1 = 1;
         end
         afq.files.fibers.clean{subnum} = varargin{val1};
+        
     case{'tractprofiles' 'tractprofile'}
         % Add the values to the correct row of the data matrix
         if strcmp('subnum',varargin{1})
@@ -200,6 +207,18 @@ switch(param)
         for jj = 1:length(varargin{val1})
             afq.TractProfiles(subnum,jj) = varargin{val1}(jj);
         end
+        
+    case {'newfibergroup' 'newfg'}
+        % Add the name of the new fiber group without the file extension
+        afq.fgnames{end+1} = prefix(varargin{1});
+        % And add the path to it
+        for ii = 1:AFQ_get(afq,'numsubs')
+            afq.files.fibers.(prefix(varargin{1})){ii} = fullfile(afq.sub_dirs{ii},'fibers',varargin{1});
+        end
+    case {'newroi'}
+        % Add the name of the new rois for a fiber group
+        afq.roi1names{end+1} = prefix(varargin{1});
+        afq.roi2names{end+1} = prefix(varargin{2});
     otherwise
         error('Uknown afq parameter');
 end

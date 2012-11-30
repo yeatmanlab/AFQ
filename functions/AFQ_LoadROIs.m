@@ -25,16 +25,27 @@ if ~exist('afq','var') || isempty(afq) && fgNumber <=20
         'HCC_roi2_L','HCC_roi2_R','FP_R','FA_R','IFO_roi2_L','IFO_roi2_R','ILF_roi2_L','ILF_roi2_R'...
         'SLF_roi2_L','SLF_roi2_R','UNC_roi2_L','UNC_roi2_R','SLFt_roi2_L','SLFt_roi2_R'};
     roiDir=fullfile(sub_dir,'ROIs');
-    roi1=dtiReadRoi(fullfile(roiDir,roi1Names{fgNumber}));
-    roi2=dtiReadRoi(fullfile(roiDir,roi2Names{fgNumber}));
+    roi1path = fullfile(roiDir,[roi1Names{fgNumber} '.mat']);
+    roi2path = fullfile(roiDir,[roi2Names{fgNumber} '.mat']);
+    if exist(roi1path,'file') && exist(roi2path,'file')
+        roi1=dtiReadRoi(roi1path);
+        roi2=dtiReadRoi(roi2path);
+    else
+        error('ROI does not exist for %s',sub_dir)
+    end
 else
     % It doesn't matter which subject number because all we need is the roi
     % name
     [~,roi1Name] = fileparts(AFQ_get(afq,'roi1',fgNumber,1));
     [~,roi2Name] = fileparts(AFQ_get(afq,'roi2',fgNumber,1));
     roiDir=fullfile(sub_dir,'ROIs');
-    roi1=dtiReadRoi(fullfile(roiDir,roi1Name));
-    roi2=dtiReadRoi(fullfile(roiDir,roi2Name));
-end
-
-return
+    roi1path = fullfile(roiDir,[roi1Name '.mat']);
+    roi2path = fullfile(roiDir,[roi2Name '.mat']);
+    if exist(roi1path,'file') && exist(roi2path,'file')
+        roi1=dtiReadRoi(roi1path);
+        roi2=dtiReadRoi(roi2path);
+    else
+        error('ROI does not exist for %s',sub_dir)
+    end
+    
+    return

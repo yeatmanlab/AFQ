@@ -11,13 +11,19 @@ function val = AFQ_get(afq, param, varargin)
 % 'patient data'
 % 'control data'
 % 'norms'
+% 'numfg'
 % 'number of patients'
 % 'number of controls'
 % 'number of subjects'
 % 'number of fibergroups'
 % 'track whole brain'     - [subject number]
+% 'wholebrain fg'         - [subject number]
 % 'segmentfibers'         - [subject number]
 % 'cleanfibers'           - [subject number]
+%
+% % To get the path to a fiber group
+% 'fgname path'           - [subject number]
+%
 % 'computevals'           - [subject number]
 %
 % To get all the values for a particular measurement (eg. 'fa') for all the
@@ -72,7 +78,7 @@ switch(param)
         val = sum(afq.sub_group);
     case({'numberofcontrols' 'numcontrols'});
         val = sum(afq.sub_group == 0);
-    case({'numberofsubjects' 'numsubjects' 'numsubs'})
+    case({'numberofsubjects' 'numsubjects' 'numsubs' 'nsubs'})
         val = length(afq.sub_group);
     case({'numberoffibergroups' 'numfg' 'numfibergroups' 'nfg' 'numberfibergroups'});
         val = length(afq.fgnames);
@@ -92,6 +98,26 @@ switch(param)
             ~ischar(afq.files.fibers.segmented{varargin{1}});
     case{'segmentedfibers' 'morigroups'}
         val = dtiReadFibers(afq.files.fibers.segmented{varargin{1}});
+    case{strcat(fgnames,'path')}
+        % find the fiber group number
+        n = find(strcmpi(param(1:end-4),fgnames));
+        if n <= 20
+            % If it is one of the mori groups than get the path to that
+            % fiber group (preferably cleaned)
+            try
+                val = afq.files.fibers.clean{varargin{1}};
+            catch
+                val = afq.files.fibers.segmented{varargin{1}};
+            end
+        else
+            % get the name (because we formated the parameter)
+            name = afq.fgnames{n};
+            try
+                val = afq.files.fibers.([name 'clean']);
+            catch
+                val = afq.files.fibers.(name);
+            end
+        end
     case{'docleaning'}
         % Check if user wants to overwrite cleaned fibers for this subject or
         % Fibers have not yet been cleaned
