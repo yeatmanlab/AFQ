@@ -33,8 +33,8 @@ else
     [~,roi1Name] = fileparts(AFQ_get(afq,'roi1',fgNumber,1));
     [~,roi2Name] = fileparts(AFQ_get(afq,'roi2',fgNumber,1));
     roiDir=fullfile(sub_dir,'ROIs');
-    roi1=dtiReadRoi(fullfile(roiDir,roi1Names{fgNumber}));
-    roi2=dtiReadRoi(fullfile(roiDir,roi2Names{fgNumber}));
+    roi1=dtiReadRoi(fullfile(roiDir,roi1Name));
+    roi2=dtiReadRoi(fullfile(roiDir,roi2Name));
 end
 
 return
