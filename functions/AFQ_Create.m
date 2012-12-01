@@ -229,4 +229,7 @@ if AFQ_get(afq,'use mrtrix')
     end
 end
 
+%% Set the current subject field to subject 1
+afq.currentsub = 1;
+
 return

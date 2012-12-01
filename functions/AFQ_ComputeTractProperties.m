@@ -57,8 +57,8 @@ function [fa, md, rd, ad, cl, TractProfile] = AFQ_ComputeTractProperties(fg_clas
 % ad               = vector of Axial Diffusivity values along fiber core.
 % cl               = vector of linearity values along fiber core.
 % TractProfile     = TractProfile structure (see AFQ_CreateTractProfile).
-%                    Contains fiber group core, fiber covariance, and 
-%                    fiber tract properties at each node. 
+%                    Contains fiber group core, fiber covariance, and
+%                    fiber tract properties at each node.
 %
 %  Example:
 %
@@ -120,7 +120,7 @@ for jj=1:numfg
     % This is what we would do with the old fiber group structure
     % fgtmp=dtiNewFiberGroup(fg_classified.subgroupNames(jj).subgroupName);
     %  fgtmp.fibers=fg_classified.fibers(fg_classified.subgroup==jj);
-
+    
     % Figure out the fiber group number if an afq structure was passed in
     if exist('afq','var') && ~isempty(afq)
         fgnames = AFQ_get(afq,'fgnames');
@@ -130,7 +130,7 @@ for jj=1:numfg
             fprintf('\n%s does not match any fiber group name in the afq structure.', fgtmp.name);
             fprintf('\n Assuming that it is equivalent to %s',fgnames{jj});
         end
-    else 
+    else
         fgnum = jj;
     end
     % clip the fiber group to the portion spanning between the two ROIs if

@@ -22,16 +22,28 @@ end
 if ~exist('sub_dir','var') || isempty(sub_dir)
     sub_dir = fileparts(dt.dataFile);
 end
-% Check if inverse deformation was passed in so computations can be skipped
+
 if ~isempty(varargin)
+    % Check if inverse deformation was passed in so computations can be skipped
     for ii = 1:length(varargin)
         if isstruct(varargin{ii}) && isfield(varargin{ii},'deformX')...
                 && isfield(varargin{ii},'coordLUT')...
                 && isfield(varargin{ii},'inMat')
-            invDef= varargin{1};
+            invDef= varargin{ii};
         end
     end
+    % Check if rois and fibers should be saved
+    for ii = 1:length(varargin)
+        if strcmpi('saveFiles',varargin{ii}) && length(varargin) > ii
+            saveFiles = varargin{ii+1};
+        end
+    end
+    % Save figures by default
+    if ~exist('saveFiles','var') || isempty(saveFiles)
+        saveFiles = 1;
+    end
 end
+
 
 %% Create ROIs and segment the posterior segment of the arcuate
 % Path to the templates directory
@@ -42,10 +54,10 @@ template = fullfile(tdir,'MNI_EPI.nii.gz');
 AFQbase = AFQ_directories;
 % L_roi_2 = fullfile(AFQbase,'templates', 'L_Arcuate_PostSegment.nii.gz');
 % R_roi_2 = fullfile(AFQbase,'templates', 'R_Arcuate_PostSegment.nii.gz');
-L_roi_3 = fullfile(AFQbase,'templates', 'L_Parietal.nii.gz');
-R_roi_3 = fullfile(AFQbase,'templates', 'R_Parietal.nii.gz');
-% L_roi_3 = fullfile(AFQbase,'templates', 'L_LateralParietal.nii.gz');
-% R_roi_3 = fullfile(AFQbase,'templates', 'R_LateralParietal.nii.gz');
+L_roi_2 = fullfile(AFQbase,'templates', 'L_Parietal.nii.gz');
+R_roi_2 = fullfile(AFQbase,'templates', 'R_Parietal.nii.gz');
+% L_roi_2 = fullfile(AFQbase,'templates', 'L_LateralParietal.nii.gz');
+% R_roi_2 = fullfile(AFQbase,'templates', 'R_LateralParietal.nii.gz');
 
 % Compute spatial normalization
 if ~exist('invDef','var') || isempty(invDef)
@@ -54,10 +66,11 @@ end
 
 % Load up template ROIs in MNI space and transform them to the subjects
 % native space.  dtiCreateRoiFromMniNifti also saves the ROIs
-%[~, ~, L_roi_2]=dtiCreateRoiFromMniNifti(dt.dataFile, L_roi_2, invDef, 1);
-[~, ~, L_roi_3]=dtiCreateRoiFromMniNifti(dt.dataFile, L_roi_3, invDef, 1);
-%[~, ~, R_roi_2]=dtiCreateRoiFromMniNifti(dt.dataFile, R_roi_2, invDef, 1);
-[~, ~, R_roi_3]=dtiCreateRoiFromMniNifti(dt.dataFile, R_roi_3, invDef, 1);
+[~, ~, L_roi_2]=dtiCreateRoiFromMniNifti(dt.dataFile, L_roi_2, invDef, 1);
+[~, ~, R_roi_2]=dtiCreateRoiFromMniNifti(dt.dataFile, R_roi_2, invDef, 1);
+% Name the ROIs
+L_roi_2.name = 'L_Parietal';
+R_roi_2.name = 'R_Parietal';
 
 % Load up predefined ROIs for the Arcuate fasciculus. These are computed in
 % AFQ_SegmentFiberGroups
@@ -93,7 +106,7 @@ for ii = -3:3
 end
 %L_FG = dtiIntersectFibersWithRoi([],'and',[],L_roi_2,L_FG);
 % Make sure endpoints are in the parietal lobe
-L_FG = dtiIntersectFibersWithRoi([],'endpoints',4,L_roi_3,L_FG);
+L_FG = dtiIntersectFibersWithRoi([],'endpoints',4,L_roi_2,L_FG);
 % And that fibers do not head to far anterior
 L_FG = dtiIntersectFibersWithRoi([],'not',[],L_roi_not,L_FG);
 
@@ -114,7 +127,7 @@ for ii = -3:3
 end
 %R_FG = dtiIntersectFibersWithRoi([],'and',[],R_roi_2,R_FG);
 % Make sure endpoints are in the parietal lobe
-R_FG = dtiIntersectFibersWithRoi([],'endpoints',4,R_roi_3,R_FG);
+R_FG = dtiIntersectFibersWithRoi([],'endpoints',4,R_roi_2,R_FG);
 % And that fibers do not head to far anterior
 R_FG = dtiIntersectFibersWithRoi([],'not',[],R_roi_not,R_FG);
 
@@ -122,9 +135,13 @@ R_FG = dtiIntersectFibersWithRoi([],'not',[],R_roi_not,R_FG);
 L_FG.name = 'L_Arcuate_Posterior';
 R_FG.name = 'R_Arcuate_Posterior';
 
-% Save the segmented fiber groups
-dtiWriteFiberGroup(L_FG,fullfile(sub_dir,'fibers',L_FG.name));
-dtiWriteFiberGroup(R_FG,fullfile(sub_dir,'fibers',R_FG.name));
+% Save the segmented fiber groups and ROIs
+if saveFiles == 1
+    dtiWriteFiberGroup(L_FG,fullfile(sub_dir,'fibers',L_FG.name));
+    dtiWriteFiberGroup(R_FG,fullfile(sub_dir,'fibers',R_FG.name));
+    dtiWriteRoi(L_roi_2,fullfile(sub_dir,'ROIs',L_roi_2.name));
+    dtiWriteRoi(R_roi_2,fullfile(sub_dir,'ROIs',R_roi_2.name));
+end
 
 % Show the fiber group if desired
 if sum(strcmpi('showfibers', varargin)) > 0

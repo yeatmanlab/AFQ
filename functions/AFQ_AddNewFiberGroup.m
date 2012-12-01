@@ -2,7 +2,7 @@ function afq = AFQ_AddNewFiberGroup(afq,fgName,roi1Name,roi2Name,cleanFibers,com
 % THIS FUNCTION IS STILL BEING DEVELOPED
 % Add new fiber groups from any segmentation proceedure to an afq structure
 %
-% afq = AFQ_AddNewFiberGroup(afq, fgNaem, roi1Name, roi2Name, [cleanFibers = true],[computeVals = true])
+% afq = AFQ_AddNewFiberGroup(afq, fgName, roi1Name, roi2Name, [cleanFibers = true],[computeVals = true])
 %
 % By default AFQ_run will segment the 20 fiber groups defined in the Mori
 % white matter atlas and save all the relevant information in the afq
@@ -39,12 +39,13 @@ function afq = AFQ_AddNewFiberGroup(afq,fgName,roi1Name,roi2Name,cleanFibers,com
 % Copyright Jason D. Yeatman November 2012
 
 %% Argument checking
+
 if ~isafq(afq)
     error('Please enter an afq structure')
 end
 if ~exist('fgName','var') || isempty(fgName) || ~ischar(fgName)
     error('Please enter the name of the fiber group')
-elseif ~strcmp(fgName(end-3:end),'.mat') || ~strcmp(fgName(end-3:end),'.pdb')
+elseif ~(strcmp(fgName(end-3:end),'.mat') || strcmp(fgName(end-3:end),'.pdb'))
     % add file extension
     fgName = [fgName '.mat'];
 end
@@ -90,13 +91,20 @@ for ii = 1:AFQ_get(afq,'numsubs')
 end
 
 %% Clean the fibers if desired
-if cleanFibers == 1
-    for ii 1::AFQ_get(afq,'numsubs')
-        % Load the fibers
-        if ~exist('fg_classified','var')
-            fg_classified = dtiLoadFiberGroup(AFQ_get(afq,[prefix(fgName) 'path'],ii));
-        end
-        
+
+% Loop over subjects
+for ii = 1:AFQ_get(afq,'numsubs')
+    
+    % Define the current subject to process
+    afq = AFQ_set(afq,'current subject',ii);
+    
+    % Load the fibers
+    if ~exist('fg_classified','var')
+        fg_classified = dtiLoadFiberGroup(AFQ_get(afq,[prefix(fgName) 'path'],ii));
+    end
+    
+    % Only clean if desired
+    if cleanFibers == 1
         % only clean if there are enough fibers for it to be worthwhile
         if  length(fg_classified.fibers) > 20
             % clean clipped fiber group if computations are to be done
@@ -122,10 +130,61 @@ if cleanFibers == 1
         % Define the full path to the new cleaned fiber group
         fgpath = fullfile(afq.sub_dirs{ii},'fibers',[prefix(fgName) '_clean_D' num2str(afq.params.maxDist) '_L'  num2str(afq.params.maxLen) '.mat']);
         % Save the fiber group
-        dtiWriteFiber(fg, fgpath);
+        dtiWriteFiberGroup(fg_classified, fgpath);
         % And add them to the afq structure
-        afq.files.fibers.([prefix(fgName) 'clean']){ii} = fgpath;
+        afq.files.fibers.([prefix(fgName) '_clean']){ii} = fgpath;
+    end
+    
+    
+    %% Compute tract profiles
+    
+    if computeVals == 1
+        fprintf('\nComputing Tract Profiles for subject %s',afq.sub_dirs{ii});
+        % Load the subject's dt6
+        dt = dtiLoadDt6(AFQ_get(afq,'dt6path',ii));
+        % Determine how much to weight each fiber's contribution to the
+        % measurement at the tract core. Higher values mean steaper falloff
+        fWeight = AFQ_get(afq,'fiber weighting');
+        % By default Tract Profiles of diffusion properties will always be
+        % calculated
+        [fa, md, rd, ad, cl, TractProfile] = AFQ_ComputeTractProperties(fg_classified, dt, afq.params.numberOfNodes, afq.params.clip2rois, afq.sub_dirs{ii}, fWeight, afq);
+        
+        % Parameterize the shape of each fiber group with calculations of
+        % curvature and torsion at each point and add it to the tract
+        % profile
+        [curv, tors, TractProfile] = AFQ_ParamaterizeTractShape(fg_classified, TractProfile);
+        
+        % Calculate the volume of each Tract Profile
+        TractProfile = AFQ_TractProfileVolume(TractProfile);
+        
+        % Add values to the afq structure
+        afq = AFQ_set(afq,'vals','subnum',ii,'fgnum',fgNumber, 'fa',fa, ...
+            'md',md,'rd',rd,'ad',ad,'cl',cl,'curvature',curv,'torsion',tors);
+        
+        % Add Tract Profiles to the afq structure
+        afq = AFQ_set(afq,'tract profile','subnum',ii,'fgnum',fgNumber,TractProfile);
+        
+        % If any other images were supplied calculate a Tract Profile for that
+        % parameter
+        numimages = AFQ_get(afq, 'numimages');
+        if numimages > 0;
+            for jj = 1:numimages
+                % Read the image file
+                image = readFileNifti(afq.files.images(jj).path{ii});
+                % Compute a Tract Profile for that image
+                imagevals = AFQ_ComputeTractProperties(fg_classified, image, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii}, fWeight);
+                % Add values to the afq structure
+                afq = AFQ_set(afq,'vals','subnum',ii,'fgnum',fgNumber, afq.files.images(jj).name, imagevals);
+                clear imagevals
+            end
+        end
+    else
+        fprintf('\nTract Profiles already computed for subject %s',sub_dirs{ii});
     end
 end
 
-%% Compute tract profiles
+%% Recompute the norms with the new fiber group
+[norms, patient_data, control_data, afq] = AFQ_ComputeNorms(afq);
+
+
+

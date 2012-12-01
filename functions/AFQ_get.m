@@ -98,7 +98,7 @@ switch(param)
             ~ischar(afq.files.fibers.segmented{varargin{1}});
     case{'segmentedfibers' 'morigroups'}
         val = dtiReadFibers(afq.files.fibers.segmented{varargin{1}});
-    case{strcat(fgnames,'path')}
+    case horzcat(strcat(fgnames,'path'))
         % find the fiber group number
         n = find(strcmpi(param(1:end-4),fgnames));
         if n <= 20
@@ -113,9 +113,9 @@ switch(param)
             % get the name (because we formated the parameter)
             name = afq.fgnames{n};
             try
-                val = afq.files.fibers.([name 'clean']);
+                val = afq.files.fibers.([name 'clean']){varargin{1}};
             catch
-                val = afq.files.fibers.(name);
+                val = afq.files.fibers.(name){varargin{1}};
             end
         end
     case{'docleaning'}

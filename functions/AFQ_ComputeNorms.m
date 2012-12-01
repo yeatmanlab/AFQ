@@ -1,10 +1,19 @@
-function [norms patient_data control_data afq] = AFQ_ComputeNorms(varargin)
+function [norms, patient_data, control_data, afq] = AFQ_ComputeNorms(varargin)
 % Compute tract diffusion profile norms from control group data
 %
-% [norms patient_data control_data] = AFQ_ComputeNorms(groupFA, groupMD, groupRD, groupAD, groupCL, sub_group)
-% [norms patient_data control_data afq] = AFQ_ComputeNorms(afq)
+% [norms, patient_data, control_data, afq] = AFQ_ComputeNorms(afq)
+% or
+% [norms, patient_data, control_data] = AFQ_ComputeNorms(groupFA, groupMD, groupRD, groupAD, groupCL, sub_group)
+%
+% This function can be called in 2 ways. Either with an afq structure as
+% the input or with cell arrays of all the values and a subject grouping
+% variable. Data will be separated into patient and control data, norms
+% will be calculated and returned and if an afq structure was passed in
+% then it will be modified to contain the new information.
 %
 % Inputs:
+% afq       = An afq structure containing values and tract profiles for all
+%             subjects. See AFQ_Create and AFQ_run
 % groupFA   = Cell array of FA values for each subject's fiber tracts
 % groupRD   = Cell array of RD values for each subject's fiber tracts
 % groupAD   = Cell array of AD values for each subject's fiber tracts
@@ -13,12 +22,20 @@ function [norms patient_data control_data afq] = AFQ_ComputeNorms(varargin)
 %             controls (0)
 %
 % Outputs:
-% norms     = means and standard deviations for each point on each fiber
-%             tract
+% norms        = means and standard deviations for each point on each fiber
+%                tract
+% patient_data = Data for the patients
+% control_data = Data for the controls
+% afq          = afq structure with new fields containing the norms,
+%                patient and control group data
 
 if nargin == 1
     afq = varargin{1};
+    % Compute the norms and add them to the afq structure. This call also
+    % separates the patient and control data and adds these fields to the
+    % afq structure
     afq = AFQ_set(afq,'norms');
+    % Get the norms, patient and control data from the afq structure
     norms = AFQ_get(afq,'norms');
     patient_data = AFQ_get(afq,'patient_data');
     control_data = AFQ_get(afq,'control_data');

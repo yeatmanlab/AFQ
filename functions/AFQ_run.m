@@ -221,7 +221,7 @@ for ii=1:length(sub_dirs)
         fWeight = AFQ_get(afq,'fiber weighting');
         % By default Tract Profiles of diffusion properties will always be
         % calculated
-        [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified, dt, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii}, fWeight, afq);
+        [fa, md, rd, ad, cl, TractProfile] = AFQ_ComputeTractProperties(fg_classified, dt, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii}, fWeight, afq);
         
         % Parameterize the shape of each fiber group with calculations of
         % curvature and torsion at each point and add it to the tract
@@ -231,23 +231,12 @@ for ii=1:length(sub_dirs)
         % Calculate the volume of each Tract Profile
         TractProfile = AFQ_TractProfileVolume(TractProfile);
         
-        % Take the stats that were calculated in the previous function and add
-        % them to a sructure for the full sample of subjects.  Each fiber group
-        % has its own cell. Within each cell there is a row for each subject with
-        % numberofnodes columns
-        % TODO: make object oriented and get rid of this
-        for jj = 1:20
-            groupFA{jj}(ii,:) = fa(:, jj);
-            groupMD{jj}(ii,:) = md(:, jj);
-            groupRD{jj}(ii,:) = rd(:, jj);
-            groupAD{jj}(ii,:) = ad(:, jj);
-            groupCL{jj}(ii,:) = cl(:, jj);
-        end
         % Add values to the afq structure
         afq = AFQ_set(afq,'vals','subnum',ii,'fa',fa,'md',md,'rd',rd,...
             'ad',ad,'cl',cl,'curvature',curv,'torsion',tors);
+        
         % Add Tract Profiles to the afq structure
-        afq = AFQ_set(afq,'tract profile',TractProfile);
+        afq = AFQ_set(afq,'tract profile','subnum',ii,TractProfile);
         
         % If any other images were supplied calculate a Tract Profile for that
         % parameter
@@ -271,7 +260,7 @@ end
 %% Generate Control Group Norms
 
 % If no control group was entered then norms will only contain nans.
-[norms patient_data control_data afq] = AFQ_ComputeNorms(afq);
+[norms, patient_data, control_data, afq] = AFQ_ComputeNorms(afq);
 
 %% Identify Patients With Abnormal Diffusion Measurements
 
@@ -285,7 +274,7 @@ if sum(isnan(eval(['norms.mean' property '(1,:)']))) == 20
     abn       = nan(length(sub_dirs),1);
     abnTracts = nan(length(sub_dirs),20);
 elseif AFQ_get(afq,'number of patients') >=1
-    [abn abnTracts] = AFQ_ComparePatientsToNorms(patient_data, norms, afq.params.cutoff, property);
+    [abn, abnTracts] = AFQ_ComparePatientsToNorms(patient_data, norms, afq.params.cutoff, property);
 else
     abn = nan;
     abnTracts = nan;
