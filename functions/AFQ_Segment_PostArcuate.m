@@ -1,9 +1,16 @@
-function [L_FG R_FG L_roi_2 L_roi_3 R_roi_2 R_roi_3] = AFQ_Segment_PostArcuate(dt, wholebrainFG, sub_dir, varargin)
+function [L_FG, R_FG, L_roi_1, L_roi_2, R_roi_1, R_roi_2] = AFQ_Segment_PostArcuate(dt, wholebrainFG, varargin)
 % Define the posterior segment of the arcuate from a wholebrain fiber group
 %
-% [L_FG R_FG L_roi_2 L_roi_3 R_roi_2 R_roi_3] = AFQ_Segment_PostArcuate(dt, wholebrainFG, sub_dir, varargin)
+% [L_FG, R_FG, L_roi_1, L_roi_2, R_roi_1, R_roi_2] = AFQ_Segment_PostArcuate(dt, wholebrainFG, varargin)
 %
-
+% This function will define the left and right posterior segment of the
+% arcuate fasciculus. 
+%
+% Arguments:
+% 'showfibers' - Locigal. Whether or not to render figures of the fibers
+% 'saveFiles'  - Logical. Whether or not to save the fibers and ROIs
+%
+% Copyright Jason D. Yeatman December 2012
 %% Argument checking
 if ~exist('dt','var') || isempty(dt)
     error('dt6 file is needed');
@@ -43,7 +50,6 @@ if ~isempty(varargin)
         saveFiles = 1;
     end
 end
-
 
 %% Create ROIs and segment the posterior segment of the arcuate
 % Path to the templates directory
