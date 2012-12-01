@@ -7,6 +7,8 @@ function AFQ_plot(varargin)
 %
 % --Group Plots--
 %
+% AFQ_plot(afq , 'group')
+% or
 % AFQ_plot('group1 name', data1, 'group2 name', data2, 'group')
 % 
 % Tract diffusion profiles can be plotted for multiple groups of subjects.
@@ -26,7 +28,9 @@ function AFQ_plot(varargin)
 % AFQ_plot('patient',patient_data,'control',control_data,'tracts',[1,2,6],'group');
 %
 % --Individual Subject Plots--
-%
+% 
+% AFQ_plot(afq,'individual')
+% or
 % AFQ_plot(norms, patient_data, 'ci',[10 90], 'legend',subnames, 'individual')
 %
 % Tract diffusion profiles will be plotted for each patient with respect to
@@ -46,6 +50,24 @@ function AFQ_plot(varargin)
 
 %% Argument checks and data formatting
 
+% Check if the first argument is an afq structure. If so we will get the
+% data from that.
+if isafq(varargin{1})
+    afq = varargin{1};
+    % Get the proper data from the afq structure depending on the plotting
+    % arguments
+    if sum(strcmpi('group',varargin))
+        data{1} = AFQ_get(afq,'control_data');
+        data{2} = AFQ_get(afq,'patient_data');
+        gnames = {'control', 'patient'};
+    elseif sum(strcmpi('individual',varargin))
+        data{1} = AFQ_get(afq,'norms');
+        data{2} = AFQ_get(afq,'patient_data');
+    elseif sum(strcmpi('colormap',varargin)) > 0
+        data{1} = AFQ_get(afq,'control_data');   
+    end
+end
+
 % Divide up the inputs into data and arguments. This is done by looping
 % over the number of input arguments and checking if they are structures or
 % strings
@@ -54,7 +76,7 @@ for ii = 1 : nargin
     if ischar(varargin{ii})
         argnum        = argnum + 1;
         arg{argnum}   = varargin{ii};
-    elseif isstruct(varargin{ii})
+    elseif isstruct(varargin{ii}) && ~isafq(varargin{ii})
         datanum       = datanum + 1;
         data{datanum} = varargin{ii};
     end
@@ -114,17 +136,30 @@ end
 % generate random numbers for the figure windowss
 fignums = ceil(rand(1,max(tracts)).*10000);
 
-% These are the names of the fiber groups
-fgNames={'Left Thalmic Radiation','Right Thalmic Radiation','Left Corticospinal','Right Corticospinal', 'Left Cingulum Cingulate', 'Right Cingulum Cingulate'...
-    'Left Cingulum Hippocampus','Right Cingulum Hippocampus', 'Callosum Forceps Major', 'Callosum Forceps Minor'...
-    'Left IFOF','Right IFOF','Left ILF','Right ILF','Left SLF','Right SLF','Left Uncinate','Right Uncinate','Left Arcuate','Right Arcuate'};
-
+% If an afq structure was passed in then get the fiber group names from it
+if exist('afq','var')
+    fgNames = AFQ_get(afq,'fgnames');
+else
+    % Otherwise assume that it is the mori groups and we know their names
+    fgNames={'Left Thalmic Radiation','Right Thalmic Radiation','Left Corticospinal','Right Corticospinal', 'Left Cingulum Cingulate', 'Right Cingulum Cingulate'...
+        'Left Cingulum Hippocampus','Right Cingulum Hippocampus', 'Callosum Forceps Major', 'Callosum Forceps Minor'...
+        'Left IFOF','Right IFOF','Left ILF','Right ILF','Left SLF','Right SLF','Left Uncinate','Right Uncinate','Left Arcuate','Right Arcuate'};
+end
 
 %% Group plots
 %  Plot the mean +/- 1 std. err. for each data set that is sent in 
 if sum(strcmpi('group',arg)) == 1
+    % If group names were not pulled from the afq structure then the should
+    % have been passed in
+    if ~exist('gnames','var')
+        gnames = arg(1:length(data));
+    end
     % define the colors to be used for each groups plot
     c = lines(length(data));
+    % make sure that we have enough fiber group names
+    if length(fgNames) < max(tracts)
+        fgNames{max(tracts)} = [];
+    end
     % Loop over all the tracts
     for jj = 1 : length(tracts)
         % For each tract loop over the number of groups and plot each
@@ -166,7 +201,7 @@ if sum(strcmpi('group',arg)) == 1
             set(gca,'fontName','Times','fontSize',12);
         end
         % add a legend to the plot
-        legend(h,arg(1:length(data)));
+        legend(h,gnames);
     end    
 end
 %% Individual plots
@@ -286,7 +321,7 @@ if sum(strcmpi('colormap',arg)) == 1
     else
         FArange = [.3 .6];
     end
-    % the second set of data will be individual subjects
+    % the first set of data will be individual subjects
     subData = data{1};
     % number of nodes to be plotted
     nnodes = length(subData(1).FA(1,:));
