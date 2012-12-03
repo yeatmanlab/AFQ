@@ -43,7 +43,11 @@ dwRawFile = dt_info.files.alignedDwRaw;
 fname_trunk = dwRawFile(1:strfind(dwRawFile,'.')-1);
 raw_idx = strfind(fname_trunk,'raw');
 if isempty(raw_idx)
-    error('Could not find raw directory')
+    % if the raw directory was not actually named raw then assume it is
+    % right above the file name
+    [~,rname]=fileparts(fileparts(fname_trunk));
+    raw_idx = strfind(fname_trunk,rname);
+    %error('Could not find raw directory')
 end
 session = fname_trunk(1:raw_idx-1);
 fname_trunk = [session, mrtrix_folder, fname_trunk(raw_idx+3:end)]; 
