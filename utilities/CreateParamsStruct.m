@@ -9,10 +9,18 @@ function params = CreateParamsStruct(c)
 % function is useful for taking 'param', val, pairs from varargin and
 % putting them in a structure
 
-if ~isparams(c)
-    params = struct;
-    params.type = 'params version 1';
-    for ii = 1:2:length(c)
-        params.(c{ii}) = c{ii+1};
+if ~isparams(c) && iscell(c)
+    % If the cell array only contains one cell check if it is a params
+    % structure and if so return it
+    if length(c) == 1 && isparams(c{1})
+        params = c{1};
+    elseif length(c) == 1 && ~isparams(c{1})
+        params = c;
+    else
+        params = struct;
+        params.type = 'params version 1';
+        for ii = 1:2:length(c)
+            params.(c{ii}) = c{ii+1};
+        end
     end
 end
