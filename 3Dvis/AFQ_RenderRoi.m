@@ -1,4 +1,4 @@
-function h = AFQ_RenderRoi(roi, color, method, render)
+function h = AFQ_RenderRoi(roi, color, method, render, varargin)
 % Render an ROI as a 3D surface
 %
 % h = AFQ_RenderRoi(roi, color , [method = 'trimesh'], [render = 'surface'])
@@ -7,13 +7,16 @@ function h = AFQ_RenderRoi(roi, color, method, render)
 %
 % roi    = Roi structure or an Nx3 matrix of X,Y,Z coordinates
 % color  = The color to render the roi. Default is red: color = [1 0 0]
-% metnod = There are many ways to build a surface mesh from coordinates.
+% method = There are many ways to build a surface mesh from coordinates.
+%          The default is method = 'mesh' which uses the AFQ_meshCreate
+%          function to build and AFQ mesh and render it. This is by far the
+%          best and other options are only left in for legacy.
 %          method = 'isosurface' converts the coordinates to an image than
 %          uses isosurface to build a mesh. method = 'trimesh' builds a
 %          triangle mesh out of the coordinates and redners that as a
 %          surface mesh.
 % render = What to render. Either the roi surface: render = 'surface' or a
-% wire frame: render = 'wire' 
+%          wire frame: render = 'wire' 
 %
 % Example: fg = dtiReadFibers('L_Arcuate.mat');
 % roi = dtiReadRoi('roi1.mat'); AFQ_RenderFiber(fg); % Render the fibers
@@ -31,7 +34,7 @@ if ~exist('color','var') || isempty(color)
     color = [1 0 0];
 end
 if ~exist('method', 'var') || isempty(method)
-    method = 'trimesh';
+    method = 'mesh';
 end
 if ~exist('render','var') || isempty(render)
     render = 'surf';
@@ -49,8 +52,14 @@ end
 
 %% Render the ROI
 
+% If an variables are in varargin put them in an afq params structure
+params = CreateParamsStruct(varargin);
+
 % Get the current figure window handle
 f = gcf;
+% Check if there is anything plotted in the figure window already and only
+% open a new plotting window if necesary
+newfig = isempty(get(f,'children'));
 
 % Compute the range of the coordinates in the roi
 roi_min = min(coords);
@@ -58,6 +67,28 @@ roi_max = max(coords);
 
 % Choose which method to use for rendering
 switch(method)
+    case {'mesh'}
+        
+        % Convert the array of coordinates to an image
+        [roiImg, imgXform] = dtiRoiToImg(roi);
+        
+        % Set ROI as a nifti struct and save
+        ni = niftiCreate('data',uint8(roiImg),'qto_xyz',imgXform);
+        % ni = niftiCreate(uint8(roiImg),imgXform);%Old code
+        
+        % Set up a parameters structure
+        params.color = color; params.newfig = newfig;
+        
+        % Close the figure window that was opened because we will open a
+        % new one with a number of properties set how we like
+        if params.newfig==1,close(f);end
+        
+        % Build a mesh from the nifti image of the roi
+        h = AFQ_RenderCorticalSurface(ni, params);
+        if strcmp(render,'wire')
+            warning('\nWire mesh not implimented yet');
+        end  
+        
     case {'isosurface', 'isosurf'}
         % Create a binary image from the ROI
         im = CoordsToImg(coords);
