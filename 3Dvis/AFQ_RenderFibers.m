@@ -264,7 +264,7 @@ if sum(strcmpi('radius',varargin)) > 0
         rTP = 5;
     end
 else
-    rFib = 1;
+    rFib = 0.7;
     rTP = 5;
 end
 
