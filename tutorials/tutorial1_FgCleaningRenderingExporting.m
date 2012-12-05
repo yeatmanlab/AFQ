@@ -1,3 +1,6 @@
+%% This tutorial is a work in progress
+
+
 %% Cleaning a fiber group and visualizing the cleaning proceedure
 % See AFQ_removeFiberOutliers
 cd /Users/jyeatman/git/AFQ/data/control_01/dti30;
