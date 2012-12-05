@@ -59,7 +59,7 @@ This function calls:
 <li><a href="AFQ_CreateTractProfile.html" class="code" title="function TractProfile = AFQ_CreateTractProfile(varargin)">AFQ_CreateTractProfile</a>	Create the AFQ Tract Profile structure</li><li><a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>	Get value from afq structure</li><li><a href="../utilities/AFQ_mrtrixInit.html" class="code" title="function files = AFQ_mrtrixInit(dt6, lmax, mrtrix_folder)">AFQ_mrtrixInit</a>	function files = AFQ_mrtrixInit(dt6, lmax, mrtrix_folder)</li><li><a href="../utilities/afqVarargin.html" class="code" title="function yourStruct = afqVarargin(yourStruct,varArgIn)">afqVarargin</a>	</li><li><a href="../utilities/check_mrTrix.html" class="code" title="function [status mrTrixpaths] = check_mrTrix">check_mrTrix</a>	Check to see if mrTrix functions are installed on the system</li><li><a href="../utilities/check_mrvista.html" class="code" title="function status = check_mrvista;">check_mrvista</a>	Check if mrvista is in the matlab search path</li><li><a href="../utilities/check_spm.html" class="code" title="function status = check_spm">check_spm</a>	Check if spm is in the matlab search path</li></ul>
 This function is called by:
 <ul style="list-style-image:url(../matlabicon.gif)">
-<li><a href="AFQ_run.html" class="code" title="function [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)">AFQ_run</a>	Run AFQ analysis on a set of subjects to generate Tract Profiles of white</li><li><a href="../test/AFQ_test.html" class="code" title="function AFQ_test">AFQ_test</a>	Perform unit testing on all the AFQ functions.</li></ul>
+<li><a href="AFQ_run.html" class="code" title="function [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)">AFQ_run</a>	Run AFQ analysis on a set of subjects to generate Tract Profiles of white</li><li><a href="../test/AFQ_test.html" class="code" title="function AFQ_test">AFQ_test</a>	Perform unit testing on all the AFQ functions.</li><li><a href="../tutorials/AFQ_example_GroupComparison.html" class="code" title="">AFQ_example_GroupComparison</a>	% Run AFQ analysis for 2 groups (patients and controls)</li></ul>
 <!-- crossreference -->
 
 
@@ -99,196 +99,207 @@ This function is called by:
 0032     <span class="string">'Left Cingulum Hippocampus'</span>,<span class="string">'Right Cingulum Hippocampus'</span>, <span class="string">'Callosum Forceps Major'</span>, <span class="string">'Callosum Forceps Minor'</span><span class="keyword">...</span>
 0033     <span class="string">'Left IFOF'</span>,<span class="string">'Right IFOF'</span>,<span class="string">'Left ILF'</span>,<span class="string">'Right ILF'</span>,<span class="string">'Left SLF'</span>,<span class="string">'Right SLF'</span>,<span class="string">'Left Uncinate'</span>,<span class="string">'Right Uncinate'</span>,<span class="string">'Left Arcuate'</span>,<span class="string">'Right Arcuate'</span>};
 0034 
-0035 <span class="comment">%% Attach a structure of values to the afq structure</span>
-0036 vals.fa = {};
-0037 vals.md = {};
-0038 vals.rd = {};
-0039 vals.ad = {};
-0040 vals.cl = {};
-0041 afq.vals = vals;
+0035 <span class="comment">%% Names of the ROIs associated with each fiber group</span>
+0036 afq.roi1names = {<span class="string">'ATR_roi1_L'</span>, <span class="string">'ATR_roi1_R'</span>,<span class="string">'CST_roi1_L'</span>,<span class="string">'CST_roi1_R'</span>,<span class="string">'CGC_roi1_L.mat'</span>,<span class="string">'CGC_roi1_R.mat'</span><span class="keyword">...</span>
+0037     <span class="string">'HCC_roi1_L'</span>,<span class="string">'HCC_roi1_R'</span>,<span class="string">'FP_L'</span>,<span class="string">'FA_L'</span>,<span class="string">'IFO_roi1_L'</span>,<span class="string">'IFO_roi1_R'</span>,<span class="string">'ILF_roi1_L'</span>,<span class="string">'ILF_roi1_R'</span><span class="keyword">...</span>
+0038     <span class="string">'SLF_roi1_L'</span>,<span class="string">'SLF_roi1_R'</span>,<span class="string">'UNC_roi1_L'</span>,<span class="string">'UNC_roi1_R'</span>,<span class="string">'SLF_roi1_L'</span>,<span class="string">'SLF_roi1_R'</span>};
+0039 afq.roi2names = {<span class="string">'ATR_roi2_L'</span>, <span class="string">'ATR_roi2_R'</span>,<span class="string">'CST_roi2_L'</span>,<span class="string">'CST_roi2_R'</span>,<span class="string">'CGC_roi2_L.mat'</span>,<span class="string">'CGC_roi2_R.mat'</span><span class="keyword">...</span>
+0040     <span class="string">'HCC_roi2_L'</span>,<span class="string">'HCC_roi2_R'</span>,<span class="string">'FP_R'</span>,<span class="string">'FA_R'</span>,<span class="string">'IFO_roi2_L'</span>,<span class="string">'IFO_roi2_R'</span>,<span class="string">'ILF_roi2_L'</span>,<span class="string">'ILF_roi2_R'</span><span class="keyword">...</span>
+0041     <span class="string">'SLF_roi2_L'</span>,<span class="string">'SLF_roi2_R'</span>,<span class="string">'UNC_roi2_L'</span>,<span class="string">'UNC_roi2_R'</span>,<span class="string">'SLFt_roi2_L'</span>,<span class="string">'SLFt_roi2_R'</span>};
 0042 
-0043 <span class="comment">%% Attach a cell array of subject names to the afq structure</span>
-0044 afq.sub_names = {};
-0045 
-0046 <span class="comment">%% Attach a vector of subject groups to afq structure</span>
-0047 afq.sub_group = [];
-0048 
-0049 <span class="comment">%% Attach a vector of subject id numbers to the afq structure</span>
-0050 afq.sub_nums = [];
-0051 
-0052 <span class="comment">%% Attach a cell array of subject directories to the afq structure</span>
-0053 afq.sub_dirs = {};
-0054 
-0055 <span class="comment">%% Attach a vector to define each subject's group</span>
-0056 afq.sub_group = [];
-0057 
-0058 <span class="comment">%% Attach the tract profile structure to the afq structure</span>
+0043 <span class="comment">%% Attach a structure of values to the afq structure</span>
+0044 vals.fa = {};
+0045 vals.md = {};
+0046 vals.rd = {};
+0047 vals.ad = {};
+0048 vals.cl = {};
+0049 afq.vals = vals;
+0050 
+0051 <span class="comment">%% Attach a cell array of subject names to the afq structure</span>
+0052 afq.sub_names = {};
+0053 
+0054 <span class="comment">%% Attach a vector of subject groups to afq structure</span>
+0055 afq.sub_group = [];
+0056 
+0057 <span class="comment">%% Attach a vector of subject id numbers to the afq structure</span>
+0058 afq.sub_nums = [];
 0059 
-0060 afq.TractProfiles = <a href="AFQ_CreateTractProfile.html" class="code" title="function TractProfile = AFQ_CreateTractProfile(varargin)">AFQ_CreateTractProfile</a>;
-0061 <span class="comment">% % Add a field to afq.TractProfiles for each tract defined above</span>
-0062 <span class="comment">% for ii = 1:length(fgNames)</span>
-0063 <span class="comment">%     afq.TractProfiles.(fgNames{ii}) = AFQ_CreateTractProfile('name',fgNames{ii});</span>
-0064 <span class="comment">% end</span>
+0060 <span class="comment">%% Attach a cell array of subject directories to the afq structure</span>
+0061 afq.sub_dirs = {};
+0062 
+0063 <span class="comment">%% Attach a vector to define each subject's group</span>
+0064 afq.sub_group = [];
 0065 
-0066 <span class="comment">%% Check which software packages are installed</span>
-0067 afq.software.mrvista = <a href="../utilities/check_mrvista.html" class="code" title="function status = check_mrvista;">check_mrvista</a>;
-0068 afq.software.mrtrix = <a href="../utilities/check_mrTrix.html" class="code" title="function [status mrTrixpaths] = check_mrTrix">check_mrTrix</a>;
-0069 afq.software.spm = <a href="../utilities/check_spm.html" class="code" title="function status = check_spm">check_spm</a>;
-0070 
-0071 <span class="comment">%% Set the afq.params structure with default parameters</span>
-0072 <span class="comment">%  cutoff: The percentile cutoff to be used to determine what is &quot;abnormal&quot;</span>
-0073 <span class="comment">%  The default is cutoff = [10 90] meaning that subjects who fall below the</span>
-0074 <span class="comment">%  10th percentile or above the 90th percentile will be considered</span>
-0075 <span class="comment">%  &quot;abnormal&quot; and their data will be plotted with respect to the control</span>
-0076 <span class="comment">%  population</span>
-0077 <span class="comment">%  Example: params.cutoff = [10 90];</span>
-0078 afq.params.cutoff = [10 90];
-0079 <span class="comment">%  run_mode: normally leave this blank unless you just want to test this</span>
-0080 <span class="comment">%  script on a new dataset.  If this is the case then set run_mode = 'test'</span>
-0081 <span class="comment">%  in which case many fewer fibers will be tracked and segmented to allow</span>
-0082 <span class="comment">%  for fast testing/debugging of the script</span>
-0083 afq.params.run_mode = [];
-0084 <span class="comment">% cleanFibers = 1 means that once all the fiber groups have been segmented</span>
-0085 <span class="comment">% they will be cleaned such that any fiber that (1) any fiber that is more</span>
-0086 <span class="comment">% than params.maxLen standard deviations above the mean fiber length will</span>
-0087 <span class="comment">% be removed and and (2) any fiber that is more than params.maxDist</span>
-0088 <span class="comment">% standard deviations from the core of the tract will be removed.  this</span>
-0089 <span class="comment">% means that fibers groups will be forced to be a compact bundle</span>
-0090 afq.params.cleanFibers = 1;
-0091 <span class="comment">% Maximum number of iteration of the cleaning algorithm</span>
-0092 afq.params.cleanIter = 5;
-0093 <span class="comment">% Remove fibers that are more than maxDist standard deviations from the</span>
-0094 <span class="comment">% core of the tract</span>
-0095 afq.params.maxDist = 5;
-0096 <span class="comment">% Remove fibers that are more than maxLen standard deviations from the</span>
-0097 <span class="comment">% mean fiber length</span>
-0098 afq.params.maxLen = 4;
-0099 <span class="comment">% The number of nodes to represent each fiber</span>
-0100 afq.params.numberOfNodes = 100;
-0101 <span class="comment">% Should we analyze the whole length of the fiber group or just the central</span>
-0102 <span class="comment">% portion spanning between 2 ROIs</span>
-0103 afq.params.clip2rois = 1;
-0104 <span class="comment">% Set the amount of weighting that will be applied when calculating tract</span>
-0105 <span class="comment">% profiles. 0 meanse that each fiber contributes equally. 1 means that we</span>
-0106 <span class="comment">% apply gaussian weighting where each fibers contribution to the</span>
-0107 <span class="comment">% measurement at a node is weighted by its gaussian distance from the tract</span>
-0108 <span class="comment">% core. Values greater than 1 mean that the core of the tract is weighted</span>
-0109 <span class="comment">% more heavily and fibers futher from the core are weighted less heavily</span>
-0110 <span class="comment">% (faster fall off than a gaussian).  See AFQ_ComputeTractProperties</span>
-0111 afq.params.fiberWeighting = 1;
-0112 <span class="comment">% If params.cleanFibers==1, then this will indicate whether to perform the</span>
-0113 <span class="comment">% cleaning on just the clipped portion of the tract or on the full tract.</span>
-0114 <span class="comment">% This may be helpful for tracts like the ILF that are extremely messy with</span>
-0115 <span class="comment">% looping fibers etc.</span>
-0116 afq.params.cleanClippedFibers = 0;
-0117 <span class="comment">% The directory to save all output figures and results</span>
-0118 afq.params.outdir = [];
-0119 <span class="comment">% Show figures? yes or no</span>
-0120 afq.params.showfigs = true;
-0121 <span class="comment">% Save figures? yes or no</span>
-0122 afq.params.savefigs = false;
-0123 <span class="comment">% Whether or not to compute constrained spherical deconvolution using</span>
-0124 <span class="comment">% mrtrix</span>
-0125 afq.params.computeCSD = 0;
-0126 <span class="comment">%% AFQ Fiber Tracking parameters</span>
-0127 <span class="comment">% Do fiber tracking with mrdiffusion by default. The other option is</span>
-0128 <span class="comment">% 'mrtrix' if it is installed and the data is HARDI</span>
-0129 afq.params.track.algorithm = <span class="string">'mrdiffusion'</span>;
-0130 <span class="comment">% Distance between steps in the tractography algoithm</span>
-0131 afq.params.track.stepSizeMm = 1;
-0132 <span class="comment">% Stopping criteria FA&lt;0.2</span>
-0133 afq.params.track.faThresh = 0.2;
-0134 <span class="comment">% Discard Fibers shorter than 50mm or longer than 250mm</span>
-0135 afq.params.track.lengthThreshMm = [50 250];
-0136 <span class="comment">% Stopping criteria angle between steps &gt;30 degrees</span>
-0137 afq.params.track.angleThresh = 30;
-0138 <span class="comment">% Unknown.....</span>
-0139 afq.params.track.wPuncture = 0.2;
-0140 <span class="comment">% There are multip.e algorithms that can be used.  We prefer STT. See:</span>
-0141 <span class="comment">% Basser PJ, Pajevic S, Pierpaoli C, Duda J, Aldroubi A. 2000.</span>
-0142 <span class="comment">% In vivo fiber tractography using DT-MRI data.</span>
-0143 <span class="comment">% Magnetic Resonance in Medicine 44(4):625-32.</span>
-0144 afq.params.track.whichAlgorithm = 1;
-0145 <span class="comment">% Interpolation method. After each step we interpolate the tensor at that</span>
-0146 <span class="comment">% point. Trilinear interpolation works well.</span>
-0147 afq.params.track.whichInterp = 1;
-0148 <span class="comment">% This adds some randomness to each seed point. Each seed point is move</span>
-0149 <span class="comment">% randomly by randn*.1mm</span>
-0150 afq.params.track.offsetJitter = 0;
-0151 <span class="comment">% We seed in voxel in multiple locations. [0.25 and 0.75] Seeds each voxel</span>
-0152 <span class="comment">% at 8 equidistant locations.  For one seed in the middle of the voxel use</span>
-0153 <span class="comment">% afq.params.track.seedVoxelOffsets = 0.5;</span>
-0154 afq.params.track.seedVoxelOffsets = [0.25 0.75];
-0155 <span class="comment">% Mask from which to initialize tracking</span>
-0156 afq.params.track.faMaskThresh = 0.30;
-0157 
-0158 <span class="comment">% TODO:</span>
-0159 <span class="comment">%  Write a parameter translation routine based on mrvParamFormat()</span>
-0160 <span class="comment">%  This will translate all of the parameters into the right format for the</span>
-0161 <span class="comment">%  afq parameters structure.</span>
-0162 
-0163 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
-0164 <span class="comment">%% Modify default parameters based on user input                          %</span>
-0165 afq = <a href="../utilities/afqVarargin.html" class="code" title="function yourStruct = afqVarargin(yourStruct,varArgIn)">afqVarargin</a>(afq, varargin);                                         <span class="comment">%</span>
-0166 afq.params = <a href="../utilities/afqVarargin.html" class="code" title="function yourStruct = afqVarargin(yourStruct,varArgIn)">afqVarargin</a>(afq.params, varargin);     
-0167 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
-0168 
-0169 <span class="comment">%% Modify tracking parameters if the mode is test mode</span>
-0170 <span class="keyword">if</span> strcmp(afq.params.run_mode,<span class="string">'test'</span>)
-0171     afq.params.track.seedVoxelOffsets = [0.5];
-0172     afq.params.track.faMaskThresh = 0.35;
-0173 <span class="keyword">end</span>
-0174 <span class="comment">%% Attach a structure pointing to each subjects data files</span>
-0175 <span class="keyword">for</span> ii = 1: <a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'num subs'</span>)
-0176     afq.files.dt6{ii} = fullfile(afq.sub_dirs{ii},<span class="string">'dt6.mat'</span>);
-0177     <span class="keyword">if</span> ~exist(<a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'dt6 path'</span>,ii))
-0178         error(<span class="string">'%s file does not exist'</span>,<a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'dt6 path'</span>,ii))
-0179     <span class="keyword">end</span>
-0180 <span class="keyword">end</span>
-0181 afq.files.images            = struct(<span class="string">'name'</span>,{},<span class="string">'path'</span>,{});
-0182 afq.files.fibers.wholebrain = cell(<a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'num subs'</span>),1);
-0183 afq.files.fibers.segmented  = cell(<a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'num subs'</span>),1);
-0184 afq.files.fibers.clean      = cell(<a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'num subs'</span>),1);
-0185 
-0186 <span class="comment">%% Add files from previous AFQ runs to afq structure</span>
-0187 <span class="keyword">for</span> ii = 1:<a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'num subs'</span>)
-0188     fibDir = fullfile(afq.sub_dirs{ii},<span class="string">'fibers'</span>);
-0189     wholebrainFG = fullfile(fibDir,<span class="string">'WholeBrainFG.mat'</span>);
-0190     segmentedFG = fullfile(fibDir,<span class="string">'MoriGroups.mat'</span>);
-0191     cleanFG = fullfile(fibDir,[<span class="string">'MoriGroups_clean_D'</span> num2str(afq.params.maxDist) <span class="string">'_L'</span>  num2str(afq.params.maxLen) <span class="string">'.mat'</span>]);
-0192     <span class="keyword">if</span> exist(wholebrainFG,<span class="string">'file'</span>)
-0193         afq.files.fibers.wholebrain{ii} = wholebrainFG;
-0194     <span class="keyword">end</span>
-0195     <span class="keyword">if</span> exist(segmentedFG,<span class="string">'file'</span>)
-0196         afq.files.fibers.segmented{ii} = segmentedFG;
-0197     <span class="keyword">end</span>
-0198     <span class="keyword">if</span> exist(cleanFG,<span class="string">'file'</span>)
-0199         afq.files.fibers.clean{ii} = cleanFG;
-0200     <span class="keyword">end</span>
-0201 <span class="keyword">end</span>
-0202 <span class="comment">%% Allow previous analyses to be overwritten</span>
-0203 afq.overwrite.fibers.wholebrain = zeros(<a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'num subs'</span>),1);
-0204 afq.overwrite.fibers.segmented = zeros(<a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'num subs'</span>),1);
-0205 afq.overwrite.fibers.clean = zeros(<a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'num subs'</span>),1);
-0206 afq.overwrite.vals = zeros(<a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'num subs'</span>,1));
-0207 
-0208 <span class="comment">%% If desired compute constrained spherical deconvolution with mr trix</span>
-0209 
-0210 <span class="comment">% If mr trix is installed and CSD is computed then perform tracking on</span>
-0211 <span class="comment">% constrained spherical deconvolution</span>
-0212 <span class="keyword">if</span> afq.software.mrtrix == 1 &amp;&amp; afq.params.computeCSD == 1
-0213     afq.params.track.algorithm = <span class="string">'mrtrix'</span>;
-0214 <span class="keyword">end</span>
+0066 <span class="comment">%% Attach the tract profile structure to the afq structure</span>
+0067 
+0068 afq.TractProfiles = <a href="AFQ_CreateTractProfile.html" class="code" title="function TractProfile = AFQ_CreateTractProfile(varargin)">AFQ_CreateTractProfile</a>;
+0069 <span class="comment">% % Add a field to afq.TractProfiles for each tract defined above</span>
+0070 <span class="comment">% for ii = 1:length(fgNames)</span>
+0071 <span class="comment">%     afq.TractProfiles.(fgNames{ii}) = AFQ_CreateTractProfile('name',fgNames{ii});</span>
+0072 <span class="comment">% end</span>
+0073 
+0074 <span class="comment">%% Check which software packages are installed</span>
+0075 afq.software.mrvista = <a href="../utilities/check_mrvista.html" class="code" title="function status = check_mrvista;">check_mrvista</a>;
+0076 afq.software.mrtrix = <a href="../utilities/check_mrTrix.html" class="code" title="function [status mrTrixpaths] = check_mrTrix">check_mrTrix</a>;
+0077 afq.software.spm = <a href="../utilities/check_spm.html" class="code" title="function status = check_spm">check_spm</a>;
+0078 
+0079 <span class="comment">%% Set the afq.params structure with default parameters</span>
+0080 <span class="comment">%  cutoff: The percentile cutoff to be used to determine what is &quot;abnormal&quot;</span>
+0081 <span class="comment">%  The default is cutoff = [10 90] meaning that subjects who fall below the</span>
+0082 <span class="comment">%  10th percentile or above the 90th percentile will be considered</span>
+0083 <span class="comment">%  &quot;abnormal&quot; and their data will be plotted with respect to the control</span>
+0084 <span class="comment">%  population</span>
+0085 <span class="comment">%  Example: params.cutoff = [10 90];</span>
+0086 afq.params.cutoff = [10 90];
+0087 <span class="comment">%  run_mode: normally leave this blank unless you just want to test this</span>
+0088 <span class="comment">%  script on a new dataset.  If this is the case then set run_mode = 'test'</span>
+0089 <span class="comment">%  in which case many fewer fibers will be tracked and segmented to allow</span>
+0090 <span class="comment">%  for fast testing/debugging of the script</span>
+0091 afq.params.run_mode = [];
+0092 <span class="comment">% cleanFibers = 1 means that once all the fiber groups have been segmented</span>
+0093 <span class="comment">% they will be cleaned such that any fiber that (1) any fiber that is more</span>
+0094 <span class="comment">% than params.maxLen standard deviations above the mean fiber length will</span>
+0095 <span class="comment">% be removed and and (2) any fiber that is more than params.maxDist</span>
+0096 <span class="comment">% standard deviations from the core of the tract will be removed.  this</span>
+0097 <span class="comment">% means that fibers groups will be forced to be a compact bundle</span>
+0098 afq.params.cleanFibers = 1;
+0099 <span class="comment">% Maximum number of iteration of the cleaning algorithm</span>
+0100 afq.params.cleanIter = 5;
+0101 <span class="comment">% Remove fibers that are more than maxDist standard deviations from the</span>
+0102 <span class="comment">% core of the tract</span>
+0103 afq.params.maxDist = 5;
+0104 <span class="comment">% Remove fibers that are more than maxLen standard deviations from the</span>
+0105 <span class="comment">% mean fiber length</span>
+0106 afq.params.maxLen = 4;
+0107 <span class="comment">% The number of nodes to represent each fiber</span>
+0108 afq.params.numberOfNodes = 100;
+0109 <span class="comment">% Should we analyze the whole length of the fiber group or just the central</span>
+0110 <span class="comment">% portion spanning between 2 ROIs</span>
+0111 afq.params.clip2rois = 1;
+0112 <span class="comment">% Set the amount of weighting that will be applied when calculating tract</span>
+0113 <span class="comment">% profiles. 0 meanse that each fiber contributes equally. 1 means that we</span>
+0114 <span class="comment">% apply gaussian weighting where each fibers contribution to the</span>
+0115 <span class="comment">% measurement at a node is weighted by its gaussian distance from the tract</span>
+0116 <span class="comment">% core. Values greater than 1 mean that the core of the tract is weighted</span>
+0117 <span class="comment">% more heavily and fibers futher from the core are weighted less heavily</span>
+0118 <span class="comment">% (faster fall off than a gaussian).  See AFQ_ComputeTractProperties</span>
+0119 afq.params.fiberWeighting = 1;
+0120 <span class="comment">% If params.cleanFibers==1, then this will indicate whether to perform the</span>
+0121 <span class="comment">% cleaning on just the clipped portion of the tract or on the full tract.</span>
+0122 <span class="comment">% This may be helpful for tracts like the ILF that are extremely messy with</span>
+0123 <span class="comment">% looping fibers etc.</span>
+0124 afq.params.cleanClippedFibers = 0;
+0125 <span class="comment">% The directory to save all output figures and results</span>
+0126 afq.params.outdir = [];
+0127 <span class="comment">% Show figures? yes or no</span>
+0128 afq.params.showfigs = true;
+0129 <span class="comment">% Save figures? yes or no</span>
+0130 afq.params.savefigs = false;
+0131 <span class="comment">% Whether or not to compute constrained spherical deconvolution using</span>
+0132 <span class="comment">% mrtrix</span>
+0133 afq.params.computeCSD = 0;
+0134 <span class="comment">%% AFQ Fiber Tracking parameters</span>
+0135 <span class="comment">% Do fiber tracking with mrdiffusion by default. The other option is</span>
+0136 <span class="comment">% 'mrtrix' if it is installed and the data is HARDI</span>
+0137 afq.params.track.algorithm = <span class="string">'mrdiffusion'</span>;
+0138 <span class="comment">% Distance between steps in the tractography algoithm</span>
+0139 afq.params.track.stepSizeMm = 1;
+0140 <span class="comment">% Stopping criteria FA&lt;0.2</span>
+0141 afq.params.track.faThresh = 0.2;
+0142 <span class="comment">% Discard Fibers shorter than 50mm or longer than 250mm</span>
+0143 afq.params.track.lengthThreshMm = [50 250];
+0144 <span class="comment">% Stopping criteria angle between steps &gt;30 degrees</span>
+0145 afq.params.track.angleThresh = 30;
+0146 <span class="comment">% Unknown.....</span>
+0147 afq.params.track.wPuncture = 0.2;
+0148 <span class="comment">% There are multip.e algorithms that can be used.  We prefer STT. See:</span>
+0149 <span class="comment">% Basser PJ, Pajevic S, Pierpaoli C, Duda J, Aldroubi A. 2000.</span>
+0150 <span class="comment">% In vivo fiber tractography using DT-MRI data.</span>
+0151 <span class="comment">% Magnetic Resonance in Medicine 44(4):625-32.</span>
+0152 afq.params.track.whichAlgorithm = 1;
+0153 <span class="comment">% Interpolation method. After each step we interpolate the tensor at that</span>
+0154 <span class="comment">% point. Trilinear interpolation works well.</span>
+0155 afq.params.track.whichInterp = 1;
+0156 <span class="comment">% This adds some randomness to each seed point. Each seed point is move</span>
+0157 <span class="comment">% randomly by randn*.1mm</span>
+0158 afq.params.track.offsetJitter = 0;
+0159 <span class="comment">% We seed in voxel in multiple locations. [0.25 and 0.75] Seeds each voxel</span>
+0160 <span class="comment">% at 8 equidistant locations.  For one seed in the middle of the voxel use</span>
+0161 <span class="comment">% afq.params.track.seedVoxelOffsets = 0.5;</span>
+0162 afq.params.track.seedVoxelOffsets = [0.25 0.75];
+0163 <span class="comment">% Mask from which to initialize tracking</span>
+0164 afq.params.track.faMaskThresh = 0.30;
+0165 
+0166 <span class="comment">% TODO:</span>
+0167 <span class="comment">%  Write a parameter translation routine based on mrvParamFormat()</span>
+0168 <span class="comment">%  This will translate all of the parameters into the right format for the</span>
+0169 <span class="comment">%  afq parameters structure.</span>
+0170 
+0171 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0172 <span class="comment">%% Modify default parameters based on user input                          %</span>
+0173 afq = <a href="../utilities/afqVarargin.html" class="code" title="function yourStruct = afqVarargin(yourStruct,varArgIn)">afqVarargin</a>(afq, varargin);                                         <span class="comment">%</span>
+0174 afq.params = <a href="../utilities/afqVarargin.html" class="code" title="function yourStruct = afqVarargin(yourStruct,varArgIn)">afqVarargin</a>(afq.params, varargin);     
+0175 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0176 
+0177 <span class="comment">%% Modify tracking parameters if the mode is test mode</span>
+0178 <span class="keyword">if</span> strcmp(afq.params.run_mode,<span class="string">'test'</span>)
+0179     afq.params.track.seedVoxelOffsets = [0.5];
+0180     afq.params.track.faMaskThresh = 0.35;
+0181 <span class="keyword">end</span>
+0182 <span class="comment">%% Attach a structure pointing to each subjects data files</span>
+0183 <span class="keyword">for</span> ii = 1: <a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'num subs'</span>)
+0184     afq.files.dt6{ii} = fullfile(afq.sub_dirs{ii},<span class="string">'dt6.mat'</span>);
+0185     <span class="keyword">if</span> ~exist(<a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'dt6 path'</span>,ii))
+0186         error(<span class="string">'%s file does not exist'</span>,<a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'dt6 path'</span>,ii))
+0187     <span class="keyword">end</span>
+0188 <span class="keyword">end</span>
+0189 afq.files.images            = struct(<span class="string">'name'</span>,{},<span class="string">'path'</span>,{});
+0190 afq.files.fibers.wholebrain = cell(<a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'num subs'</span>),1);
+0191 afq.files.fibers.segmented  = cell(<a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'num subs'</span>),1);
+0192 afq.files.fibers.clean      = cell(<a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'num subs'</span>),1);
+0193 
+0194 <span class="comment">%% Add files from previous AFQ runs to afq structure</span>
+0195 <span class="keyword">for</span> ii = 1:<a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'num subs'</span>)
+0196     fibDir = fullfile(afq.sub_dirs{ii},<span class="string">'fibers'</span>);
+0197     wholebrainFG = fullfile(fibDir,<span class="string">'WholeBrainFG.mat'</span>);
+0198     segmentedFG = fullfile(fibDir,<span class="string">'MoriGroups.mat'</span>);
+0199     cleanFG = fullfile(fibDir,[<span class="string">'MoriGroups_clean_D'</span> num2str(afq.params.maxDist) <span class="string">'_L'</span>  num2str(afq.params.maxLen) <span class="string">'.mat'</span>]);
+0200     <span class="keyword">if</span> exist(wholebrainFG,<span class="string">'file'</span>)
+0201         afq.files.fibers.wholebrain{ii} = wholebrainFG;
+0202     <span class="keyword">end</span>
+0203     <span class="keyword">if</span> exist(segmentedFG,<span class="string">'file'</span>)
+0204         afq.files.fibers.segmented{ii} = segmentedFG;
+0205     <span class="keyword">end</span>
+0206     <span class="keyword">if</span> exist(cleanFG,<span class="string">'file'</span>)
+0207         afq.files.fibers.clean{ii} = cleanFG;
+0208     <span class="keyword">end</span>
+0209 <span class="keyword">end</span>
+0210 <span class="comment">%% Allow previous analyses to be overwritten</span>
+0211 afq.overwrite.fibers.wholebrain = zeros(<a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'num subs'</span>),1);
+0212 afq.overwrite.fibers.segmented = zeros(<a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'num subs'</span>),1);
+0213 afq.overwrite.fibers.clean = zeros(<a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'num subs'</span>),1);
+0214 afq.overwrite.vals = zeros(<a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'num subs'</span>,1));
 0215 
-0216 <span class="keyword">if</span> <a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'use mrtrix'</span>)
-0217     <span class="keyword">for</span> ii = 1:<a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'num subs'</span>)
-0218         files = <a href="../utilities/AFQ_mrtrixInit.html" class="code" title="function files = AFQ_mrtrixInit(dt6, lmax, mrtrix_folder)">AFQ_mrtrixInit</a>(<a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq, <span class="string">'dt6 path'</span>,ii));
-0219         afq.files.mrtrix.csd{ii} = files.csd;
-0220         afq.files.mrtrix.wm{ii} = files.wm;
-0221     <span class="keyword">end</span>
+0216 <span class="comment">%% If desired compute constrained spherical deconvolution with mr trix</span>
+0217 
+0218 <span class="comment">% If mr trix is installed and CSD is computed then perform tracking on</span>
+0219 <span class="comment">% constrained spherical deconvolution</span>
+0220 <span class="keyword">if</span> afq.software.mrtrix == 1 &amp;&amp; afq.params.computeCSD == 1
+0221     afq.params.track.algorithm = <span class="string">'mrtrix'</span>;
 0222 <span class="keyword">end</span>
 0223 
-0224 <span class="keyword">return</span></pre></div>
-<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+0224 <span class="keyword">if</span> <a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'use mrtrix'</span>)
+0225     <span class="keyword">for</span> ii = 1:<a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'num subs'</span>)
+0226         files = <a href="../utilities/AFQ_mrtrixInit.html" class="code" title="function files = AFQ_mrtrixInit(dt6, lmax, mrtrix_folder)">AFQ_mrtrixInit</a>(<a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq, <span class="string">'dt6 path'</span>,ii));
+0227         afq.files.mrtrix.csd{ii} = files.csd;
+0228         afq.files.mrtrix.wm{ii} = files.wm;
+0229     <span class="keyword">end</span>
+0230 <span class="keyword">end</span>
+0231 
+0232 <span class="comment">%% Set the current subject field to subject 1</span>
+0233 afq.currentsub = 1;
+0234 
+0235 <span class="keyword">return</span></pre></div>
+<hr><address>Generated on Wed 05-Dec-2012 12:03:42 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
 </body>
 </html>

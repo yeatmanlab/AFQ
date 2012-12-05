@@ -1,0 +1,347 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of AFQ_AddImageTo3dPlot</title>
+  <meta name="keywords" content="AFQ_AddImageTo3dPlot">
+  <meta name="description" content="Add a slice from a nifti image to a 3D plot">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">3Dvis</a> &gt; AFQ_AddImageTo3dPlot.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for 3Dvis&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>AFQ_AddImageTo3dPlot
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Add a slice from a nifti image to a 3D plot</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function h = AFQ_AddImageTo3dPlot(nifti, slice, cmap, rescale, alpha, varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Add a slice from a nifti image to a 3D plot
+
+ h = AFQ_AddImageTo3dPlot(nifti, slice, [cmap], [rescale], alpha, varargin)
+
+ Inputs:
+
+ nifti   = A 3D nifti image. It is ok if the image has translation
+           information in the header, however there may be problems if
+           there are rotations saved into the header. Typically we do not
+           save rotations into the header so everything should be fine.
+
+ slice   = Designate which slice in acpc (millimeter) coordinates should
+           be added to the plot. slice should be a 1x3 vector where each
+           coordinate is either a 0 or nan except the coordinate of the
+           slice to be rendered. For example to render the coronal slice 5
+           mm anterior to the anterior commissure: slice = [5 0 0]. For an
+           axial slice 10mm below the acpc plane: slice = [0 0 -10]. For a
+           sagittal slice 25mm to the left of the mid-sagittal plane:
+           slice = [-25 0 0]
+
+ cmap    = Define a colormap for the values in the image.  The defualt is
+           cmap = 'gray'; Other options: cmap = 'jet'; cmap = 'hot'; etc.
+
+ rescale = If the image is being added to an existing axis the default is
+           to rescale the axis so the full image can be seen 
+           [rescale = 1]. To preserve the current axis properties: 
+           rescale = 0
+ 
+ alpha   = Alpha of the image. Value from 0 to 1 that sets how 
+           transparent the image is.
+
+ Aditional options:
+ 
+ To add an overlay heatmap to the rendering. For example BOLD activation.
+ Add the aditional argument 'overlay', followed by a nifti image and
+ threshold.
+ AFQ_AddImageTo3dPlot(nifti, slice, [cmap], [rescale], alpha,'overlay',nifti,threshold)
+ 
+ Output:
+
+ h       = Handle for the object in the figure.  You can remove the slice
+           from the figure window with: delete(h);
+
+ Example:
+
+ % Load a fiber group
+ fg = dtiReadFibers('LeftArcuate.mat');
+ % Render the fibers as red tubes.
+ AFQ_RenderFibers(fg, 'color', [1 0 0]);
+ % Load a nifti image
+ nifti = readFileNifti('t1.nii.gz');
+ % Add a sagittal slice to the figure;
+ h = AFQ_AddImageTo3dPlot(nifti, [-20 0 0])
+
+ Copyright Jason D Yeatman June 2012</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="../functions/AFQ_Segment_PostArcuate.html" class="code" title="function [L_FG, R_FG, L_roi_1, L_roi_2, R_roi_1, R_roi_2] = AFQ_Segment_PostArcuate(dt, wholebrainFG, varargin)">AFQ_Segment_PostArcuate</a>	Define the posterior segment of the arcuate from a wholebrain fiber group</li><li><a href="../tutorials/AFQ_example.html" class="code" title="">AFQ_example</a>	% Example AFQ analysis</li><li><a href="../tutorials/AFQ_example_GroupComparison.html" class="code" title="">AFQ_example_GroupComparison</a>	% Run AFQ analysis for 2 groups (patients and controls)</li></ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function [colorimg min_x max_x min_y max_y min_z max_z] =</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function h = AFQ_AddImageTo3dPlot(nifti, slice, cmap, rescale, alpha, varargin)</a>
+0002 <span class="comment">% Add a slice from a nifti image to a 3D plot</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% h = AFQ_AddImageTo3dPlot(nifti, slice, [cmap], [rescale], alpha, varargin)</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Inputs:</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% nifti   = A 3D nifti image. It is ok if the image has translation</span>
+0009 <span class="comment">%           information in the header, however there may be problems if</span>
+0010 <span class="comment">%           there are rotations saved into the header. Typically we do not</span>
+0011 <span class="comment">%           save rotations into the header so everything should be fine.</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% slice   = Designate which slice in acpc (millimeter) coordinates should</span>
+0014 <span class="comment">%           be added to the plot. slice should be a 1x3 vector where each</span>
+0015 <span class="comment">%           coordinate is either a 0 or nan except the coordinate of the</span>
+0016 <span class="comment">%           slice to be rendered. For example to render the coronal slice 5</span>
+0017 <span class="comment">%           mm anterior to the anterior commissure: slice = [5 0 0]. For an</span>
+0018 <span class="comment">%           axial slice 10mm below the acpc plane: slice = [0 0 -10]. For a</span>
+0019 <span class="comment">%           sagittal slice 25mm to the left of the mid-sagittal plane:</span>
+0020 <span class="comment">%           slice = [-25 0 0]</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">% cmap    = Define a colormap for the values in the image.  The defualt is</span>
+0023 <span class="comment">%           cmap = 'gray'; Other options: cmap = 'jet'; cmap = 'hot'; etc.</span>
+0024 <span class="comment">%</span>
+0025 <span class="comment">% rescale = If the image is being added to an existing axis the default is</span>
+0026 <span class="comment">%           to rescale the axis so the full image can be seen</span>
+0027 <span class="comment">%           [rescale = 1]. To preserve the current axis properties:</span>
+0028 <span class="comment">%           rescale = 0</span>
+0029 <span class="comment">%</span>
+0030 <span class="comment">% alpha   = Alpha of the image. Value from 0 to 1 that sets how</span>
+0031 <span class="comment">%           transparent the image is.</span>
+0032 <span class="comment">%</span>
+0033 <span class="comment">% Aditional options:</span>
+0034 <span class="comment">%</span>
+0035 <span class="comment">% To add an overlay heatmap to the rendering. For example BOLD activation.</span>
+0036 <span class="comment">% Add the aditional argument 'overlay', followed by a nifti image and</span>
+0037 <span class="comment">% threshold.</span>
+0038 <span class="comment">% AFQ_AddImageTo3dPlot(nifti, slice, [cmap], [rescale], alpha,'overlay',nifti,threshold)</span>
+0039 <span class="comment">%</span>
+0040 <span class="comment">% Output:</span>
+0041 <span class="comment">%</span>
+0042 <span class="comment">% h       = Handle for the object in the figure.  You can remove the slice</span>
+0043 <span class="comment">%           from the figure window with: delete(h);</span>
+0044 <span class="comment">%</span>
+0045 <span class="comment">% Example:</span>
+0046 <span class="comment">%</span>
+0047 <span class="comment">% % Load a fiber group</span>
+0048 <span class="comment">% fg = dtiReadFibers('LeftArcuate.mat');</span>
+0049 <span class="comment">% % Render the fibers as red tubes.</span>
+0050 <span class="comment">% AFQ_RenderFibers(fg, 'color', [1 0 0]);</span>
+0051 <span class="comment">% % Load a nifti image</span>
+0052 <span class="comment">% nifti = readFileNifti('t1.nii.gz');</span>
+0053 <span class="comment">% % Add a sagittal slice to the figure;</span>
+0054 <span class="comment">% h = AFQ_AddImageTo3dPlot(nifti, [-20 0 0])</span>
+0055 <span class="comment">%</span>
+0056 <span class="comment">% Copyright Jason D Yeatman June 2012</span>
+0057 
+0058 <span class="comment">%% Check arguments</span>
+0059 <span class="keyword">if</span> ~exist(<span class="string">'cmap'</span>,<span class="string">'var'</span>) || isempty(cmap)
+0060     cmap = gray(256);
+0061 <span class="keyword">elseif</span> ischar(cmap)
+0062     cmap = eval([cmap <span class="string">'(256)'</span>]);
+0063 <span class="keyword">end</span>
+0064 <span class="keyword">if</span> ~exist(<span class="string">'rescale'</span>,<span class="string">'var'</span>) || isempty(rescale)
+0065     rescale = 1;
+0066 <span class="keyword">end</span>
+0067 <span class="keyword">if</span> ~exist(<span class="string">'alpha'</span>,<span class="string">'var'</span>) || isempty(alpha)
+0068     alpha = 1;
+0069 <span class="keyword">end</span>
+0070 <span class="comment">% Make sure only one plane was designated for plotting</span>
+0071 plane = ~isnan(slice);
+0072 <span class="keyword">if</span> sum(plane) &gt; 1
+0073     plane = slice ~= 0;
+0074 <span class="keyword">end</span>
+0075 <span class="keyword">if</span> sum(plane) &gt; 1
+0076     error(<span class="string">'Only one slice can be plotted. Other values should be nan or 0'</span>)
+0077 <span class="keyword">end</span>
+0078 <span class="comment">% Replace nans with zeros</span>
+0079 slice = slice .* plane;
+0080 <span class="comment">% Make sure slice is a row vector</span>
+0081 <span class="keyword">if</span> size(slice,2) ~= 3
+0082     slice = slice';
+0083 <span class="keyword">end</span>
+0084 <span class="comment">%% Create a color image from the slice in the 3d volume</span>
+0085 [colorimg min_x max_x min_y max_y min_z max_z] = <span class="keyword">...</span>
+0086     MakeImageFromVolume(nifti,slice,plane,cmap);
+0087 
+0088 <span class="comment">%% Create overlay image</span>
+0089 <span class="comment">% Check if an overlay image was passed in</span>
+0090 ov = find(strcmpi(<span class="string">'overlay'</span>,varargin));
+0091 <span class="keyword">if</span> sum(ov) == 1
+0092     <span class="comment">% Get the overlay image volume</span>
+0093     overlayIm = varargin{ov+1};
+0094     <span class="comment">% Get the overlay threshold</span>
+0095     overlayThresh = varargin{ov+2};
+0096     <span class="comment">% Get the colormap if one was defined</span>
+0097     <span class="keyword">if</span> length(varargin) &gt; ov+2
+0098         overlayCmap = varargin{ov+3}
+0099     <span class="keyword">else</span>
+0100         overlayCmap = autumn(256);
+0101     <span class="keyword">end</span>
+0102     <span class="comment">% Create a color image</span>
+0103     OverColorImg = MakeImageFromVolume(overlayIm,slice,plane,overlayCmap,overlayThresh);
+0104     <span class="comment">% Combine the overlay and the background images</span>
+0105     nonan = find(~isnan(OverColorImg));
+0106     colorimg(nonan) = OverColorImg(nonan);
+0107 <span class="keyword">end</span>
+0108 
+0109 <span class="comment">%% Plot the image</span>
+0110 <span class="comment">% The call to surface will be slightly different depending on whether it is</span>
+0111 <span class="comment">% an axial, sagittal or coronal image.</span>
+0112 <span class="keyword">if</span> find(plane) == 1
+0113     <span class="comment">% Add the image to the current 3D plot</span>
+0114     z_dims = [min_z max_z; min_z max_z];
+0115     h = surf([min_x max_x],[min_y max_y],z_dims,<span class="keyword">...</span>
+0116         colorimg,<span class="string">'facecolor'</span>,<span class="string">'texture'</span>,<span class="string">'ambientstrength'</span>,1,<span class="string">'facealpha'</span>,alpha);
+0117 <span class="keyword">elseif</span> find(plane) == 2
+0118     <span class="comment">% The image dimensions must be permuted to match what is expected in</span>
+0119     <span class="comment">% surf</span>
+0120     colorimg=permute(colorimg,[2 1 3]);
+0121     <span class="comment">% Add the image to the current 3D plot</span>
+0122     z_dims = [min_z min_z;   max_z max_z];
+0123     h = surf([min_x max_x],[min_y max_y],z_dims,<span class="keyword">...</span>
+0124         colorimg,<span class="string">'facecolor'</span>,<span class="string">'texture'</span>,<span class="string">'ambientstrength'</span>,1,<span class="string">'facealpha'</span>,alpha);
+0125 <span class="keyword">elseif</span> find(plane) == 3
+0126     <span class="comment">% The image dimensions must be permuted to match what is expected in</span>
+0127     <span class="comment">% surf</span>
+0128     colorimg=permute(colorimg,[2 1 3]);
+0129     <span class="comment">% Add the image to the current 3D plot</span>
+0130     h =surf([min_x max_x],[min_y max_y],repmat(min_z, [2 2]),<span class="keyword">...</span>
+0131         colorimg,<span class="string">'facecolor'</span>,<span class="string">'texture'</span>,<span class="string">'ambientstrength'</span>,1,<span class="string">'facealpha'</span>,alpha);
+0132 <span class="keyword">end</span>
+0133 
+0134 <span class="comment">% Rescale the axis to fit the image</span>
+0135 <span class="keyword">if</span> rescale == 1
+0136     <span class="comment">% Old axis values</span>
+0137     ax = axis;
+0138     <span class="comment">% New axis scaling</span>
+0139     ax2 = [min_x max_x min_y max_y min_z max_z];
+0140     <span class="comment">% Only change the dimensions that are needed to see the full image</span>
+0141     <span class="keyword">if</span> find(plane) == 1
+0142         ax2(1:2) = ax(1:2);
+0143     <span class="keyword">elseif</span> find(plane) == 2
+0144         ax2(3:4) = ax(3:4);
+0145     <span class="keyword">elseif</span> find(plane) == 3;
+0146             a = get(gca);
+0147             <span class="keyword">if</span> isfield(a,<span class="string">'ZLim'</span>)
+0148                 ax2(5:6) = a.ZLim;
+0149             <span class="keyword">end</span>
+0150     <span class="keyword">end</span>
+0151     <span class="comment">% Rescale axis</span>
+0152     axis(ax2);
+0153 <span class="keyword">end</span>
+0154 
+0155 <span class="comment">% Turn hold on in case other features are added to the rendering</span>
+0156 hold on;
+0157 
+0158 <span class="keyword">return</span>
+0159 
+0160 <a name="_sub1" href="#_subfunctions" class="code">function [colorimg min_x max_x min_y max_y min_z max_z] =</a><span class="keyword">...</span>
+0161      MakeImageFromVolume(nifti,slice,plane,cmap,thresh)
+0162 <span class="comment">% Get a slice from a nifti volume, resample it to 1mm isotropic resolution</span>
+0163 <span class="comment">% and make a rgb image from it</span>
+0164 
+0165 <span class="comment">% First Format the image with propper transforms etc.</span>
+0166 <span class="comment">% The variable slice is given in acpc coordinates.  Transform acpc to image</span>
+0167 <span class="comment">% coordinates</span>
+0168 imgXform = nifti.qto_ijk;
+0169 ImCoords = round(imgXform * [slice 1]');
+0170 imIndx = ImCoords(find(slice));
+0171 
+0172 <span class="comment">% Pull the desired slice out of the 3d image volume</span>
+0173 <span class="keyword">if</span> find(plane) == 1
+0174     image = squeeze(nifti.data(imIndx,:,:));
+0175     <span class="comment">% Define the minimum and maximum coordinates of the image in each</span>
+0176     <span class="comment">% dimension in acpc mm space.</span>
+0177     min_x = slice(1); max_x = min_x;
+0178     [y z] = size(image);
+0179     max_corner = inv(imgXform) * [imIndx y z 1]';
+0180     max_y = max_corner(2); max_z = max_corner(3);
+0181     min_corner = inv(imgXform) * [imIndx 0 0 1]';
+0182     min_y = min_corner(2); min_z = min_corner(3);
+0183 <span class="keyword">elseif</span> find(plane) == 2
+0184     image = squeeze(nifti.data(:,imIndx,:));
+0185     <span class="comment">% Define the minimum and maximum coordinates of the image in each</span>
+0186     <span class="comment">% dimension in acpc mm space.</span>
+0187     min_y = slice(2); max_y = min_y;
+0188     [x z] = size(image);
+0189     max_corner = inv(imgXform) * [x imIndx z 1]';
+0190     max_x = max_corner(1); max_z = max_corner(3);
+0191     min_corner = inv(imgXform) * [0 imIndx 0 1]';
+0192     min_x = min_corner(1); min_z = min_corner(3);
+0193 <span class="keyword">else</span>
+0194     image = squeeze(nifti.data(:,:,imIndx));
+0195     <span class="comment">% Define the minimum and maximum coordinates of the image in each</span>
+0196     <span class="comment">% dimension in acpc mm space.</span>
+0197     min_z = slice(3); max_z = min_z;
+0198     [x y] = size(image);
+0199     max_corner = inv(imgXform) * [x y imIndx 1]';
+0200     max_x = max_corner(1); max_y = max_corner(2);
+0201     min_corner = inv(imgXform) * [0 0 imIndx 1]';
+0202     min_x = min_corner(1); min_y = min_corner(2);
+0203 <span class="keyword">end</span>
+0204 
+0205 <span class="comment">% Resample the image to 1mm resolution. The necessary scale factor is</span>
+0206 <span class="comment">% stored in the image xform.</span>
+0207 scale = diag(nifti.qto_xyz); scale = scale(1:3);
+0208 
+0209 <span class="comment">% The new dimensions will be the old dimensions multiplied by the scale</span>
+0210 <span class="comment">% factors for the plane</span>
+0211 oldDim = size(image);
+0212 newDim = oldDim .* scale(find(plane == 0))';
+0213 <span class="comment">% Resize the image</span>
+0214 image = double(imresize(image,newDim));
+0215 
+0216 <span class="keyword">if</span> ~exist(<span class="string">'thresh'</span>,<span class="string">'var'</span>) || isempty(thresh)
+0217     <span class="comment">% Scale and clip the image values so that the lowest 25% of the values are</span>
+0218     <span class="comment">% zeroed, the top 5% are maxed and the range is 0 to 255</span>
+0219     image = uint8(mrAnatHistogramClip(image,.25,.95,1).* 255);
+0220 <span class="keyword">else</span>
+0221     <span class="comment">% If a threshold was defined then change values below that threshold to nan</span>
+0222     nanindx = image &lt; thresh(1);
+0223     image(nanindx) = thresh(1);
+0224     <span class="keyword">if</span> length(thresh) == 2
+0225         <span class="comment">% If a maximum threshold was defined then clip values above that</span>
+0226         image(image &gt; thresh(2)) = thresh(2);
+0227     <span class="keyword">end</span>
+0228     <span class="comment">% Scale the image based on the threshold values</span>
+0229     imMin = min(image(:));
+0230     image = image - imMin;
+0231     imMax = max(image(:));
+0232     image = uint8((image./imMax).*255);
+0233 <span class="keyword">end</span>
+0234 
+0235 <span class="comment">% Convert the scaler image to an RGB image based on the chosen colormap</span>
+0236 colorimg = ind2rgb(image,cmap);
+0237 
+0238 <span class="comment">% If a threshold was defined then change values below that threshold to nan</span>
+0239 <span class="keyword">if</span> exist(<span class="string">'thresh'</span>,<span class="string">'var'</span>) &amp;&amp; ~isempty(thresh)
+0240     nanindx3 = repmat(nanindx,[1 1 3]);
+0241     colorimg(nanindx3) = nan;
+0242 <span class="keyword">end</span>
+0243 
+0244</pre></div>
+<hr><address>Generated on Wed 05-Dec-2012 12:03:42 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

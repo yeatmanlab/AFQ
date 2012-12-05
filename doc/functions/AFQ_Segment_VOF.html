@@ -24,17 +24,22 @@
 <div class="box"><strong>THIS FUNCTION IS STILL BEING DEVELOPED</strong></div>
 
 <h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
-<div class="box"><strong>function [vofFG vofROI1 vofROI2] = AFQ_Segment_VOF(dt, wholebrainFG, varargin) </strong></div>
+<div class="box"><strong>function [vofFG, vofROI1, vofROI2] = AFQ_Segment_VOF(dt, wholebrainFG, varargin) </strong></div>
 
 <h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
 <div class="fragment"><pre class="comment"> THIS FUNCTION IS STILL BEING DEVELOPED
- Define the vertical occipital fasciculus from a wholebrain fiber group.</pre></div>
+ Define the vertical occipital fasciculus from a wholebrain fiber group.
+
+ [vofFG, vofROI1, vofROI2] = AFQ_Segment_VOF(dt, wholebrainFG);
+
+ 
+ Copyright Jason D Yeatman and Hiromasa Takamura, December 2012</pre></div>
 
 <!-- crossreference -->
 <h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
 This function calls:
 <ul style="list-style-image:url(../matlabicon.gif)">
-<li><a href="AFQ_RenderFibers.html" class="code" title="function lightH = AFQ_RenderFibers(fg,varargin)">AFQ_RenderFibers</a>	Render a fiber group and tract profile in 3-D</li></ul>
+<li><a href="../3Dvis/AFQ_RenderFibers.html" class="code" title="function lightH = AFQ_RenderFibers(fg,varargin)">AFQ_RenderFibers</a>	Render a fiber group and tract profile in 3-D</li><li><a href="AFQ_directories.html" class="code" title="function [AFQbase AFQdata AFQfunc AFQutil AFQdoc AFQgui] = AFQ_directories">AFQ_directories</a>	Returns a path to the AFQ directories</li></ul>
 This function is called by:
 <ul style="list-style-image:url(../matlabicon.gif)">
 </ul>
@@ -43,63 +48,72 @@ This function is called by:
 
 
 <h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
-<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [vofFG vofROI1 vofROI2] = AFQ_Segment_VOF(dt, wholebrainFG, varargin)</a>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [vofFG, vofROI1, vofROI2] = AFQ_Segment_VOF(dt, wholebrainFG, varargin)</a>
 0002 <span class="comment">% THIS FUNCTION IS STILL BEING DEVELOPED</span>
 0003 <span class="comment">% Define the vertical occipital fasciculus from a wholebrain fiber group.</span>
-0004 
-0005 <span class="keyword">if</span> ischar(dt)
-0006     dt = dtiLoadDt6(dt);
-0007 <span class="keyword">end</span>
-0008 <span class="keyword">if</span> ischar(wholebrainFG)
-0009     wholebrainFG = dtiReadFibers(wholebrainFG);
-0010 <span class="keyword">end</span>
-0011 <span class="comment">% Check if other files were passed in so computations can be skipped</span>
-0012 <span class="keyword">if</span> ~isempty(varargin)
-0013     <span class="keyword">for</span> ii = 1:length(varargin)
-0014         <span class="keyword">if</span> isstruct(varargin{ii}) &amp;&amp; isfield(varargin{ii},<span class="string">'deformX'</span>)<span class="keyword">...</span>
-0015                 &amp;&amp; isfield(varargin{ii},<span class="string">'coordLUT'</span>)<span class="keyword">...</span>
-0016                 &amp;&amp; isfield(varargin{ii},<span class="string">'inMat'</span>)
-0017             invDef= varargin{1};
-0018         <span class="keyword">end</span>
-0019     <span class="keyword">end</span>
-0020 <span class="keyword">end</span>
-0021 
-0022 <span class="comment">% Path to the templates directory</span>
-0023 tdir = fullfile(fileparts(which(<span class="string">'mrDiffusion.m'</span>)), <span class="string">'templates'</span>);
-0024 template = fullfile(tdir,<span class="string">'MNI_EPI.nii.gz'</span>);
-0025 
-0026 <span class="comment">% Path to the VOF ROIs in MNI space</span>
-0027 vof_roi_1 = <span class="string">'/Users/jyeatman/git/AFQ/templates/L_VOF_ROI1.nii.gz'</span>;
-0028 vof_roi_2 = <span class="string">'/Users/jyeatman/git/AFQ/templates/L_VOF_ROI2.nii.gz'</span>;
-0029 
-0030 <span class="comment">% Compute spatial normalization</span>
-0031 <span class="keyword">if</span> ~exist(<span class="string">'invDef'</span>,<span class="string">'var'</span>) || isempty(invDef)
-0032     [sn, Vtemplate, invDef] = mrAnatComputeSpmSpatialNorm(dt.b0, dt.xformToAcpc, template);
-0033 <span class="keyword">end</span>
-0034 
-0035 <span class="comment">% Convert the ROIs to the individual's native space</span>
-0036 [~, ~, vofROI1]=dtiCreateRoiFromMniNifti(dt.dataFile, vof_roi_1, invDef);
-0037 [~, ~, vofROI2]=dtiCreateRoiFromMniNifti(dt.dataFile, vof_roi_2, invDef);
+0004 <span class="comment">%</span>
+0005 <span class="comment">% [vofFG, vofROI1, vofROI2] = AFQ_Segment_VOF(dt, wholebrainFG);</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% Copyright Jason D Yeatman and Hiromasa Takamura, December 2012</span>
+0009 
+0010 
+0011 <span class="comment">%% Argument checking</span>
+0012 <span class="keyword">if</span> ischar(dt)
+0013     dt = dtiLoadDt6(dt);
+0014 <span class="keyword">end</span>
+0015 <span class="keyword">if</span> ischar(wholebrainFG)
+0016     wholebrainFG = dtiReadFibers(wholebrainFG);
+0017 <span class="keyword">end</span>
+0018 <span class="comment">% Check if other files were passed in so computations can be skipped</span>
+0019 <span class="keyword">if</span> ~isempty(varargin)
+0020     <span class="keyword">for</span> ii = 1:length(varargin)
+0021         <span class="keyword">if</span> isstruct(varargin{ii}) &amp;&amp; isfield(varargin{ii},<span class="string">'deformX'</span>)<span class="keyword">...</span>
+0022                 &amp;&amp; isfield(varargin{ii},<span class="string">'coordLUT'</span>)<span class="keyword">...</span>
+0023                 &amp;&amp; isfield(varargin{ii},<span class="string">'inMat'</span>)
+0024             invDef= varargin{1};
+0025         <span class="keyword">end</span>
+0026     <span class="keyword">end</span>
+0027 <span class="keyword">end</span>
+0028 
+0029 <span class="comment">% Path to the templates directory</span>
+0030 tdir = fullfile(fileparts(which(<span class="string">'mrDiffusion.m'</span>)), <span class="string">'templates'</span>);
+0031 template = fullfile(tdir,<span class="string">'MNI_EPI.nii.gz'</span>);
+0032 
+0033 <span class="comment">% Path to the VOF ROIs in MNI space</span>
+0034 AFQbase = <a href="AFQ_directories.html" class="code" title="function [AFQbase AFQdata AFQfunc AFQutil AFQdoc AFQgui] = AFQ_directories">AFQ_directories</a>;
+0035 AFQtemplates = fullfile(AFQbase,<span class="string">'templates'</span>);
+0036 vof_roi_1 = fullfile(AFQtemplates,<span class="string">'L_VOF_ROI1.nii.gz'</span>);
+0037 vof_roi_2 = fullfile(AFQtemplates,<span class="string">'L_VOF_ROI2.nii.gz'</span>);
 0038 
-0039 <span class="comment">% Compute the PDD at each point in each ROI</span>
-0040 vofROI1_pdd = dtiGetValFromTensors(dt.dt6, vofROI1.coords, inv(dt.xformToAcpc), <span class="string">'pdd'</span>);
-0041 vofROI2_pdd = dtiGetValFromTensors(dt.dt6, vofROI2.coords, inv(dt.xformToAcpc), <span class="string">'pdd'</span>);
-0042 
-0043 <span class="comment">% Find every coordinate in each VOF ROI where the PDD is in the Z direction</span>
-0044 [~, vofROI1_pddZ] = max(abs(vofROI1_pdd),[],2);
-0045 vofROI1_pddZ = vofROI1_pddZ == 3;
-0046 [~, vofROI2_pddZ] = max(abs(vofROI2_pdd),[],2);
-0047 vofROI2_pddZ = vofROI2_pddZ == 3;
-0048 
-0049 <span class="comment">% Retain VOF ROI coordinates that have a PDD in the Z direction</span>
-0050 vofROI1.coords = vofROI1.coords(vofROI1_pddZ,:);
-0051 vofROI2.coords = vofROI2.coords(vofROI2_pddZ,:);
-0052 
-0053 <span class="comment">% Intersect the wholebrain fiber group with the ROIs</span>
-0054 vofFG = dtiIntersectFibersWithRoi([],<span class="string">'and'</span>,[],vofROI1,wholebrainFG);
-0055 vofFG = dtiIntersectFibersWithRoi([],<span class="string">'and'</span>,[],vofROI2,vofFG);
-0056 
-0057 <a href="AFQ_RenderFibers.html" class="code" title="function lightH = AFQ_RenderFibers(fg,varargin)">AFQ_RenderFibers</a>(vofFG,<span class="string">'camera'</span>,<span class="string">'sagittal'</span>)</pre></div>
-<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+0039 <span class="comment">% Compute spatial normalization</span>
+0040 <span class="keyword">if</span> ~exist(<span class="string">'invDef'</span>,<span class="string">'var'</span>) || isempty(invDef)
+0041     [sn, Vtemplate, invDef] = mrAnatComputeSpmSpatialNorm(dt.b0, dt.xformToAcpc, template);
+0042 <span class="keyword">end</span>
+0043 
+0044 <span class="comment">% Convert the ROIs to the individual's native space</span>
+0045 [~, ~, vofROI1]=dtiCreateRoiFromMniNifti(dt.dataFile, vof_roi_1, invDef);
+0046 [~, ~, vofROI2]=dtiCreateRoiFromMniNifti(dt.dataFile, vof_roi_2, invDef);
+0047 
+0048 <span class="comment">% Compute the PDD at each point in each ROI</span>
+0049 vofROI1_pdd = dtiGetValFromTensors(dt.dt6, vofROI1.coords, inv(dt.xformToAcpc), <span class="string">'pdd'</span>);
+0050 vofROI2_pdd = dtiGetValFromTensors(dt.dt6, vofROI2.coords, inv(dt.xformToAcpc), <span class="string">'pdd'</span>);
+0051 
+0052 <span class="comment">% Find every coordinate in each VOF ROI where the PDD is in the Z direction</span>
+0053 [~, vofROI1_pddZ] = max(abs(vofROI1_pdd),[],2);
+0054 vofROI1_pddZ = vofROI1_pddZ == 3;
+0055 [~, vofROI2_pddZ] = max(abs(vofROI2_pdd),[],2);
+0056 vofROI2_pddZ = vofROI2_pddZ == 3;
+0057 
+0058 <span class="comment">% Retain VOF ROI coordinates that have a PDD in the Z direction</span>
+0059 vofROI1.coords = vofROI1.coords(vofROI1_pddZ,:);
+0060 vofROI2.coords = vofROI2.coords(vofROI2_pddZ,:);
+0061 
+0062 <span class="comment">% Intersect the wholebrain fiber group with the ROIs</span>
+0063 vofFG = dtiIntersectFibersWithRoi([],<span class="string">'and'</span>,[],vofROI1,wholebrainFG);
+0064 vofFG = dtiIntersectFibersWithRoi([],<span class="string">'and'</span>,[],vofROI2,vofFG);
+0065 
+0066 <a href="../3Dvis/AFQ_RenderFibers.html" class="code" title="function lightH = AFQ_RenderFibers(fg,varargin)">AFQ_RenderFibers</a>(vofFG,<span class="string">'camera'</span>,<span class="string">'sagittal'</span>)</pre></div>
+<hr><address>Generated on Wed 05-Dec-2012 12:03:42 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
 </body>
 </html>

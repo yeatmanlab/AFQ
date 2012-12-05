@@ -24,18 +24,28 @@
 <div class="box"><strong>Define the posterior segment of the arcuate from a wholebrain fiber group</strong></div>
 
 <h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
-<div class="box"><strong>function [L_FG R_FG L_roi_2 L_roi_3 R_roi_2 R_roi_3] = AFQ_Segment_PostArcuate(dt, wholebrainFG, sub_dir, varargin) </strong></div>
+<div class="box"><strong>function [L_FG, R_FG, L_roi_1, L_roi_2, R_roi_1, R_roi_2] = AFQ_Segment_PostArcuate(dt, wholebrainFG, varargin) </strong></div>
 
 <h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
 <div class="fragment"><pre class="comment"> Define the posterior segment of the arcuate from a wholebrain fiber group
 
- [L_FG R_FG L_roi_2 L_roi_3 R_roi_2 R_roi_3] = AFQ_Segment_PostArcuate(dt, wholebrainFG, sub_dir, varargin)</pre></div>
+ [L_FG, R_FG, L_roi_1, L_roi_2, R_roi_1, R_roi_2] = AFQ_Segment_PostArcuate(dt, wholebrainFG, varargin)
+
+ This function will define the left and right posterior segment of the
+ arcuate fasciculus. 
+
+ Arguments:
+ 'showfibers' - Locigal. Whether or not to render figures of the fibers
+ 'saveFiles'  - Logical. Whether or not to save the fibers and ROIs
+
+ Copyright Jason D. Yeatman December 2012
+% Argument checking</pre></div>
 
 <!-- crossreference -->
 <h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
 This function calls:
 <ul style="list-style-image:url(../matlabicon.gif)">
-<li><a href="AFQ_AddImageTo3dPlot.html" class="code" title="function h = AFQ_AddImageTo3dPlot(nifti, slice, cmap, rescale, alpha, varargin)">AFQ_AddImageTo3dPlot</a>	Add a slice from a nifti image to a 3D plot</li><li><a href="AFQ_LoadROIs.html" class="code" title="function [roi1 roi2] = AFQ_LoadROIs(fgNumber,sub_dir)">AFQ_LoadROIs</a>	Load the two ROIs used to define a fiber group</li><li><a href="AFQ_RenderFibers.html" class="code" title="function lightH = AFQ_RenderFibers(fg,varargin)">AFQ_RenderFibers</a>	Render a fiber group and tract profile in 3-D</li><li><a href="AFQ_RenderRoi.html" class="code" title="function h = AFQ_RenderRoi(roi, color, method, render)">AFQ_RenderRoi</a>	Render an ROI as a 3D surface</li><li><a href="AFQ_WholebrainTractography.html" class="code" title="function fg = AFQ_WholebrainTractography(dt,run_mode,params)">AFQ_WholebrainTractography</a>	Perform whole brain deterministic tractography within a white matter mask</li><li><a href="AFQ_directories.html" class="code" title="function [AFQbase AFQdata AFQfunc AFQutil AFQdoc AFQgui] = AFQ_directories">AFQ_directories</a>	Returns a path to the AFQ directories</li></ul>
+<li><a href="../3Dvis/AFQ_AddImageTo3dPlot.html" class="code" title="function h = AFQ_AddImageTo3dPlot(nifti, slice, cmap, rescale, alpha, varargin)">AFQ_AddImageTo3dPlot</a>	Add a slice from a nifti image to a 3D plot</li><li><a href="../3Dvis/AFQ_RenderFibers.html" class="code" title="function lightH = AFQ_RenderFibers(fg,varargin)">AFQ_RenderFibers</a>	Render a fiber group and tract profile in 3-D</li><li><a href="../3Dvis/AFQ_RenderRoi.html" class="code" title="function h = AFQ_RenderRoi(roi, color, method, render, varargin)">AFQ_RenderRoi</a>	Render an ROI as a 3D surface</li><li><a href="AFQ_LoadROIs.html" class="code" title="function [roi1, roi2] = AFQ_LoadROIs(fgNumber,sub_dir, afq)">AFQ_LoadROIs</a>	Load the two ROIs used to define a fiber group</li><li><a href="AFQ_WholebrainTractography.html" class="code" title="function fg = AFQ_WholebrainTractography(dt,run_mode,params)">AFQ_WholebrainTractography</a>	Perform whole brain deterministic tractography within a white matter mask</li><li><a href="AFQ_directories.html" class="code" title="function [AFQbase AFQdata AFQfunc AFQutil AFQdoc AFQgui] = AFQ_directories">AFQ_directories</a>	Returns a path to the AFQ directories</li></ul>
 This function is called by:
 <ul style="list-style-image:url(../matlabicon.gif)">
 </ul>
@@ -44,143 +54,166 @@ This function is called by:
 
 
 <h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
-<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [L_FG R_FG L_roi_2 L_roi_3 R_roi_2 R_roi_3] = AFQ_Segment_PostArcuate(dt, wholebrainFG, sub_dir, varargin)</a>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [L_FG, R_FG, L_roi_1, L_roi_2, R_roi_1, R_roi_2] = AFQ_Segment_PostArcuate(dt, wholebrainFG, varargin)</a>
 0002 <span class="comment">% Define the posterior segment of the arcuate from a wholebrain fiber group</span>
 0003 <span class="comment">%</span>
-0004 <span class="comment">% [L_FG R_FG L_roi_2 L_roi_3 R_roi_2 R_roi_3] = AFQ_Segment_PostArcuate(dt, wholebrainFG, sub_dir, varargin)</span>
+0004 <span class="comment">% [L_FG, R_FG, L_roi_1, L_roi_2, R_roi_1, R_roi_2] = AFQ_Segment_PostArcuate(dt, wholebrainFG, varargin)</span>
 0005 <span class="comment">%</span>
-0006 
-0007 <span class="comment">%% Argument checking</span>
-0008 <span class="keyword">if</span> ~exist(<span class="string">'dt'</span>,<span class="string">'var'</span>) || isempty(dt)
-0009     error(<span class="string">'dt6 file is needed'</span>);
-0010 <span class="keyword">elseif</span> ischar(dt)
-0011     dt = dtiLoadDt6(dt);
-0012 <span class="keyword">end</span>
-0013 <span class="keyword">if</span> ~exist(<span class="string">'wholebrainFG'</span>,<span class="string">'var'</span>) || isempty(wholebrainFG)
-0014     fprintf(<span class="string">'Wholebrain fiber group was not supplied. Tracking fibers'</span>);
-0015     wholebrainFG = <a href="AFQ_WholebrainTractography.html" class="code" title="function fg = AFQ_WholebrainTractography(dt,run_mode,params)">AFQ_WholebrainTractography</a>(dt);
-0016 <span class="keyword">elseif</span> ischar(wholebrainFG) &amp;&amp; exist(wholebrainFG,<span class="string">'file'</span>)
-0017     wholebrainFG = dtiReadFibers(wholebrainFG);
-0018 <span class="keyword">elseif</span> ischar(wholebrainFG) &amp;&amp; ~exist(wholebrainFG,<span class="string">'file'</span>)
-0019     fprintf(<span class="string">'Wholebrain fiber group was not found. Tracking fibers'</span>);
-0020     wholebrainFG = <a href="AFQ_WholebrainTractography.html" class="code" title="function fg = AFQ_WholebrainTractography(dt,run_mode,params)">AFQ_WholebrainTractography</a>(dt);
-0021 <span class="keyword">end</span>
-0022 <span class="keyword">if</span> ~exist(<span class="string">'sub_dir'</span>,<span class="string">'var'</span>) || isempty(sub_dir)
-0023     sub_dir = fileparts(dt.dataFile);
-0024 <span class="keyword">end</span>
-0025 <span class="comment">% Check if inverse deformation was passed in so computations can be skipped</span>
-0026 <span class="keyword">if</span> ~isempty(varargin)
-0027     <span class="keyword">for</span> ii = 1:length(varargin)
-0028         <span class="keyword">if</span> isstruct(varargin{ii}) &amp;&amp; isfield(varargin{ii},<span class="string">'deformX'</span>)<span class="keyword">...</span>
-0029                 &amp;&amp; isfield(varargin{ii},<span class="string">'coordLUT'</span>)<span class="keyword">...</span>
-0030                 &amp;&amp; isfield(varargin{ii},<span class="string">'inMat'</span>)
-0031             invDef= varargin{1};
-0032         <span class="keyword">end</span>
-0033     <span class="keyword">end</span>
-0034 <span class="keyword">end</span>
-0035 
-0036 <span class="comment">%% Create ROIs and segment the posterior segment of the arcuate</span>
-0037 <span class="comment">% Path to the templates directory</span>
-0038 tdir = fullfile(fileparts(which(<span class="string">'mrDiffusion.m'</span>)), <span class="string">'templates'</span>);
-0039 template = fullfile(tdir,<span class="string">'MNI_EPI.nii.gz'</span>);
-0040 
-0041 <span class="comment">% Path to the VOF ROIs in MNI space</span>
-0042 AFQbase = <a href="AFQ_directories.html" class="code" title="function [AFQbase AFQdata AFQfunc AFQutil AFQdoc AFQgui] = AFQ_directories">AFQ_directories</a>;
-0043 <span class="comment">% L_roi_2 = fullfile(AFQbase,'templates', 'L_Arcuate_PostSegment.nii.gz');</span>
-0044 <span class="comment">% R_roi_2 = fullfile(AFQbase,'templates', 'R_Arcuate_PostSegment.nii.gz');</span>
-0045 L_roi_3 = fullfile(AFQbase,<span class="string">'templates'</span>, <span class="string">'L_Parietal.nii.gz'</span>);
-0046 R_roi_3 = fullfile(AFQbase,<span class="string">'templates'</span>, <span class="string">'R_Parietal.nii.gz'</span>);
-0047 <span class="comment">% L_roi_3 = fullfile(AFQbase,'templates', 'L_LateralParietal.nii.gz');</span>
-0048 <span class="comment">% R_roi_3 = fullfile(AFQbase,'templates', 'R_LateralParietal.nii.gz');</span>
-0049 
-0050 <span class="comment">% Compute spatial normalization</span>
-0051 <span class="keyword">if</span> ~exist(<span class="string">'invDef'</span>,<span class="string">'var'</span>) || isempty(invDef)
-0052     [sn, Vtemplate, invDef] = mrAnatComputeSpmSpatialNorm(dt.b0, dt.xformToAcpc, template);
-0053 <span class="keyword">end</span>
-0054 
-0055 <span class="comment">% Load up template ROIs in MNI space and transform them to the subjects</span>
-0056 <span class="comment">% native space.  dtiCreateRoiFromMniNifti also saves the ROIs</span>
-0057 <span class="comment">%[~, ~, L_roi_2]=dtiCreateRoiFromMniNifti(dt.dataFile, L_roi_2, invDef, 1);</span>
-0058 [~, ~, L_roi_3]=dtiCreateRoiFromMniNifti(dt.dataFile, L_roi_3, invDef, 1);
-0059 <span class="comment">%[~, ~, R_roi_2]=dtiCreateRoiFromMniNifti(dt.dataFile, R_roi_2, invDef, 1);</span>
-0060 [~, ~, R_roi_3]=dtiCreateRoiFromMniNifti(dt.dataFile, R_roi_3, invDef, 1);
-0061 
-0062 <span class="comment">% Load up predefined ROIs for the Arcuate fasciculus. These are computed in</span>
-0063 <span class="comment">% AFQ_SegmentFiberGroups</span>
-0064 [L_roi_not, L_roi_1] = <a href="AFQ_LoadROIs.html" class="code" title="function [roi1 roi2] = AFQ_LoadROIs(fgNumber,sub_dir)">AFQ_LoadROIs</a>(19,sub_dir);
-0065 [R_roi_not, R_roi_1] = <a href="AFQ_LoadROIs.html" class="code" title="function [roi1 roi2] = AFQ_LoadROIs(fgNumber,sub_dir)">AFQ_LoadROIs</a>(20,sub_dir);
-0066 
-0067 <span class="comment">% To eliminate fibers that head too far anterior we will create a full</span>
-0068 <span class="comment">% plane at the y coordinate of the anterior slf roi (around the central</span>
-0069 <span class="comment">% sulcus) and remove fibers that intersect this ROI</span>
-0070 L_roi_not = dtiRoiMakePlane([-60,mean(L_roi_not.coords(:,2)),-60; 60,mean(L_roi_not.coords(:,2)),80]);
-0071 R_roi_not = dtiRoiMakePlane([-60,mean(R_roi_not.coords(:,2)),-60; 60,mean(R_roi_not.coords(:,2)),80]);
+0006 <span class="comment">% This function will define the left and right posterior segment of the</span>
+0007 <span class="comment">% arcuate fasciculus.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% Arguments:</span>
+0010 <span class="comment">% 'showfibers' - Locigal. Whether or not to render figures of the fibers</span>
+0011 <span class="comment">% 'saveFiles'  - Logical. Whether or not to save the fibers and ROIs</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% Copyright Jason D. Yeatman December 2012</span>
+0014 <span class="comment">%% Argument checking</span>
+0015 <span class="keyword">if</span> ~exist(<span class="string">'dt'</span>,<span class="string">'var'</span>) || isempty(dt)
+0016     error(<span class="string">'dt6 file is needed'</span>);
+0017 <span class="keyword">elseif</span> ischar(dt)
+0018     dt = dtiLoadDt6(dt);
+0019 <span class="keyword">end</span>
+0020 <span class="keyword">if</span> ~exist(<span class="string">'wholebrainFG'</span>,<span class="string">'var'</span>) || isempty(wholebrainFG)
+0021     fprintf(<span class="string">'Wholebrain fiber group was not supplied. Tracking fibers'</span>);
+0022     wholebrainFG = <a href="AFQ_WholebrainTractography.html" class="code" title="function fg = AFQ_WholebrainTractography(dt,run_mode,params)">AFQ_WholebrainTractography</a>(dt);
+0023 <span class="keyword">elseif</span> ischar(wholebrainFG) &amp;&amp; exist(wholebrainFG,<span class="string">'file'</span>)
+0024     wholebrainFG = dtiReadFibers(wholebrainFG);
+0025 <span class="keyword">elseif</span> ischar(wholebrainFG) &amp;&amp; ~exist(wholebrainFG,<span class="string">'file'</span>)
+0026     fprintf(<span class="string">'Wholebrain fiber group was not found. Tracking fibers'</span>);
+0027     wholebrainFG = <a href="AFQ_WholebrainTractography.html" class="code" title="function fg = AFQ_WholebrainTractography(dt,run_mode,params)">AFQ_WholebrainTractography</a>(dt);
+0028 <span class="keyword">end</span>
+0029 <span class="keyword">if</span> ~exist(<span class="string">'sub_dir'</span>,<span class="string">'var'</span>) || isempty(sub_dir)
+0030     sub_dir = fileparts(dt.dataFile);
+0031 <span class="keyword">end</span>
+0032 
+0033 <span class="keyword">if</span> ~isempty(varargin)
+0034     <span class="comment">% Check if inverse deformation was passed in so computations can be skipped</span>
+0035     <span class="keyword">for</span> ii = 1:length(varargin)
+0036         <span class="keyword">if</span> isstruct(varargin{ii}) &amp;&amp; isfield(varargin{ii},<span class="string">'deformX'</span>)<span class="keyword">...</span>
+0037                 &amp;&amp; isfield(varargin{ii},<span class="string">'coordLUT'</span>)<span class="keyword">...</span>
+0038                 &amp;&amp; isfield(varargin{ii},<span class="string">'inMat'</span>)
+0039             invDef= varargin{ii};
+0040         <span class="keyword">end</span>
+0041     <span class="keyword">end</span>
+0042     <span class="comment">% Check if rois and fibers should be saved</span>
+0043     <span class="keyword">for</span> ii = 1:length(varargin)
+0044         <span class="keyword">if</span> strcmpi(<span class="string">'saveFiles'</span>,varargin{ii}) &amp;&amp; length(varargin) &gt; ii
+0045             saveFiles = varargin{ii+1};
+0046         <span class="keyword">end</span>
+0047     <span class="keyword">end</span>
+0048     <span class="comment">% Save figures by default</span>
+0049     <span class="keyword">if</span> ~exist(<span class="string">'saveFiles'</span>,<span class="string">'var'</span>) || isempty(saveFiles)
+0050         saveFiles = 1;
+0051     <span class="keyword">end</span>
+0052 <span class="keyword">end</span>
+0053 
+0054 <span class="comment">%% Create ROIs and segment the posterior segment of the arcuate</span>
+0055 <span class="comment">% Path to the templates directory</span>
+0056 tdir = fullfile(fileparts(which(<span class="string">'mrDiffusion.m'</span>)), <span class="string">'templates'</span>);
+0057 template = fullfile(tdir,<span class="string">'MNI_EPI.nii.gz'</span>);
+0058 
+0059 <span class="comment">% Path to the VOF ROIs in MNI space</span>
+0060 AFQbase = <a href="AFQ_directories.html" class="code" title="function [AFQbase AFQdata AFQfunc AFQutil AFQdoc AFQgui] = AFQ_directories">AFQ_directories</a>;
+0061 <span class="comment">% L_roi_2 = fullfile(AFQbase,'templates', 'L_Arcuate_PostSegment.nii.gz');</span>
+0062 <span class="comment">% R_roi_2 = fullfile(AFQbase,'templates', 'R_Arcuate_PostSegment.nii.gz');</span>
+0063 L_roi_2 = fullfile(AFQbase,<span class="string">'templates'</span>, <span class="string">'L_Parietal.nii.gz'</span>);
+0064 R_roi_2 = fullfile(AFQbase,<span class="string">'templates'</span>, <span class="string">'R_Parietal.nii.gz'</span>);
+0065 <span class="comment">% L_roi_2 = fullfile(AFQbase,'templates', 'L_LateralParietal.nii.gz');</span>
+0066 <span class="comment">% R_roi_2 = fullfile(AFQbase,'templates', 'R_LateralParietal.nii.gz');</span>
+0067 
+0068 <span class="comment">% Compute spatial normalization</span>
+0069 <span class="keyword">if</span> ~exist(<span class="string">'invDef'</span>,<span class="string">'var'</span>) || isempty(invDef)
+0070     [sn, Vtemplate, invDef] = mrAnatComputeSpmSpatialNorm(dt.b0, dt.xformToAcpc, template);
+0071 <span class="keyword">end</span>
 0072 
-0073 <span class="comment">% Intersect the wholebrain fiber group with the ROIs to retain only fibers</span>
-0074 <span class="comment">% that correspond to the posterior segment of the arcuate</span>
-0075 L_FG = dtiIntersectFibersWithRoi([],<span class="string">'and'</span>,[],L_roi_1,wholebrainFG);
-0076 
-0077 <span class="comment">% We want fibers that are traveling superior to inferior as they pass</span>
-0078 <span class="comment">% through the first ROI.  To do this we will restrict the ROI to voxels</span>
-0079 <span class="comment">% with superior-inferior orientation and repeate this process for planes</span>
-0080 <span class="comment">% directly above and below the ROI</span>
-0081 <span class="keyword">for</span> ii = -3:3
-0082     roi_tmp = L_roi_1;
-0083     <span class="comment">% Shift the roi</span>
-0084     roi_tmp.coords(:,3) = roi_tmp.coords(:,3) + ii;
-0085     <span class="comment">% Compute the PDD at each point in each ROI</span>
-0086     roi_pdd = dtiGetValFromTensors(dt.dt6, roi_tmp.coords, inv(dt.xformToAcpc), <span class="string">'pdd'</span>);
-0087     <span class="comment">% Find every coordinate in each VOF ROI where the PDD is in the Z direction</span>
-0088     [~, roi_pddZ] = max(abs(roi_pdd),[],2);
-0089     roi_pddZ = roi_pddZ == 3;
-0090     <span class="comment">% Retain VOF ROI coordinates that have a PDD in the Z direction</span>
-0091     roi_tmp.coords = roi_tmp.coords(roi_pddZ,:);
-0092     L_FG = dtiIntersectFibersWithRoi([],<span class="string">'and'</span>,[],roi_tmp,L_FG);
-0093 <span class="keyword">end</span>
-0094 <span class="comment">%L_FG = dtiIntersectFibersWithRoi([],'and',[],L_roi_2,L_FG);</span>
-0095 <span class="comment">% Make sure endpoints are in the parietal lobe</span>
-0096 L_FG = dtiIntersectFibersWithRoi([],<span class="string">'endpoints'</span>,4,L_roi_3,L_FG);
-0097 <span class="comment">% And that fibers do not head to far anterior</span>
-0098 L_FG = dtiIntersectFibersWithRoi([],<span class="string">'not'</span>,[],L_roi_not,L_FG);
-0099 
-0100 <span class="comment">% Same for the right hemisphere fiber group</span>
-0101 R_FG = dtiIntersectFibersWithRoi([],<span class="string">'and'</span>,[],R_roi_1,wholebrainFG);
-0102 <span class="keyword">for</span> ii = -3:3
-0103     roi_tmp = R_roi_1;
-0104     <span class="comment">% Shift the roi</span>
-0105     roi_tmp.coords(:,3) = roi_tmp.coords(:,3) + ii;
-0106     <span class="comment">% Compute the PDD at each point in each ROI</span>
-0107     roi_pdd = dtiGetValFromTensors(dt.dt6, roi_tmp.coords, inv(dt.xformToAcpc), <span class="string">'pdd'</span>);
-0108     <span class="comment">% Find every coordinate in each VOF ROI where the PDD is in the Z direction</span>
-0109     [~, roi_pddZ] = max(abs(roi_pdd),[],2);
-0110     roi_pddZ = roi_pddZ == 3;
-0111     <span class="comment">% Retain VOF ROI coordinates that have a PDD in the Z direction</span>
-0112     roi_tmp.coords = roi_tmp.coords(roi_pddZ,:);
-0113     R_FG = dtiIntersectFibersWithRoi([],<span class="string">'and'</span>,[],roi_tmp,R_FG);
-0114 <span class="keyword">end</span>
-0115 <span class="comment">%R_FG = dtiIntersectFibersWithRoi([],'and',[],R_roi_2,R_FG);</span>
-0116 <span class="comment">% Make sure endpoints are in the parietal lobe</span>
-0117 R_FG = dtiIntersectFibersWithRoi([],<span class="string">'endpoints'</span>,4,R_roi_3,R_FG);
-0118 <span class="comment">% And that fibers do not head to far anterior</span>
-0119 R_FG = dtiIntersectFibersWithRoi([],<span class="string">'not'</span>,[],R_roi_not,R_FG);
-0120 
-0121 <span class="comment">% Name the fiber groups</span>
-0122 L_FG.name = <span class="string">'L_Arcuate_Posterior'</span>;
-0123 R_FG.name = <span class="string">'R_Arcuate_Posterior'</span>;
-0124 
-0125 <span class="comment">% Save the segmented fiber groups</span>
-0126 dtiWriteFiberGroup(L_FG,fullfile(sub_dir,<span class="string">'fibers'</span>,L_FG.name));
-0127 dtiWriteFiberGroup(R_FG,fullfile(sub_dir,<span class="string">'fibers'</span>,R_FG.name));
-0128 
-0129 <span class="comment">% Show the fiber group if desired</span>
-0130 <span class="keyword">if</span> sum(strcmpi(<span class="string">'showfibers'</span>, varargin)) &gt; 0
-0131     <a href="AFQ_RenderFibers.html" class="code" title="function lightH = AFQ_RenderFibers(fg,varargin)">AFQ_RenderFibers</a>(L_FG,<span class="string">'color'</span>,[0 0 1],<span class="string">'numfibers'</span>,300);
-0132     b0 = readFileNifti(dt.files.b0);
-0133     <a href="AFQ_AddImageTo3dPlot.html" class="code" title="function h = AFQ_AddImageTo3dPlot(nifti, slice, cmap, rescale, alpha, varargin)">AFQ_AddImageTo3dPlot</a>(b0,[-30 0 0]);
-0134     <a href="AFQ_RenderRoi.html" class="code" title="function h = AFQ_RenderRoi(roi, color, method, render)">AFQ_RenderRoi</a>(L_roi_1);
-0135 <span class="keyword">end</span>
-0136 
-0137 <span class="keyword">return</span></pre></div>
-<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+0073 <span class="comment">% Load up template ROIs in MNI space and transform them to the subjects</span>
+0074 <span class="comment">% native space.  dtiCreateRoiFromMniNifti also saves the ROIs</span>
+0075 [~, ~, L_roi_2]=dtiCreateRoiFromMniNifti(dt.dataFile, L_roi_2, invDef, 1);
+0076 [~, ~, R_roi_2]=dtiCreateRoiFromMniNifti(dt.dataFile, R_roi_2, invDef, 1);
+0077 <span class="comment">% Name the ROIs</span>
+0078 L_roi_2.name = <span class="string">'L_Parietal'</span>;
+0079 R_roi_2.name = <span class="string">'R_Parietal'</span>;
+0080 
+0081 <span class="comment">% Load up predefined ROIs for the Arcuate fasciculus. These are computed in</span>
+0082 <span class="comment">% AFQ_SegmentFiberGroups</span>
+0083 [L_roi_not, L_roi_1] = <a href="AFQ_LoadROIs.html" class="code" title="function [roi1, roi2] = AFQ_LoadROIs(fgNumber,sub_dir, afq)">AFQ_LoadROIs</a>(19,sub_dir);
+0084 [R_roi_not, R_roi_1] = <a href="AFQ_LoadROIs.html" class="code" title="function [roi1, roi2] = AFQ_LoadROIs(fgNumber,sub_dir, afq)">AFQ_LoadROIs</a>(20,sub_dir);
+0085 
+0086 <span class="comment">% To eliminate fibers that head too far anterior we will create a full</span>
+0087 <span class="comment">% plane at the y coordinate of the anterior slf roi (around the central</span>
+0088 <span class="comment">% sulcus) and remove fibers that intersect this ROI</span>
+0089 L_roi_not = dtiRoiMakePlane([-60,mean(L_roi_not.coords(:,2)),-60; 60,mean(L_roi_not.coords(:,2)),80]);
+0090 R_roi_not = dtiRoiMakePlane([-60,mean(R_roi_not.coords(:,2)),-60; 60,mean(R_roi_not.coords(:,2)),80]);
+0091 
+0092 <span class="comment">% Intersect the wholebrain fiber group with the ROIs to retain only fibers</span>
+0093 <span class="comment">% that correspond to the posterior segment of the arcuate</span>
+0094 L_FG = dtiIntersectFibersWithRoi([],<span class="string">'and'</span>,[],L_roi_1,wholebrainFG);
+0095 
+0096 <span class="comment">% We want fibers that are traveling superior to inferior as they pass</span>
+0097 <span class="comment">% through the first ROI.  To do this we will restrict the ROI to voxels</span>
+0098 <span class="comment">% with superior-inferior orientation and repeate this process for planes</span>
+0099 <span class="comment">% directly above and below the ROI</span>
+0100 <span class="keyword">for</span> ii = -3:3
+0101     roi_tmp = L_roi_1;
+0102     <span class="comment">% Shift the roi</span>
+0103     roi_tmp.coords(:,3) = roi_tmp.coords(:,3) + ii;
+0104     <span class="comment">% Compute the PDD at each point in each ROI</span>
+0105     roi_pdd = dtiGetValFromTensors(dt.dt6, roi_tmp.coords, inv(dt.xformToAcpc), <span class="string">'pdd'</span>);
+0106     <span class="comment">% Find every coordinate in each VOF ROI where the PDD is in the Z direction</span>
+0107     [~, roi_pddZ] = max(abs(roi_pdd),[],2);
+0108     roi_pddZ = roi_pddZ == 3;
+0109     <span class="comment">% Retain VOF ROI coordinates that have a PDD in the Z direction</span>
+0110     roi_tmp.coords = roi_tmp.coords(roi_pddZ,:);
+0111     L_FG = dtiIntersectFibersWithRoi([],<span class="string">'and'</span>,[],roi_tmp,L_FG);
+0112 <span class="keyword">end</span>
+0113 <span class="comment">%L_FG = dtiIntersectFibersWithRoi([],'and',[],L_roi_2,L_FG);</span>
+0114 <span class="comment">% Make sure endpoints are in the parietal lobe</span>
+0115 L_FG = dtiIntersectFibersWithRoi([],<span class="string">'endpoints'</span>,4,L_roi_2,L_FG);
+0116 <span class="comment">% And that fibers do not head to far anterior</span>
+0117 L_FG = dtiIntersectFibersWithRoi([],<span class="string">'not'</span>,[],L_roi_not,L_FG);
+0118 
+0119 <span class="comment">% Same for the right hemisphere fiber group</span>
+0120 R_FG = dtiIntersectFibersWithRoi([],<span class="string">'and'</span>,[],R_roi_1,wholebrainFG);
+0121 <span class="keyword">for</span> ii = -3:3
+0122     roi_tmp = R_roi_1;
+0123     <span class="comment">% Shift the roi</span>
+0124     roi_tmp.coords(:,3) = roi_tmp.coords(:,3) + ii;
+0125     <span class="comment">% Compute the PDD at each point in each ROI</span>
+0126     roi_pdd = dtiGetValFromTensors(dt.dt6, roi_tmp.coords, inv(dt.xformToAcpc), <span class="string">'pdd'</span>);
+0127     <span class="comment">% Find every coordinate in each VOF ROI where the PDD is in the Z direction</span>
+0128     [~, roi_pddZ] = max(abs(roi_pdd),[],2);
+0129     roi_pddZ = roi_pddZ == 3;
+0130     <span class="comment">% Retain VOF ROI coordinates that have a PDD in the Z direction</span>
+0131     roi_tmp.coords = roi_tmp.coords(roi_pddZ,:);
+0132     R_FG = dtiIntersectFibersWithRoi([],<span class="string">'and'</span>,[],roi_tmp,R_FG);
+0133 <span class="keyword">end</span>
+0134 <span class="comment">%R_FG = dtiIntersectFibersWithRoi([],'and',[],R_roi_2,R_FG);</span>
+0135 <span class="comment">% Make sure endpoints are in the parietal lobe</span>
+0136 R_FG = dtiIntersectFibersWithRoi([],<span class="string">'endpoints'</span>,4,R_roi_2,R_FG);
+0137 <span class="comment">% And that fibers do not head to far anterior</span>
+0138 R_FG = dtiIntersectFibersWithRoi([],<span class="string">'not'</span>,[],R_roi_not,R_FG);
+0139 
+0140 <span class="comment">% Name the fiber groups</span>
+0141 L_FG.name = <span class="string">'L_Arcuate_Posterior'</span>;
+0142 R_FG.name = <span class="string">'R_Arcuate_Posterior'</span>;
+0143 
+0144 <span class="comment">% Save the segmented fiber groups and ROIs</span>
+0145 <span class="keyword">if</span> saveFiles == 1
+0146     dtiWriteFiberGroup(L_FG,fullfile(sub_dir,<span class="string">'fibers'</span>,L_FG.name));
+0147     dtiWriteFiberGroup(R_FG,fullfile(sub_dir,<span class="string">'fibers'</span>,R_FG.name));
+0148     dtiWriteRoi(L_roi_2,fullfile(sub_dir,<span class="string">'ROIs'</span>,L_roi_2.name));
+0149     dtiWriteRoi(R_roi_2,fullfile(sub_dir,<span class="string">'ROIs'</span>,R_roi_2.name));
+0150 <span class="keyword">end</span>
+0151 
+0152 <span class="comment">% Show the fiber group if desired</span>
+0153 <span class="keyword">if</span> sum(strcmpi(<span class="string">'showfibers'</span>, varargin)) &gt; 0
+0154     <a href="../3Dvis/AFQ_RenderFibers.html" class="code" title="function lightH = AFQ_RenderFibers(fg,varargin)">AFQ_RenderFibers</a>(L_FG,<span class="string">'color'</span>,[0 0 1],<span class="string">'numfibers'</span>,300);
+0155     b0 = readFileNifti(dt.files.b0);
+0156     <a href="../3Dvis/AFQ_AddImageTo3dPlot.html" class="code" title="function h = AFQ_AddImageTo3dPlot(nifti, slice, cmap, rescale, alpha, varargin)">AFQ_AddImageTo3dPlot</a>(b0,[-30 0 0]);
+0157     <a href="../3Dvis/AFQ_RenderRoi.html" class="code" title="function h = AFQ_RenderRoi(roi, color, method, render, varargin)">AFQ_RenderRoi</a>(L_roi_1);
+0158 <span class="keyword">end</span>
+0159 
+0160 <span class="keyword">return</span></pre></div>
+<hr><address>Generated on Wed 05-Dec-2012 12:03:42 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
 </body>
 </html>

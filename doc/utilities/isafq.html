@@ -41,7 +41,7 @@ This function calls:
 </ul>
 This function is called by:
 <ul style="list-style-image:url(../matlabicon.gif)">
-<li><a href="../functions/AFQ_WholebrainTractography.html" class="code" title="function fg = AFQ_WholebrainTractography(dt,run_mode,params)">AFQ_WholebrainTractography</a>	Perform whole brain deterministic tractography within a white matter mask</li><li><a href="../functions/AFQ_pca.html" class="code" title="function [coeff, score, subMeans, latent] = AFQ_pca(afq, valname, group, demean)">AFQ_pca</a>	Perform principal components analysis on AFQ Tract Profiles</li></ul>
+<li><a href="../functions/AFQ_AddNewFiberGroup.html" class="code" title="function afq = AFQ_AddNewFiberGroup(afq,fgName,roi1Name,roi2Name,cleanFibers,computeVals)">AFQ_AddNewFiberGroup</a>	THIS FUNCTION IS STILL BEING DEVELOPED</li><li><a href="../functions/AFQ_MakeFGProbabilityMap.html" class="code" title="function [fgPmap, fgEndPmap] = AFQ_MakeFGProbabilityMap(dtPaths,fgPaths,writeImage)">AFQ_MakeFGProbabilityMap</a>	Make a fiber tract probability map from fiber group segmentations</li><li><a href="../functions/AFQ_WholebrainTractography.html" class="code" title="function fg = AFQ_WholebrainTractography(dt,run_mode,params)">AFQ_WholebrainTractography</a>	Perform whole brain deterministic tractography within a white matter mask</li><li><a href="../functions/AFQ_pca.html" class="code" title="function [coeff, score, subMeans, latent] = AFQ_pca(afq, valname, group, demean)">AFQ_pca</a>	Perform principal components analysis on AFQ Tract Profiles</li><li><a href="../functions/AFQ_plot.html" class="code" title="function AFQ_plot(varargin)">AFQ_plot</a>	This function will plot AFQ results in a variety of ways</li></ul>
 <!-- crossreference -->
 
 
@@ -55,7 +55,11 @@ This function is called by:
 0006 <span class="comment">% Returns a 0 (false) if the input is not an afq structure and a 1 (true)</span>
 0007 <span class="comment">% if it is</span>
 0008 
-0009 log = isstruct(afq) &amp;&amp; isfield(afq,<span class="string">'type'</span>) &amp;&amp; strcmp(afq.type,<span class="string">'afq version 1'</span>);</pre></div>
-<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+0009 <span class="keyword">if</span> exist(<span class="string">'afq'</span>,<span class="string">'var'</span>) &amp;&amp; ~isempty(afq)
+0010     log = isstruct(afq) &amp;&amp; isfield(afq,<span class="string">'type'</span>) &amp;&amp; strcmp(afq.type,<span class="string">'afq version 1'</span>);
+0011 <span class="keyword">else</span>
+0012     log = false;
+0013 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 05-Dec-2012 12:03:42 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
 </body>
 </html>

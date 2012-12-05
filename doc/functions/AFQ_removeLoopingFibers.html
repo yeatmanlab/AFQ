@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of AFQ_removeLoopingFibers</title>
+  <meta name="keywords" content="AFQ_removeLoopingFibers">
+  <meta name="description" content="Remove fibers from a fiber group that loop and double back on themselves">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">functions</a> &gt; AFQ_removeLoopingFibers.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for functions&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>AFQ_removeLoopingFibers
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Remove fibers from a fiber group that loop and double back on themselves</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [fg, keep] = AFQ_removeLoopingFibers(fg, span) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Remove fibers from a fiber group that loop and double back on themselves
+
+ [fg, keep] = AFQ_removeLoopingFibers(fg)
+
+ Copyright Jason D. Yeatman December 2012</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [fg, keep] = AFQ_removeLoopingFibers(fg, span)</a>
+0002 <span class="comment">% Remove fibers from a fiber group that loop and double back on themselves</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% [fg, keep] = AFQ_removeLoopingFibers(fg)</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Copyright Jason D. Yeatman December 2012</span>
+0007 
+0008 <span class="keyword">if</span> ~exist(<span class="string">'fg'</span>,<span class="string">'var'</span>) || isempty(fg)
+0009     error(<span class="string">'please provide a fiber group'</span>)
+0010 <span class="keyword">end</span>
+0011 <span class="keyword">if</span> ~exist(<span class="string">'span'</span>,<span class="string">'var'</span>) || isempty(span)
+0012     span = 11;
+0013 <span class="keyword">end</span>
+0014 
+0015 <span class="comment">% Loop over the fibers</span>
+0016 <span class="keyword">for</span> ii = 1:length(fg.fibers)
+0017     <span class="comment">% Compute the spatial derivative of the fiber. This is the direction of</span>
+0018     <span class="comment">% the tangent vector at that point</span>
+0019     dX = gradient(fg.fibers{ii}(1,:));
+0020     dY = gradient(fg.fibers{ii}(2,:));
+0021     dZ = gradient(fg.fibers{ii}(3,:));
+0022     <span class="comment">% Convert these to cartesian coordinates</span>
+0023     [az{ii},el{ii}] = cart2sph(dX,dY,dZ);
+0024     <span class="comment">% Convert from radians to degrees</span>
+0025     az{ii}=az{ii} .* (180/pi);
+0026     el{ii}=el{ii} .* (180/pi);
+0027     <span class="comment">% Compute the difference in angle between adjacent points</span>
+0028     del{ii} = [0 diff(el{ii})];
+0029     daz{ii} = [0 diff(az{ii})];
+0030     <span class="comment">% Compute the running average with a smoothing window of 11 points.</span>
+0031     delS{ii} = smooth(del{ii},span) .* span;
+0032     dazS{ii} = smooth(daz{ii},span) .* span;
+0033     <span class="comment">% Compute the total elevation and azimuth change for the fiber</span>
+0034     elSum(ii) = sum(del{ii});
+0035     azSum(ii) = sum(daz{ii});
+0036     <span class="comment">% Compute the maximum local change over a window of 11 points but not</span>
+0037     <span class="comment">% considering the ends of the fiber because there are weird end effects</span>
+0038     <span class="comment">% for running average smoothing</span>
+0039     elSumLocMax(ii) = max(delS{ii}(round(span./2):end-round(span./2)));
+0040     azSumLocMax(ii) = max(dazS{ii}(round(span./2):end-round(span./2)));
+0041 <span class="keyword">end</span>
+0042 <span class="comment">% Keep fibers that never make a 180 within a local region and never turn</span>
+0043 <span class="comment">% more than 270 degrees in one direction over their whole length</span>
+0044 keep = elSum&lt;270 &amp; elSumLocMax&lt;180 &amp; azSum&lt;270  &amp; azSumLocMax&lt;180;</pre></div>
+<hr><address>Generated on Wed 05-Dec-2012 12:03:42 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

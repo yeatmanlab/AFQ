@@ -24,12 +24,12 @@
 <div class="box"><strong>Compute a multiple comparison correction for Tract Profile data</strong></div>
 
 <h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
-<div class="box"><strong>function [alphaFWE statFWE clusterFWE stats] = AFQ_MultiCompCorrection(data,y,alpha, method) </strong></div>
+<div class="box"><strong>function [alphaFWE, statFWE, clusterFWE, stats] = AFQ_MultiCompCorrection(data,y,alpha, method) </strong></div>
 
 <h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
 <div class="fragment"><pre class="comment"> Compute a multiple comparison correction for Tract Profile data
 
-   [alphaFWE statFWE clusterFWE] = AFQ_MultiCompCorrection(data,y,alpha, method)
+   [alphaFWE, statFWE, clusterFWE, stats] = AFQ_MultiCompCorrection(data,y,alpha, method)
 
  There are 2 multiple comparison corrections implemented. Both account for
  the correlation structure in the data but in different ways.
@@ -64,8 +64,8 @@
             grouping variable for which pointwise statistics will be
             computed on the Tract Profile and the p-value adjusted for
             mulltiple comparisons will be determined.  If y is a
-            continuous variable the correlations will be computed. If y is
-            a binary vector then T-tests will be computed.
+            continuous variable then correlations will be computed. If y 
+            is a binary vector then T-tests will be computed.
  alpha    = The desired alpha (pvalue) to adjust
  method   = 'permutation' or 'chevrud'. We strongly recomend 'permutation'
 
@@ -100,10 +100,10 @@ This function is called by:
 
 
 <h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
-<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [alphaFWE statFWE clusterFWE stats] = AFQ_MultiCompCorrection(data,y,alpha, method)</a>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [alphaFWE, statFWE, clusterFWE, stats] = AFQ_MultiCompCorrection(data,y,alpha, method)</a>
 0002 <span class="comment">% Compute a multiple comparison correction for Tract Profile data</span>
 0003 <span class="comment">%</span>
-0004 <span class="comment">%   [alphaFWE statFWE clusterFWE] = AFQ_MultiCompCorrection(data,y,alpha, method)</span>
+0004 <span class="comment">%   [alphaFWE, statFWE, clusterFWE, stats] = AFQ_MultiCompCorrection(data,y,alpha, method)</span>
 0005 <span class="comment">%</span>
 0006 <span class="comment">% There are 2 multiple comparison corrections implemented. Both account for</span>
 0007 <span class="comment">% the correlation structure in the data but in different ways.</span>
@@ -138,8 +138,8 @@ This function is called by:
 0036 <span class="comment">%            grouping variable for which pointwise statistics will be</span>
 0037 <span class="comment">%            computed on the Tract Profile and the p-value adjusted for</span>
 0038 <span class="comment">%            mulltiple comparisons will be determined.  If y is a</span>
-0039 <span class="comment">%            continuous variable the correlations will be computed. If y is</span>
-0040 <span class="comment">%            a binary vector then T-tests will be computed.</span>
+0039 <span class="comment">%            continuous variable then correlations will be computed. If y</span>
+0040 <span class="comment">%            is a binary vector then T-tests will be computed.</span>
 0041 <span class="comment">% alpha    = The desired alpha (pvalue) to adjust</span>
 0042 <span class="comment">% method   = 'permutation' or 'chevrud'. We strongly recomend 'permutation'</span>
 0043 <span class="comment">%</span>
@@ -303,6 +303,6 @@ This function is called by:
 0201 <span class="keyword">return</span>
 0202 
 0203</pre></div>
-<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+<hr><address>Generated on Wed 05-Dec-2012 12:03:42 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
 </body>
 </html>

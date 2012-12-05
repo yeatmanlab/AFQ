@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of simulateDiffusion</title>
+  <meta name="keywords" content="simulateDiffusion">
+  <meta name="description" content="% Simulate diffusion">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">utilities</a> &gt; simulateDiffusion.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for utilities&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>simulateDiffusion
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>% Simulate diffusion</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">% Simulate diffusion
+ layout axons</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="../3Dvis/AFQ_RenderEllipsoid.html" class="code" title="function xyzData = AFQ_RenderEllipsoid(Q,C,N,color,newFigure)">AFQ_RenderEllipsoid</a>	Plot a diffusion ellipsoid from a tensor</li><li><a href="../3Dvis/AFQ_RenderFibers.html" class="code" title="function lightH = AFQ_RenderFibers(fg,varargin)">AFQ_RenderFibers</a>	Render a fiber group and tract profile in 3-D</li><li><a href="computeGaussianDisplacement.html" class="code" title="function [Cnew v] = computeGaussianDisplacement(Q, C)">computeGaussianDisplacement</a>	Compute the displacements of N particles givent a tensor</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">%% Simulate diffusion</span>
+0002 <span class="comment">% layout axons</span>
+0003 L =100;
+0004 [X,Y] = meshgrid(1:5,1:5);
+0005 x = X(:); y = Y(:);
+0006 <span class="keyword">for</span> ii = 1:length(x)
+0007     fg.fibers{ii} = [ones(L,1)*x(ii) ones(L,1)*y(ii) [1:L]'];
+0008 <span class="keyword">end</span>
+0009 <a href="../3Dvis/AFQ_RenderFibers.html" class="code" title="function lightH = AFQ_RenderFibers(fg,varargin)">AFQ_RenderFibers</a>(fg,<span class="string">'radius'</span>,.3,<span class="string">'color'</span>,[.6 0.3 0.2],<span class="string">'jittercolor'</span>,0,<span class="string">'jittershading'</span>,0,<span class="string">'subdivs'</span>,10)
+0010 set(gca,<span class="string">'color'</span>,[0 0 0]);axis(<span class="string">'off'</span>);set(gcf,<span class="string">'color'</span>,[0 0 0]);
+0011 <span class="comment">% add water</span>
+0012 C = rand(100,3)*3;Q = eye(3);
+0013 <span class="keyword">for</span> ii = 1:100
+0014     C = <a href="computeGaussianDisplacement.html" class="code" title="function [Cnew v] = computeGaussianDisplacement(Q, C)">computeGaussianDisplacement</a>(Q,C);
+0015     <span class="keyword">for</span> jj = 1:100
+0016         <a href="../3Dvis/AFQ_RenderEllipsoid.html" class="code" title="function xyzData = AFQ_RenderEllipsoid(Q,C,N,color,newFigure)">AFQ_RenderEllipsoid</a>(eye(3).*.2,C(jj,:),5,[0 .5 1],0);
+0017     <span class="keyword">end</span>
+0018     pause(.2)
+0019 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 05-Dec-2012 12:03:42 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

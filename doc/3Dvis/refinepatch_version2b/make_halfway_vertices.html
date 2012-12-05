@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of make_halfway_vertices</title>
+  <meta name="keywords" content="make_halfway_vertices">
+  <meta name="description" content="ETV_index_sparse=sparse(size(V,1),size(V,1));">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">3Dvis</a> &gt; <a href="index.html">refinepatch_version2b</a> &gt; make_halfway_vertices.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for 3Dvis/refinepatch_version2b&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>make_halfway_vertices
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>ETV_index_sparse=sparse(size(V,1),size(V,1));</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [Vout,HT_index, HT_values]=make_halfway_vertices(EV_table,ET_table,ETV_index,V,Ne) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> ETV_index_sparse=sparse(size(V,1),size(V,1));
+
+ for i=1:size(ETV_index,1)
+     if(ETV_index(i,1)&gt;0)
+         ETV_index_sparse(ETV_index(i,1),ETV_index(i,2))=i;
+     else
+         ET_table=ET_table(1:(i-1),:);
+         EV_table=EV_table(1:(i-1));
+         break
+     end
+ end</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="refinepatch.html" class="code" title="function [FV2]=refinepatch(FV)">refinepatch</a>	This function "refinepatch" refines a triangular mesh with</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [Vout,HT_index, HT_values]=make_halfway_vertices(EV_table,ET_table,ETV_index,V,Ne)</a>
+0002 <span class="comment">% ETV_index_sparse=sparse(size(V,1),size(V,1));</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% for i=1:size(ETV_index,1)</span>
+0005 <span class="comment">%     if(ETV_index(i,1)&gt;0)</span>
+0006 <span class="comment">%         ETV_index_sparse(ETV_index(i,1),ETV_index(i,2))=i;</span>
+0007 <span class="comment">%     else</span>
+0008 <span class="comment">%         ET_table=ET_table(1:(i-1),:);</span>
+0009 <span class="comment">%         EV_table=EV_table(1:(i-1));</span>
+0010 <span class="comment">%         break</span>
+0011 <span class="comment">%     end</span>
+0012 <span class="comment">% end</span>
+0013 
+0014 
+0015 <span class="comment">% Table to cell array</span>
+0016 ETV_index_vall=cell(length(V),1);
+0017 <span class="keyword">for</span> i=1:size(ETV_index,1)
+0018     <span class="keyword">if</span>(ETV_index(i,1)&gt;0)
+0019         ETV_index_vall{ETV_index(i,1)}=[ETV_index_vall{ETV_index(i,1)} i];
+0020     <span class="keyword">else</span>
+0021         ET_table=ET_table(1:(i-1),:);
+0022         EV_table=EV_table(1:(i-1));
+0023         <span class="keyword">break</span>;
+0024     <span class="keyword">end</span>
+0025 <span class="keyword">end</span>
+0026 
+0027 HT_index=cell(length(V),1);
+0028 HT_values=cell(length(V),1);
+0029 
+0030 <span class="comment">% Make output V</span>
+0031 Vout=zeros(size(V,1)*4,3);
+0032 Vout(1:size(V,1),:)=V;
+0033 Vindex=size(V,1);
+0034 
+0035 <span class="keyword">for</span> i=1:length(V)
+0036     Pneig=Ne{i};
+0037     <span class="keyword">for</span> j=1:length(Pneig);
+0038         <span class="comment">% Get the tangent and velocity of the edge P -&gt; Pneig</span>
+0039         index=Ne{i}; vals=ETV_index_vall{i}; select1=vals(index==Pneig(j));
+0040         Va=EV_table( select1); Ea=ET_table( select1,:);
+0041         <span class="comment">% Get the tangent and velocity of the edge Pneig -&gt; P</span>
+0042         index=Ne{Pneig(j)}; vals=ETV_index_vall{Pneig(j)}; select2=vals(index==i);
+0043         Vb=EV_table(select2); Eb=ET_table(select2,:);
+0044             
+0045         <span class="comment">% The four points describing the spline</span>
+0046         P0=V(i,:);
+0047         P3=V(Pneig(j),:);
+0048         P1=P0+Ea*Va/3;
+0049         P2=P3+Eb*Vb/3;
+0050                
+0051         <span class="comment">% Spline used to calculated the xyz coordinate of the middle of each edge;</span>
+0052         c = 3*(P1 - P0);
+0053         b = 3*(P2 - P1) - c;
+0054         a = P3 - P0 - c - b;
+0055        
+0056         halfwayp = a*0.125 + b*0.250 + c*0.500 + P0;
+0057         
+0058         <span class="comment">% Save the edge middle point</span>
+0059         <span class="keyword">if</span>(sum(HT_index{i}==Pneig(j))==0)
+0060             Vindex=Vindex+1;
+0061             Vout(Vindex,:)=halfwayp;
+0062             HT_index {i}= [HT_index{i} Pneig(j)];
+0063             HT_values{i}=[HT_values{i} Vindex];
+0064             HT_index {Pneig(j)}=[HT_index{ Pneig(j)} i];
+0065             HT_values{Pneig(j)}=[HT_values{Pneig(j)} Vindex];
+0066         <span class="keyword">end</span>
+0067     <span class="keyword">end</span>
+0068 <span class="keyword">end</span>
+0069 Vout=Vout(1:Vindex,:);</pre></div>
+<hr><address>Generated on Wed 05-Dec-2012 12:03:42 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,187 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of smoothpatch</title>
+  <meta name="keywords" content="smoothpatch">
+  <meta name="description" content="This function PATCHSMOOTH smooths a triangulated Mesh, with accurate">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">3Dvis</a> &gt; <a href="index.html">smoothpatch_version1b</a> &gt; smoothpatch.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for 3Dvis/smoothpatch_version1b&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>smoothpatch
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This function PATCHSMOOTH smooths a triangulated Mesh, with accurate</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function FV2=smoothpatch(FV,mode,itt,lambda,sigma) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> This function PATCHSMOOTH smooths a triangulated Mesh, with accurate
+ curvature flow smoothing, or laplacian smoothing with inverse vertice
+ distance based umbrella weights.
+
+ FV2=smoothpatch(FV,mode,itt,lambda,sigma);
+
+ Inputs,
+   FV : A struct containing FV.faces with a facelist Nx3 and FV.vertices
+        with a Nx3 vertices list. Such a structure is created by Matlab
+        Patch function
+   mode : value 0 or 1 (default)
+          If zero uses inverse distance between vertices as weights. The
+          mesh becomes smoother but also edge distances more uniform
+          If one uses the normalized curvature operator as weights. The
+          mesh is mainly smoothed in the normal direction, thus the
+          orignal ratio in length between edges is preserved.
+   itt : Number of smoothing itterations (default 1)
+   lambda : Amount of smoothing [0....1] (default 1)
+   sigma : (If mode is 0), Influence of neighbour point is 
+             Weight = 1 / ( inverse distance + sigma)   (default sigma=1);
+ Outputs,
+   FV2 : A struct containing the smoothed patch
+
+ Literature:
+ Mathieu Desbrun et al. &quot;Implicit Faring of Irregular Meshes using
+     Diffusion and Curvature Flow&quot;
+ Alexander Belyaev. &quot;Curvature Estimation&quot;
+
+ Example,
+   % Compile the c-code functions
+   mex smoothpatch_curvature_double.c -v
+   mex smoothpatch_inversedistance_double.c -v
+   mex vertex_neighbours_double.c -v
+
+   % Load a triangulated mesh of a sphere
+   load MRI;
+   D = squeeze(D);
+   FV = isosurface(D,1);
+
+   % Calculate the smoothed version
+   FV2=smoothpatch(FV,1,5);
+
+   % Show the mesh and smoothed mesh
+   figure, 
+    subplot(1,2,1), patch(FV,'FaceColor',[1 0 0],'EdgeAlpha',0);  view(3); camlight
+    subplot(1,2,2), patch(FV2,'FaceColor',[0 0 1],'EdgeAlpha',0); view(3); camlight
+
+ Function is written by D.Kroon University of Twente (June 2009)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../3Dvis/refinepatch_version2b/vertex_neighbours.html" class="code" title="function Ne=vertex_neighbours(FV)">vertex_neighbours</a>	This function VERTEX_NEIGHBOURS will search in a face list for all</li><li><a href="vertex_neighbours.html" class="code" title="function Ne=vertex_neighbours(FV)">vertex_neighbours</a>	This function VERTEX_NEIGHBOURS will search in a face list for all</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../3Dvis/AFQ_meshCreate.html" class="code" title="function msh = AFQ_meshCreate(im, varargin)">AFQ_meshCreate</a>	Create a mesh structure and build a 3d mesh from a nifti image</li><li><a href="../../3Dvis/AFQ_meshSet.html" class="code" title="function msh = AFQ_meshSet(msh, param, varargin)">AFQ_meshSet</a>	Set fields in the AFQ msh mesh structure</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function FV2=smoothpatch(FV,mode,itt,lambda,sigma)</a>
+0002 <span class="comment">% This function PATCHSMOOTH smooths a triangulated Mesh, with accurate</span>
+0003 <span class="comment">% curvature flow smoothing, or laplacian smoothing with inverse vertice</span>
+0004 <span class="comment">% distance based umbrella weights.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% FV2=smoothpatch(FV,mode,itt,lambda,sigma);</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% Inputs,</span>
+0009 <span class="comment">%   FV : A struct containing FV.faces with a facelist Nx3 and FV.vertices</span>
+0010 <span class="comment">%        with a Nx3 vertices list. Such a structure is created by Matlab</span>
+0011 <span class="comment">%        Patch function</span>
+0012 <span class="comment">%   mode : value 0 or 1 (default)</span>
+0013 <span class="comment">%          If zero uses inverse distance between vertices as weights. The</span>
+0014 <span class="comment">%          mesh becomes smoother but also edge distances more uniform</span>
+0015 <span class="comment">%          If one uses the normalized curvature operator as weights. The</span>
+0016 <span class="comment">%          mesh is mainly smoothed in the normal direction, thus the</span>
+0017 <span class="comment">%          orignal ratio in length between edges is preserved.</span>
+0018 <span class="comment">%   itt : Number of smoothing itterations (default 1)</span>
+0019 <span class="comment">%   lambda : Amount of smoothing [0....1] (default 1)</span>
+0020 <span class="comment">%   sigma : (If mode is 0), Influence of neighbour point is</span>
+0021 <span class="comment">%             Weight = 1 / ( inverse distance + sigma)   (default sigma=1);</span>
+0022 <span class="comment">% Outputs,</span>
+0023 <span class="comment">%   FV2 : A struct containing the smoothed patch</span>
+0024 <span class="comment">%</span>
+0025 <span class="comment">% Literature:</span>
+0026 <span class="comment">% Mathieu Desbrun et al. &quot;Implicit Faring of Irregular Meshes using</span>
+0027 <span class="comment">%     Diffusion and Curvature Flow&quot;</span>
+0028 <span class="comment">% Alexander Belyaev. &quot;Curvature Estimation&quot;</span>
+0029 <span class="comment">%</span>
+0030 <span class="comment">% Example,</span>
+0031 <span class="comment">%   % Compile the c-code functions</span>
+0032 <span class="comment">%   mex smoothpatch_curvature_double.c -v</span>
+0033 <span class="comment">%   mex smoothpatch_inversedistance_double.c -v</span>
+0034 <span class="comment">%   mex vertex_neighbours_double.c -v</span>
+0035 <span class="comment">%</span>
+0036 <span class="comment">%   % Load a triangulated mesh of a sphere</span>
+0037 <span class="comment">%   load MRI;</span>
+0038 <span class="comment">%   D = squeeze(D);</span>
+0039 <span class="comment">%   FV = isosurface(D,1);</span>
+0040 <span class="comment">%</span>
+0041 <span class="comment">%   % Calculate the smoothed version</span>
+0042 <span class="comment">%   FV2=smoothpatch(FV,1,5);</span>
+0043 <span class="comment">%</span>
+0044 <span class="comment">%   % Show the mesh and smoothed mesh</span>
+0045 <span class="comment">%   figure,</span>
+0046 <span class="comment">%    subplot(1,2,1), patch(FV,'FaceColor',[1 0 0],'EdgeAlpha',0);  view(3); camlight</span>
+0047 <span class="comment">%    subplot(1,2,2), patch(FV2,'FaceColor',[0 0 1],'EdgeAlpha',0); view(3); camlight</span>
+0048 <span class="comment">%</span>
+0049 <span class="comment">% Function is written by D.Kroon University of Twente (June 2009)</span>
+0050 <span class="keyword">if</span>(nargin&lt;2), mode =1; <span class="keyword">end</span>
+0051 <span class="keyword">if</span>(nargin&lt;3), itt=1; <span class="keyword">end</span>
+0052 <span class="keyword">if</span>(nargin&lt;4), lambda=1; <span class="keyword">end</span>
+0053 <span class="keyword">if</span>(nargin&lt;5), sigma=1; <span class="keyword">end</span>
+0054 
+0055 sizev=size(FV.vertices);
+0056 <span class="comment">% Check size of vertice array</span>
+0057 <span class="keyword">if</span>((sizev(2)~=3)||(length(sizev)~=2))
+0058     error(<span class="string">'patchnormals:inputs'</span>,<span class="string">'The vertice list is not a m x 3 array'</span>)
+0059 <span class="keyword">end</span>
+0060 
+0061 sizef=size(FV.faces);
+0062 <span class="comment">% Check size of vertice array</span>
+0063 <span class="keyword">if</span>((sizef(2)~=3)||(length(sizef)~=2))
+0064     error(<span class="string">'patchnormals:inputs'</span>,<span class="string">'The vertice list is not a m x 3 array'</span>)
+0065 <span class="keyword">end</span>
+0066 
+0067 <span class="comment">% Check if vertice indices exist</span>
+0068 <span class="keyword">if</span>(max(FV.faces(:))&gt;size(FV.vertices,1))
+0069     error(<span class="string">'patchnormals:inputs'</span>,<span class="string">'The face list contains an undefined vertex index'</span>)
+0070 <span class="keyword">end</span>
+0071 
+0072 <span class="comment">% Check if vertice indices exist</span>
+0073 <span class="keyword">if</span>(min(FV.faces(:))&lt;1)
+0074     error(<span class="string">'patchnormals:inputs'</span>,<span class="string">'The face list contains an vertex index smaller then 1'</span>)
+0075 <span class="keyword">end</span>
+0076 
+0077 FV.vertices=double(FV.vertices);
+0078 FV.faces=double(FV.faces);
+0079 <span class="keyword">if</span>(mode==1)
+0080     <span class="comment">% Get the neighbour vertices of each vertice from the face list.</span>
+0081     Ne=<a href="vertex_neighbours.html" class="code" title="function Ne=vertex_neighbours(FV)">vertex_neighbours</a>(FV);
+0082     <span class="comment">% Do the curvature weighted smoothing</span>
+0083     [Vx,Vy,Vz]=smoothpatch_curvature_double(double(FV.faces(:,1)),double(FV.faces(:,2)),double(FV.faces(:,3)),double(FV.vertices(:,1)),double(FV.vertices(:,2)),double(FV.vertices(:,3)),ceil(double(itt)),[double(lambda) double(sigma)],Ne);
+0084 <span class="keyword">else</span>
+0085     <span class="comment">% Do the umbrella inverse distance weighted smoothing</span>
+0086     [Vx,Vy,Vz]=smoothpatch_inversedistance_double(double(FV.faces(:,1)),double(FV.faces(:,2)),double(FV.faces(:,3)),double(FV.vertices(:,1)),double(FV.vertices(:,2)),double(FV.vertices(:,3)),ceil(double(itt)),[double(lambda) double(sigma)]);
+0087 <span class="keyword">end</span>
+0088 
+0089 FV2=FV;
+0090 FV2.vertices(:,1)=Vx;
+0091 FV2.vertices(:,2)=Vy;
+0092 FV2.vertices(:,3)=Vz;
+0093</pre></div>
+<hr><address>Generated on Wed 05-Dec-2012 12:03:42 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

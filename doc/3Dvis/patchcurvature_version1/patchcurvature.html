@@ -1,0 +1,428 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of patchcurvature</title>
+  <meta name="keywords" content="patchcurvature">
+  <meta name="description" content="This function calculates the principal curvature directions and values">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">3Dvis</a> &gt; <a href="index.html">patchcurvature_version1</a> &gt; patchcurvature.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for 3Dvis/patchcurvature_version1&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>patchcurvature
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This function calculates the principal curvature directions and values</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [Cmean,Cgaussian,Dir1,Dir2,Lambda1,Lambda2]=patchcurvature(FV,usethird) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> This function calculates the principal curvature directions and values
+ of a triangulated mesh. 
+
+ The function first rotates the data so the normal of the current
+ vertex becomes [-1 0 0], so we can describe the data by XY instead of
+ XYZ.
+ Secondly it fits a least-squares quadratic patch to the local 
+ neighborhood of a vertex &quot;f(x,y) = ax^2 + by^2 + cxy + dx + ey + f&quot;. 
+ Then the eigenvectors and eigenvalues of the hessian are used to
+ calculate the principal, mean and gaussian curvature.
+
+ [Cmean,Cgaussian,Dir1,Dir2,Lambda1,Lambda2]=patchcurvature(FV,usethird)
+
+ inputs,
+   FV : A triangulated mesh (see Patch)
+   usethird : Use third order neighbour vertices for the curvature
+              fit, making it smoother but less local. true/ false (default)
+
+ outputs,
+   Cmean : Mean Curvature
+   Cgaussian : Gaussian Curvature
+   Dir1 : XYZ Direction of first Principal component
+   Dir2 : XYZ Direction of second Principal component
+   Lambda1 : value of first Principal component
+   Lambda2 : value of second Principal component
+
+ Example, Jaw
+   load('testdata.mat');
+
+   [Cmean,Cgaussian,Dir1,Dir2,Lambda1,Lambda2]=patchcurvature(FV,true);
+
+   figure, title('Principal A');
+     p1=FV.vertices-2*Dir1; p2=FV.vertices+2*Dir1;       
+     plot3([p1(:,1) p2(:,1)]',[p1(:,2) p2(:,2)]',[p1(:,3) p2(:,3)]','g-');
+     axis equal; view(3) 
+   figure, title('Principal B');
+     p1=FV.vertices-2*Dir2; p2=FV.vertices+2*Dir2;       
+     plot3([p1(:,1) p2(:,1)]',[p1(:,2) p2(:,2)]',[p1(:,3) p2(:,3)]','r-');
+     axis equal; view(3)
+
+
+ Example, Cylinder
+   load('testdata2.mat');
+
+   [Cmean,Cgaussian,Dir1,Dir2,Lambda1,Lambda2]=patchcurvature(FV);
+
+   figure,
+   subplot(2,2,1), title('Mean Curvature');
+     C=Cmean;
+     patch(FV,'FaceColor','interp','FaceVertexCData',C,'edgecolor','none');
+     axis equal; view(3)
+   subplot(2,2,2), title('Gaussian Curvature');
+     C=Cgaussian;
+     patch(FV,'FaceColor','interp','FaceVertexCData',C,'edgecolor','none');
+     axis equal; view(3)
+   subplot(2,2,3), title('Principal A');
+     p1=FV.vertices-2*Dir1; p2=FV.vertices+2*Dir1;       
+     plot3([p1(:,1) p2(:,1)]',[p1(:,2) p2(:,2)]',[p1(:,3) p2(:,3)]','g-');
+     axis equal; view(3) 
+   subplot(2,2,4), title('Principal B');
+     p1=FV.vertices-2*Dir2; p2=FV.vertices+2*Dir2;       
+     plot3([p1(:,1) p2(:,1)]',[p1(:,2) p2(:,2)]',[p1(:,3) p2(:,3)]','r-');
+     axis equal; view(3)
+     
+
+ Function is written by D.Kroon University of Twente (August 2011)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../3Dvis/patch_normals/patchnormals.html" class="code" title="function N=patchnormals(FV)">patchnormals</a>	This function PATCHNORMALS calculates the normals of a triangulated</li><li><a href="../../3Dvis/patch_normals/patchnormals_double.html" class="code" title="function [Nx,Ny,Nz]=patchnormals_double(Fa,Fb,Fc,Vx,Vy,Vz)">patchnormals_double</a>	</li><li><a href="../../3Dvis/refinepatch_version2b/vertex_neighbours.html" class="code" title="function Ne=vertex_neighbours(FV)">vertex_neighbours</a>	This function VERTEX_NEIGHBOURS will search in a face list for all</li><li><a href="../../3Dvis/refinepatch_version2b/vertex_neighbours_double.html" class="code" title="function Ne=vertex_neighbours_double(Fa,Fb,Fc,Vx,Vy,Vz)">vertex_neighbours_double</a>	</li><li><a href="../../3Dvis/smoothpatch_version1b/vertex_neighbours.html" class="code" title="function Ne=vertex_neighbours(FV)">vertex_neighbours</a>	This function VERTEX_NEIGHBOURS will search in a face list for all</li><li><a href="../../3Dvis/smoothpatch_version1b/vertex_neighbours_double.html" class="code" title="function Ne=vertex_neighbours_double(Fa,Fb,Fc,Vx,Vy,Vz)">vertex_neighbours_double</a>	</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function [Lambda1,Lambda2,I1,I2]=eig2(Dxx,Dxy,Dyy)</a></li><li><a href="#_sub2" class="code">function N=patchnormals(FV)</a></li><li><a href="#_sub3" class="code">function [Nx,Ny,Nz]=patchnormals_double(Fa,Fb,Fc,Vx,Vy,Vz)</a></li><li><a href="#_sub4" class="code">function [M,Minv]=VectorRotationMatrix(v)</a></li><li><a href="#_sub5" class="code">function Ne=vertex_neighbours(FV)</a></li><li><a href="#_sub6" class="code">function Ne=vertex_neighbours_double(Fa,Fb,Fc,Vx,Vy,Vz)</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [Cmean,Cgaussian,Dir1,Dir2,Lambda1,Lambda2]=patchcurvature(FV,usethird)</a>
+0002 <span class="comment">% This function calculates the principal curvature directions and values</span>
+0003 <span class="comment">% of a triangulated mesh.</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% The function first rotates the data so the normal of the current</span>
+0006 <span class="comment">% vertex becomes [-1 0 0], so we can describe the data by XY instead of</span>
+0007 <span class="comment">% XYZ.</span>
+0008 <span class="comment">% Secondly it fits a least-squares quadratic patch to the local</span>
+0009 <span class="comment">% neighborhood of a vertex &quot;f(x,y) = ax^2 + by^2 + cxy + dx + ey + f&quot;.</span>
+0010 <span class="comment">% Then the eigenvectors and eigenvalues of the hessian are used to</span>
+0011 <span class="comment">% calculate the principal, mean and gaussian curvature.</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% [Cmean,Cgaussian,Dir1,Dir2,Lambda1,Lambda2]=patchcurvature(FV,usethird)</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% inputs,</span>
+0016 <span class="comment">%   FV : A triangulated mesh (see Patch)</span>
+0017 <span class="comment">%   usethird : Use third order neighbour vertices for the curvature</span>
+0018 <span class="comment">%              fit, making it smoother but less local. true/ false (default)</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">% outputs,</span>
+0021 <span class="comment">%   Cmean : Mean Curvature</span>
+0022 <span class="comment">%   Cgaussian : Gaussian Curvature</span>
+0023 <span class="comment">%   Dir1 : XYZ Direction of first Principal component</span>
+0024 <span class="comment">%   Dir2 : XYZ Direction of second Principal component</span>
+0025 <span class="comment">%   Lambda1 : value of first Principal component</span>
+0026 <span class="comment">%   Lambda2 : value of second Principal component</span>
+0027 <span class="comment">%</span>
+0028 <span class="comment">% Example, Jaw</span>
+0029 <span class="comment">%   load('testdata.mat');</span>
+0030 <span class="comment">%</span>
+0031 <span class="comment">%   [Cmean,Cgaussian,Dir1,Dir2,Lambda1,Lambda2]=patchcurvature(FV,true);</span>
+0032 <span class="comment">%</span>
+0033 <span class="comment">%   figure, title('Principal A');</span>
+0034 <span class="comment">%     p1=FV.vertices-2*Dir1; p2=FV.vertices+2*Dir1;</span>
+0035 <span class="comment">%     plot3([p1(:,1) p2(:,1)]',[p1(:,2) p2(:,2)]',[p1(:,3) p2(:,3)]','g-');</span>
+0036 <span class="comment">%     axis equal; view(3)</span>
+0037 <span class="comment">%   figure, title('Principal B');</span>
+0038 <span class="comment">%     p1=FV.vertices-2*Dir2; p2=FV.vertices+2*Dir2;</span>
+0039 <span class="comment">%     plot3([p1(:,1) p2(:,1)]',[p1(:,2) p2(:,2)]',[p1(:,3) p2(:,3)]','r-');</span>
+0040 <span class="comment">%     axis equal; view(3)</span>
+0041 <span class="comment">%</span>
+0042 <span class="comment">%</span>
+0043 <span class="comment">% Example, Cylinder</span>
+0044 <span class="comment">%   load('testdata2.mat');</span>
+0045 <span class="comment">%</span>
+0046 <span class="comment">%   [Cmean,Cgaussian,Dir1,Dir2,Lambda1,Lambda2]=patchcurvature(FV);</span>
+0047 <span class="comment">%</span>
+0048 <span class="comment">%   figure,</span>
+0049 <span class="comment">%   subplot(2,2,1), title('Mean Curvature');</span>
+0050 <span class="comment">%     C=Cmean;</span>
+0051 <span class="comment">%     patch(FV,'FaceColor','interp','FaceVertexCData',C,'edgecolor','none');</span>
+0052 <span class="comment">%     axis equal; view(3)</span>
+0053 <span class="comment">%   subplot(2,2,2), title('Gaussian Curvature');</span>
+0054 <span class="comment">%     C=Cgaussian;</span>
+0055 <span class="comment">%     patch(FV,'FaceColor','interp','FaceVertexCData',C,'edgecolor','none');</span>
+0056 <span class="comment">%     axis equal; view(3)</span>
+0057 <span class="comment">%   subplot(2,2,3), title('Principal A');</span>
+0058 <span class="comment">%     p1=FV.vertices-2*Dir1; p2=FV.vertices+2*Dir1;</span>
+0059 <span class="comment">%     plot3([p1(:,1) p2(:,1)]',[p1(:,2) p2(:,2)]',[p1(:,3) p2(:,3)]','g-');</span>
+0060 <span class="comment">%     axis equal; view(3)</span>
+0061 <span class="comment">%   subplot(2,2,4), title('Principal B');</span>
+0062 <span class="comment">%     p1=FV.vertices-2*Dir2; p2=FV.vertices+2*Dir2;</span>
+0063 <span class="comment">%     plot3([p1(:,1) p2(:,1)]',[p1(:,2) p2(:,2)]',[p1(:,3) p2(:,3)]','r-');</span>
+0064 <span class="comment">%     axis equal; view(3)</span>
+0065 <span class="comment">%</span>
+0066 <span class="comment">%</span>
+0067 <span class="comment">% Function is written by D.Kroon University of Twente (August 2011)</span>
+0068 
+0069 <span class="comment">% Check inputs</span>
+0070 <span class="keyword">if</span>(nargin&lt;2), usethird=false; <span class="keyword">end</span>
+0071 
+0072 <span class="comment">% Number of vertices</span>
+0073 nv=size(FV.vertices,1);
+0074 
+0075 <span class="comment">% Calculate vertices normals</span>
+0076 N=<a href="../../3Dvis/patch_normals/patchnormals.html" class="code" title="function N=patchnormals(FV)">patchnormals</a>(FV);
+0077 
+0078 <span class="comment">% Calculate Rotation matrices for the normals</span>
+0079 M= zeros(3,3,nv);
+0080 Minv= zeros(3,3,nv);
+0081 <span class="keyword">for</span> i=1:nv, 
+0082     [M(:,:,i),Minv(:,:,i)]=<a href="#_sub4" class="code" title="subfunction [M,Minv]=VectorRotationMatrix(v)">VectorRotationMatrix</a>(N(i,:));
+0083 <span class="keyword">end</span>
+0084 
+0085 <span class="comment">% Get neighbours of all vertices</span>
+0086 Ne=<a href="../../3Dvis/refinepatch_version2b/vertex_neighbours.html" class="code" title="function Ne=vertex_neighbours(FV)">vertex_neighbours</a>(FV);
+0087 
+0088 <span class="comment">% Loop through all vertices</span>
+0089 Lambda1=zeros(nv,1);
+0090 Lambda2=zeros(nv,1);
+0091 Dir1=zeros(nv,3);
+0092 Dir2=zeros(nv,3);
+0093 
+0094 <span class="keyword">for</span> i=1:nv
+0095    <span class="comment">% Get first and second ring neighbours.</span>
+0096    <span class="keyword">if</span>(~usethird)
+0097        Nce=unique([Ne{Ne{i}}]);
+0098    <span class="keyword">else</span>
+0099        <span class="comment">% Get first, second and third ring neighbours</span>
+0100        Nce=unique([Ne{[Ne{Ne{i}}]}]);
+0101    <span class="keyword">end</span>
+0102    
+0103    Ve=FV.vertices(Nce,:);
+0104 
+0105    <span class="comment">% Rotate to make normal [-1 0 0]</span>
+0106    We=Ve*Minv(:,:,i);
+0107    f=We(:,1); x=We(:,2); y=We(:,3); 
+0108    
+0109    <span class="comment">% Fit patch</span>
+0110    <span class="comment">% f(x,y) = ax^2 + by^2 + cxy + dx + ey + f</span>
+0111    FM=[x(:).^2 y(:).^2 x(:).*y(:) x(:) y(:) ones(numel(x),1)];
+0112    abcdef=FM\f(:);
+0113    a=abcdef(1); b=abcdef(2); c=abcdef(3);
+0114    
+0115    <span class="comment">% Make Hessian matrix</span>
+0116    <span class="comment">% H =  [2*a c;c 2*b];</span>
+0117    Dxx = 2*a; Dxy=c; Dyy=2*b;
+0118    
+0119    [Lambda1(i),Lambda2(i),I1,I2]=<a href="#_sub1" class="code" title="subfunction [Lambda1,Lambda2,I1,I2]=eig2(Dxx,Dxy,Dyy)">eig2</a>(Dxx,Dxy,Dyy);
+0120    dir1=[0 I1(1) I1(2)]*M(:,:,i); 
+0121    dir2=[0 I2(1) I2(2)]*M(:,:,i);
+0122    Dir1(i,:)=dir1/sqrt(dir1(1)^2+dir1(2)^2+dir1(3)^2);
+0123    Dir2(i,:)=dir2/sqrt(dir2(1)^2+dir2(2)^2+dir2(3)^2);
+0124 <span class="keyword">end</span>
+0125 
+0126 Cmean=(Lambda1+Lambda2)/2;
+0127 Cgaussian=Lambda1.*Lambda2;
+0128 
+0129 
+0130 <a name="_sub1" href="#_subfunctions" class="code">function [Lambda1,Lambda2,I1,I2]=eig2(Dxx,Dxy,Dyy)</a>
+0131 <span class="comment">% | Dxx  Dxy |</span>
+0132 <span class="comment">% |          |</span>
+0133 <span class="comment">% | Dxy  Dyy |</span>
+0134 
+0135 <span class="comment">% Compute the eigenvectors</span>
+0136 tmp = sqrt((Dxx - Dyy).^2 + 4*Dxy.^2);
+0137 v2x = 2*Dxy; v2y = Dyy - Dxx + tmp;
+0138 
+0139 <span class="comment">% Normalize</span>
+0140 mag = sqrt(v2x.^2 + v2y.^2); i = (mag ~= 0);
+0141 v2x(i) = v2x(i)./mag(i);
+0142 v2y(i) = v2y(i)./mag(i);
+0143 
+0144 <span class="comment">% The eigenvectors are orthogonal</span>
+0145 v1x = -v2y; v1y = v2x;
+0146 
+0147 <span class="comment">% Compute the eigenvalues</span>
+0148 mu1 = abs(0.5*(Dxx + Dyy + tmp));
+0149 mu2 = abs(0.5*(Dxx + Dyy - tmp));
+0150 
+0151 <span class="comment">% Sort eigen values by absolute value abs(Lambda1)&lt;abs(Lambda2)</span>
+0152 <span class="keyword">if</span>(mu1&lt;mu2)
+0153     Lambda1=mu1;
+0154     Lambda2=mu2;
+0155     I1=[v1x v1y];
+0156     I2=[v2x v2y];
+0157 <span class="keyword">else</span>
+0158     Lambda1=mu2;
+0159     Lambda2=mu1;
+0160     I1=[v2x v2y];
+0161     I2=[v1x v1y];
+0162 <span class="keyword">end</span>
+0163 
+0164 
+0165 <a name="_sub2" href="#_subfunctions" class="code">function N=patchnormals(FV)</a>
+0166 <span class="comment">% This function PATCHNORMALS calculates the normals of a triangulated</span>
+0167 <span class="comment">% mesh. PATCHNORMALS calls the patchnormal_double.c mex function which</span>
+0168 <span class="comment">% first calculates the normals of all faces, and after that calculates</span>
+0169 <span class="comment">% the vertice normals from the face normals weighted by the angles</span>
+0170 <span class="comment">% of the faces.</span>
+0171 [Nx,Ny,Nz]=<a href="../../3Dvis/patch_normals/patchnormals_double.html" class="code" title="function [Nx,Ny,Nz]=patchnormals_double(Fa,Fb,Fc,Vx,Vy,Vz)">patchnormals_double</a>(double(FV.faces(:,1)),double(FV.faces(:,2)),double(FV.faces(:,3)),double(FV.vertices(:,1)),double(FV.vertices(:,2)),double(FV.vertices(:,3)));
+0172 N=zeros(length(Nx),3);
+0173 N(:,1)=Nx; N(:,2)=Ny; N(:,3)=Nz;
+0174 
+0175 
+0176 
+0177 <a name="_sub3" href="#_subfunctions" class="code">function [Nx,Ny,Nz]=patchnormals_double(Fa,Fb,Fc,Vx,Vy,Vz)</a>
+0178 <span class="comment">%</span>
+0179 <span class="comment">%  [Nx,Ny,Nz]=patchnormals_double(Fa,Fb,Fc,Vx,Vy,Vz)</span>
+0180 <span class="comment">%</span>
+0181 
+0182 FV.vertices=zeros(length(Vx),3);
+0183 FV.vertices(:,1)=Vx;
+0184 FV.vertices(:,2)=Vy;
+0185 FV.vertices(:,3)=Vz;
+0186 
+0187 <span class="comment">% Get all edge vectors</span>
+0188 e1=FV.vertices(Fa,:)-FV.vertices(Fb,:);
+0189 e2=FV.vertices(Fb,:)-FV.vertices(Fc,:);
+0190 e3=FV.vertices(Fc,:)-FV.vertices(Fa,:);
+0191 
+0192 <span class="comment">% Normalize edge vectors</span>
+0193 e1_norm=e1./repmat(sqrt(e1(:,1).^2+e1(:,2).^2+e1(:,3).^2),1,3); 
+0194 e2_norm=e2./repmat(sqrt(e2(:,1).^2+e2(:,2).^2+e2(:,3).^2),1,3); 
+0195 e3_norm=e3./repmat(sqrt(e3(:,1).^2+e3(:,2).^2+e3(:,3).^2),1,3);
+0196 
+0197 <span class="comment">% Calculate Angle of face seen from vertices</span>
+0198 Angle =  [acos(dot(e1_norm',-e3_norm'));acos(dot(e2_norm',-e1_norm'));acos(dot(e3_norm',-e2_norm'))]';
+0199 
+0200 <span class="comment">% Calculate normal of face</span>
+0201  Normal=cross(e1,e3);
+0202 
+0203 <span class="comment">% Calculate Vertice Normals</span>
+0204 VerticeNormals=zeros([size(FV.vertices,1) 3]);
+0205 <span class="keyword">for</span> i=1:size(Fa,1),
+0206     VerticeNormals(Fa(i),:)=VerticeNormals(Fa(i),:)+Normal(i,:)*Angle(i,1);
+0207     VerticeNormals(Fb(i),:)=VerticeNormals(Fb(i),:)+Normal(i,:)*Angle(i,2);
+0208     VerticeNormals(Fc(i),:)=VerticeNormals(Fc(i),:)+Normal(i,:)*Angle(i,3);
+0209 <span class="keyword">end</span>
+0210 
+0211 V_norm=sqrt(VerticeNormals(:,1).^2+VerticeNormals(:,2).^2+VerticeNormals(:,3).^2)+eps;
+0212 VerticeNormals=VerticeNormals./repmat(V_norm,1,3);
+0213 Nx=VerticeNormals(:,1);
+0214 Ny=VerticeNormals(:,2);
+0215 Nz=VerticeNormals(:,3);
+0216 
+0217     
+0218     
+0219 
+0220 <a name="_sub4" href="#_subfunctions" class="code">function [M,Minv]=VectorRotationMatrix(v)</a>
+0221 <span class="comment">% [M,Minv]=VectorRotationMatrix(v,k)</span>
+0222 v=(v(:)')/sqrt(sum(v.^2));
+0223 k=rand(1,3);
+0224 l = [k(2).*v(3)-k(3).*v(2), k(3).*v(1)-k(1).*v(3), k(1).*v(2)-k(2).*v(1)]; l=l/sqrt(sum(l.^2));
+0225 k = [l(2).*v(3)-l(3).*v(2), l(3).*v(1)-l(1).*v(3), l(1).*v(2)-l(2).*v(1)]; k=k/sqrt(sum(k.^2));
+0226 Minv=[v(:) l(:) k(:)];
+0227 M=inv(Minv);
+0228 
+0229 <a name="_sub5" href="#_subfunctions" class="code">function Ne=vertex_neighbours(FV)</a>
+0230 <span class="comment">% This function VERTEX_NEIGHBOURS will search in a face list for all</span>
+0231 <span class="comment">% the neigbours of each vertex.</span>
+0232 <span class="comment">%</span>
+0233 <span class="comment">% Ne=vertex_neighbours(FV)</span>
+0234 <span class="comment">%</span>
+0235 Ne=<a href="../../3Dvis/refinepatch_version2b/vertex_neighbours_double.html" class="code" title="function Ne=vertex_neighbours_double(Fa,Fb,Fc,Vx,Vy,Vz)">vertex_neighbours_double</a>(FV.faces(:,1),FV.faces(:,2),FV.faces(:,3),FV.vertices(:,1),FV.vertices(:,2),FV.vertices(:,3));
+0236 
+0237 <a name="_sub6" href="#_subfunctions" class="code">function Ne=vertex_neighbours_double(Fa,Fb,Fc,Vx,Vy,Vz)</a>
+0238 
+0239 F=[Fa Fb Fc];
+0240 V=[Vx Vy Vz];
+0241 
+0242 <span class="comment">% Neighbourh cell array</span>
+0243 Ne=cell(1,size(V,1));
+0244 
+0245 <span class="comment">% Loop through all faces</span>
+0246 <span class="keyword">for</span> i=1:length(F)
+0247     <span class="comment">% Add the neighbors of each vertice of a face</span>
+0248     <span class="comment">% to his neighbors list.</span>
+0249     Ne{F(i,1)}=[Ne{F(i,1)} [F(i,2) F(i,3)]];
+0250     Ne{F(i,2)}=[Ne{F(i,2)} [F(i,3) F(i,1)]];
+0251     Ne{F(i,3)}=[Ne{F(i,3)} [F(i,1) F(i,2)]];
+0252 <span class="keyword">end</span>
+0253 
+0254 <span class="comment">% Loop through all neighbor arrays and sort them (Rotation same as faces)</span>
+0255 <span class="keyword">for</span> i=1:size(V,1)
+0256  
+0257     Pneighf=Ne{i};
+0258     <span class="keyword">if</span>(isempty(Pneighf))
+0259         Pneig=[];
+0260     <span class="keyword">else</span>
+0261         start=1;
+0262         <span class="keyword">for</span> index1=1:2:length(Pneighf)
+0263             found=false;
+0264             <span class="keyword">for</span> index2=2:2:length(Pneighf),
+0265                 <span class="keyword">if</span>(Pneighf(index1)==Pneighf(index2))
+0266                     found=true; <span class="keyword">break</span>
+0267                 <span class="keyword">end</span>
+0268             <span class="keyword">end</span>
+0269             <span class="keyword">if</span>(~found)
+0270                 start=index1; <span class="keyword">break</span>
+0271             <span class="keyword">end</span>
+0272         <span class="keyword">end</span>
+0273         Pneig=[];
+0274         Pneig(1)=Pneighf(start);
+0275         Pneig(2)=Pneighf(start+1);
+0276         
+0277         <span class="comment">% Add the neighbours with respect to original rotation</span>
+0278         <span class="keyword">for</span> j=2+double(found):(length(Pneighf)/2)
+0279             found = false;
+0280             <span class="keyword">for</span> index=1:2:length(Pneighf),
+0281                 <span class="keyword">if</span>(Pneighf(index)==Pneig(end))
+0282                     <span class="keyword">if</span>(sum(Pneig==Pneighf(index+1))==0)
+0283                         found =true;
+0284                         Pneig=[Pneig Pneighf(index+1)];
+0285                     <span class="keyword">end</span>
+0286                 <span class="keyword">end</span>
+0287             <span class="keyword">end</span>
+0288             <span class="keyword">if</span>(~found) <span class="comment">% This only happens with weird edge vertices</span>
+0289                 <span class="keyword">for</span> index=1:2:length(Pneighf),
+0290                     <span class="keyword">if</span>(sum(Pneig==Pneighf(index))==0)
+0291                         Pneig=[Pneig Pneighf(index)];
+0292                         <span class="keyword">if</span>(sum(Pneig==Pneighf(index+1))==0)
+0293                             Pneig=[Pneig Pneighf(index+1)];
+0294                         <span class="keyword">end</span>
+0295                     <span class="keyword">end</span>
+0296                 <span class="keyword">end</span>
+0297             <span class="keyword">end</span>
+0298         <span class="keyword">end</span>
+0299         <span class="comment">% Add forgotten neigbours</span>
+0300         <span class="keyword">if</span>(length(Pneig)&lt;length(Pneighf))
+0301             <span class="keyword">for</span> j=1:length(Pneighf)
+0302                 <span class="keyword">if</span>(sum(Pneig==Pneighf(j))==0)
+0303                     Pneig=[Pneig Pneighf(j)];
+0304                 <span class="keyword">end</span>
+0305             <span class="keyword">end</span>
+0306         <span class="keyword">end</span>
+0307     <span class="keyword">end</span>
+0308     Ne{i}=Pneig;
+0309 <span class="keyword">end</span>
+0310 
+0311 
+0312 
+0313 
+0314</pre></div>
+<hr><address>Generated on Wed 05-Dec-2012 12:03:42 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

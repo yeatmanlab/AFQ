@@ -24,14 +24,14 @@
 <div class="box"><strong>Compute diffusion properties along the trajectory of the fiber groups.</strong></div>
 
 <h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
-<div class="box"><strong>function [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,numberOfNodes,clip2rois,subDir, weighting) </strong></div>
+<div class="box"><strong>function [fa, md, rd, ad, cl, TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,numberOfNodes,clip2rois,subDir, weighting, afq) </strong></div>
 
 <h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
 <div class="fragment"><pre class="comment"> Compute diffusion properties along the trajectory of the fiber groups.
  The function returns vectors of diffusion properties and TractProfile
  structure for each fiber group
 
- [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,[numberOfNodes=30],[clip2rois=1],[subDir], [weighting = 1])
+ [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,[numberOfNodes=30],[clip2rois=1],[subDir], [weighting = 1], afq)
 
  The input fiber group can either be a single fiber group or an array of
  fiber groups (See fg2Array). Each fiber group is clipped to its 2
@@ -85,8 +85,8 @@
  ad               = vector of Axial Diffusivity values along fiber core.
  cl               = vector of linearity values along fiber core.
  TractProfile     = TractProfile structure (see AFQ_CreateTractProfile).
-                    Contains fiber group core, fiber covariance, and 
-                    fiber tract properties at each node. 
+                    Contains fiber group core, fiber covariance, and
+                    fiber tract properties at each node.
 
   Example:
 
@@ -104,21 +104,21 @@
 <h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
 This function calls:
 <ul style="list-style-image:url(../matlabicon.gif)">
-<li><a href="AFQ_CreateTractProfile.html" class="code" title="function TractProfile = AFQ_CreateTractProfile(varargin)">AFQ_CreateTractProfile</a>	Create the AFQ Tract Profile structure</li><li><a href="AFQ_LoadROIs.html" class="code" title="function [roi1 roi2] = AFQ_LoadROIs(fgNumber,sub_dir)">AFQ_LoadROIs</a>	Load the two ROIs used to define a fiber group</li></ul>
+<li><a href="AFQ_CreateTractProfile.html" class="code" title="function TractProfile = AFQ_CreateTractProfile(varargin)">AFQ_CreateTractProfile</a>	Create the AFQ Tract Profile structure</li><li><a href="AFQ_LoadROIs.html" class="code" title="function [roi1, roi2] = AFQ_LoadROIs(fgNumber,sub_dir, afq)">AFQ_LoadROIs</a>	Load the two ROIs used to define a fiber group</li><li><a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>	Get value from afq structure</li></ul>
 This function is called by:
 <ul style="list-style-image:url(../matlabicon.gif)">
-<li><a href="AFQ_run.html" class="code" title="function [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)">AFQ_run</a>	Run AFQ analysis on a set of subjects to generate Tract Profiles of white</li></ul>
+<li><a href="AFQ_AddNewFiberGroup.html" class="code" title="function afq = AFQ_AddNewFiberGroup(afq,fgName,roi1Name,roi2Name,cleanFibers,computeVals)">AFQ_AddNewFiberGroup</a>	THIS FUNCTION IS STILL BEING DEVELOPED</li><li><a href="AFQ_run.html" class="code" title="function [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)">AFQ_run</a>	Run AFQ analysis on a set of subjects to generate Tract Profiles of white</li><li><a href="../tutorials/AFQ_example.html" class="code" title="">AFQ_example</a>	% Example AFQ analysis</li><li><a href="../tutorials/AFQ_example_GroupComparison.html" class="code" title="">AFQ_example_GroupComparison</a>	% Run AFQ analysis for 2 groups (patients and controls)</li></ul>
 <!-- crossreference -->
 
 
 
 <h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
-<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,numberOfNodes,clip2rois,subDir, weighting)</a>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [fa, md, rd, ad, cl, TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,numberOfNodes,clip2rois,subDir, weighting, afq)</a>
 0002 <span class="comment">% Compute diffusion properties along the trajectory of the fiber groups.</span>
 0003 <span class="comment">% The function returns vectors of diffusion properties and TractProfile</span>
 0004 <span class="comment">% structure for each fiber group</span>
 0005 <span class="comment">%</span>
-0006 <span class="comment">% [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,[numberOfNodes=30],[clip2rois=1],[subDir], [weighting = 1])</span>
+0006 <span class="comment">% [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,[numberOfNodes=30],[clip2rois=1],[subDir], [weighting = 1], afq)</span>
 0007 <span class="comment">%</span>
 0008 <span class="comment">% The input fiber group can either be a single fiber group or an array of</span>
 0009 <span class="comment">% fiber groups (See fg2Array). Each fiber group is clipped to its 2</span>
@@ -235,39 +235,52 @@ This function is called by:
 0120     <span class="comment">% This is what we would do with the old fiber group structure</span>
 0121     <span class="comment">% fgtmp=dtiNewFiberGroup(fg_classified.subgroupNames(jj).subgroupName);</span>
 0122     <span class="comment">%  fgtmp.fibers=fg_classified.fibers(fg_classified.subgroup==jj);</span>
-0123 
-0124 
-0125     <span class="comment">% clip the fiber group to the portion spanning between the two ROIs if</span>
-0126     <span class="comment">% desired</span>
-0127     <span class="keyword">if</span> clip2rois==1
-0128         [roi1 roi2] = <a href="AFQ_LoadROIs.html" class="code" title="function [roi1 roi2] = AFQ_LoadROIs(fgNumber,sub_dir)">AFQ_LoadROIs</a>(jj,subDir);
-0129     <span class="keyword">else</span>
-0130         roi1=[]; roi2=[];
-0131     <span class="keyword">end</span>
-0132     <span class="comment">% Some subjects may be missing certain fiber groups due to lesions,</span>
-0133     <span class="comment">% or noise in the data.  If a fiber group is empty we will ad NaNs to</span>
-0134     <span class="comment">% the database</span>
-0135     <span class="keyword">if</span> isempty(fgtmp.fibers)
-0136         fa(:, jj)=nan;md(:, jj)=nan;rd(:, jj)=nan;ad(:, jj)=nan;cl(:, jj)=nan;
-0137         TractProfile(jj) = <a href="AFQ_CreateTractProfile.html" class="code" title="function TractProfile = AFQ_CreateTractProfile(varargin)">AFQ_CreateTractProfile</a>(<span class="string">'name'</span>,fgtmp.name);
-0138         <span class="keyword">continue</span>
-0139     <span class="keyword">end</span>
-0140     <span class="comment">% Here is where we will create define the fiber group core and calculate</span>
-0141     <span class="comment">% stats based on the method described in Yeatman et al 2011. Sometimes</span>
-0142     <span class="comment">% there is a problem such as only having 1 fiber in the fiber group.</span>
-0143     <span class="comment">% To avoid breaking the whole loop we use the try catch loop</span>
-0144     <span class="keyword">try</span>
-0145         [fa(:, jj),md(:, jj),rd(:, jj),ad(:, jj),cl(:, jj),SuperFibersGroup(jj)]=dtiComputeDiffusionPropertiesAlongFG(fgtmp, dt, roi1, roi2, numberOfNodes,weighting);
-0146         <span class="comment">% Put mean fiber into Tract Profile structure</span>
-0147         TractProfile(jj) = <a href="AFQ_CreateTractProfile.html" class="code" title="function TractProfile = AFQ_CreateTractProfile(varargin)">AFQ_CreateTractProfile</a>(<span class="string">'name'</span>,fgtmp.name,<span class="string">'superfiber'</span>,SuperFibersGroup(jj));
-0148     <span class="keyword">catch</span>
+0123     
+0124     <span class="comment">% Figure out the fiber group number if an afq structure was passed in</span>
+0125     <span class="keyword">if</span> exist(<span class="string">'afq'</span>,<span class="string">'var'</span>) &amp;&amp; ~isempty(afq)
+0126         fgnames = <a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(afq,<span class="string">'fgnames'</span>);
+0127         fgnum = find(strcmpi(fgtmp.name, fgnames));
+0128         <span class="keyword">if</span> isempty(fgnum)
+0129             fgnum = jj;
+0130             fprintf(<span class="string">'\n%s does not match any fiber group name in the afq structure.'</span>, fgtmp.name);
+0131             fprintf(<span class="string">'\n Assuming that it is equivalent to %s'</span>,fgnames{jj});
+0132         <span class="keyword">end</span>
+0133     <span class="keyword">else</span>
+0134         fgnum = jj;
+0135     <span class="keyword">end</span>
+0136     <span class="comment">% clip the fiber group to the portion spanning between the two ROIs if</span>
+0137     <span class="comment">% desired</span>
+0138     <span class="keyword">if</span> clip2rois==1 &amp;&amp; exist(<span class="string">'afq'</span>,<span class="string">'var'</span>) &amp;&amp; ~isempty(afq)
+0139         [roi1, roi2] = <a href="AFQ_LoadROIs.html" class="code" title="function [roi1, roi2] = AFQ_LoadROIs(fgNumber,sub_dir, afq)">AFQ_LoadROIs</a>(fgnum,subDir,afq);
+0140     <span class="keyword">elseif</span> clip2rois==1
+0141         [roi1, roi2] = <a href="AFQ_LoadROIs.html" class="code" title="function [roi1, roi2] = AFQ_LoadROIs(fgNumber,sub_dir, afq)">AFQ_LoadROIs</a>(fgnum,subDir);
+0142     <span class="keyword">else</span>
+0143         roi1=[]; roi2=[];
+0144     <span class="keyword">end</span>
+0145     <span class="comment">% Some subjects may be missing certain fiber groups due to lesions,</span>
+0146     <span class="comment">% or noise in the data.  If a fiber group is empty we will ad NaNs to</span>
+0147     <span class="comment">% the database</span>
+0148     <span class="keyword">if</span> isempty(fgtmp.fibers)
 0149         fa(:, jj)=nan;md(:, jj)=nan;rd(:, jj)=nan;ad(:, jj)=nan;cl(:, jj)=nan;
 0150         TractProfile(jj) = <a href="AFQ_CreateTractProfile.html" class="code" title="function TractProfile = AFQ_CreateTractProfile(varargin)">AFQ_CreateTractProfile</a>(<span class="string">'name'</span>,fgtmp.name);
-0151     <span class="keyword">end</span>
-0152 <span class="keyword">end</span>
-0153 
-0154 
-0155 <span class="keyword">return</span></pre></div>
-<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+0151         <span class="keyword">continue</span>
+0152     <span class="keyword">end</span>
+0153     <span class="comment">% Here is where we will create define the fiber group core and calculate</span>
+0154     <span class="comment">% stats based on the method described in Yeatman et al 2011. Sometimes</span>
+0155     <span class="comment">% there is a problem such as only having 1 fiber in the fiber group.</span>
+0156     <span class="comment">% To avoid breaking the whole loop we use the try catch loop</span>
+0157     <span class="keyword">try</span>
+0158         [fa(:, jj),md(:, jj),rd(:, jj),ad(:, jj),cl(:, jj),SuperFibersGroup(jj)]=dtiComputeDiffusionPropertiesAlongFG(fgtmp, dt, roi1, roi2, numberOfNodes,weighting);
+0159         <span class="comment">% Put mean fiber into Tract Profile structure</span>
+0160         TractProfile(jj) = <a href="AFQ_CreateTractProfile.html" class="code" title="function TractProfile = AFQ_CreateTractProfile(varargin)">AFQ_CreateTractProfile</a>(<span class="string">'name'</span>,fgtmp.name,<span class="string">'superfiber'</span>,SuperFibersGroup(jj));
+0161     <span class="keyword">catch</span>
+0162         fa(:, jj)=nan;md(:, jj)=nan;rd(:, jj)=nan;ad(:, jj)=nan;cl(:, jj)=nan;
+0163         TractProfile(jj) = <a href="AFQ_CreateTractProfile.html" class="code" title="function TractProfile = AFQ_CreateTractProfile(varargin)">AFQ_CreateTractProfile</a>(<span class="string">'name'</span>,fgtmp.name);
+0164     <span class="keyword">end</span>
+0165 <span class="keyword">end</span>
+0166 
+0167 
+0168 <span class="keyword">return</span></pre></div>
+<hr><address>Generated on Wed 05-Dec-2012 12:03:42 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
 </body>
 </html>

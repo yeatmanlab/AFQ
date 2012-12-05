@@ -24,7 +24,7 @@
 <div class="box"><strong>THIS FUNCTION IS STILL BEING DEVELOPED</strong></div>
 
 <h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
-<div class="box"><strong>function [fg keep flipped] = AFQ_DefineFgEndpoints(fg,startpoint,endpoint,dt6Path,dCrit,invDef) </strong></div>
+<div class="box"><strong>function [fg, keep, flipped] = AFQ_DefineFgEndpoints(fg,startpoint,endpoint,dt6Path,dCrit,invDef) </strong></div>
 
 <h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
 <div class="fragment"><pre class="comment"> THIS FUNCTION IS STILL BEING DEVELOPED
@@ -54,10 +54,10 @@ This function is called by:
 
 <h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
 <ul style="list-style-image:url(../matlabicon.gif)">
-<li><a href="#_sub1" class="code">function fibOut = flipfun(fibIn,ind)</a></li><li><a href="#_sub2" class="code">function Lnum = getLabelNumber(Lname)</a></li></ul>
+<li><a href="#_sub1" class="code">function fibOut = flipfun(fibIn,ind)</a></li><li><a href="#_sub2" class="code">function [Lnum, Vnum] = getLabelNumber(Lname)</a></li><li><a href="#_sub3" class="code">function v = extractVolume(img, vnum)</a></li></ul>
 
 <h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
-<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [fg keep flipped] = AFQ_DefineFgEndpoints(fg,startpoint,endpoint,dt6Path,dCrit,invDef)</a>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [fg, keep, flipped] = AFQ_DefineFgEndpoints(fg,startpoint,endpoint,dt6Path,dCrit,invDef)</a>
 0002 <span class="comment">% THIS FUNCTION IS STILL BEING DEVELOPED</span>
 0003 <span class="comment">% Define the cortical endpoints of a fiber group, remove fibers that do not</span>
 0004 <span class="comment">% terminate in the correct location and reorient each fiber in the group so</span>
@@ -73,119 +73,246 @@ This function is called by:
 0014 <span class="comment">%</span>
 0015 <span class="comment">% Copyright Jason D. Yeatman October 2012</span>
 0016 
-0017 <span class="keyword">if</span> ~exist(<span class="string">'dt6Path'</span>,<span class="string">'var'</span>) || isempty(dt6Path)
-0018     error(<span class="string">'please input a dt6.mat file'</span>)
-0019 <span class="keyword">elseif</span> ischar(dt6Path)
-0020     dt = dtiLoadDt6(dt6Path);
-0021 <span class="keyword">elseif</span> isstruct(dt6Path)
-0022     dt = dt6Path;
-0023     dt6Path = dt.dataFile;
-0024 <span class="keyword">end</span>
-0025 <span class="comment">% Distance criteria for endpoints to match ROIs</span>
-0026 <span class="keyword">if</span> ~exist(<span class="string">'dCrit'</span>,<span class="string">'var'</span>) || isempty(dCrit)
-0027     dCritSq = 16;
-0028 <span class="keyword">else</span>
-0029     dCritSq = dCrit^2;
-0030 <span class="keyword">end</span>
-0031 <span class="comment">% Compute normalization if it was not passed in</span>
-0032 <span class="keyword">if</span> ~exist(<span class="string">'invDef'</span>,<span class="string">'var'</span>) || isempty(invDef)
-0033     <span class="comment">% MNI template</span>
-0034     template = fullfile(fileparts(which(<span class="string">'mrDiffusion.m'</span>)), <span class="string">'templates'</span>,<span class="string">'MNI_EPI.nii.gz'</span>);
-0035     <span class="comment">% Compute spatial normalization</span>
-0036     [~, ~, invDef] = mrAnatComputeSpmSpatialNorm(dt.b0, dt.xformToAcpc, template);
-0037 <span class="keyword">end</span>
-0038 <span class="comment">% Get the AFQ base directory</span>
-0039 AFQbase = <a href="AFQ_directories.html" class="code" title="function [AFQbase AFQdata AFQfunc AFQutil AFQdoc AFQgui] = AFQ_directories">AFQ_directories</a>;
-0040 <span class="comment">% Template directory</span>
-0041 tdir = fullfile(AFQbase,<span class="string">'templates'</span>,<span class="string">'labelMaps'</span>);
-0042 <span class="comment">% AAL template</span>
-0043 AAL = fullfile(tdir,<span class="string">'MNI_AAL.nii.gz'</span>);
-0044 
-0045 <span class="comment">%% Reorient the fibers within each suplied fiber group</span>
-0046 <span class="comment">% Number of fiber groups</span>
-0047 nFG = length(fg);
-0048 <span class="comment">% Pre allocate variables</span>
-0049 keep = cell(length(fg),1);
-0050 flipped = cell(length(fg),1);
-0051 <span class="keyword">for</span> jj = 1:nFG
-0052     <span class="comment">% Check if the fiber group is empty</span>
-0053     <span class="keyword">if</span> isempty(fg(jj).fibers)
-0054         <span class="keyword">continue</span>
-0055     <span class="keyword">end</span>
-0056     <span class="comment">% Get the numbers of numbers of the regions that define the desired ROI</span>
-0057     <span class="comment">% in the AAL template</span>
-0058     <span class="keyword">if</span> iscell(startpoint) &amp;&amp; iscell(endpoint)
-0059         Lnum1 = <a href="#_sub2" class="code" title="subfunction Lnum = getLabelNumber(Lname)">getLabelNumber</a>(startpoint{jj});
-0060         Lnum2 = <a href="#_sub2" class="code" title="subfunction Lnum = getLabelNumber(Lname)">getLabelNumber</a>(endpoint{jj});
-0061     <span class="keyword">else</span>
-0062         Lnum1 = <a href="#_sub2" class="code" title="subfunction Lnum = getLabelNumber(Lname)">getLabelNumber</a>(startpoint);
-0063         Lnum2 = <a href="#_sub2" class="code" title="subfunction Lnum = getLabelNumber(Lname)">getLabelNumber</a>(endpoint);
-0064     <span class="keyword">end</span>
-0065     <span class="comment">% Make ROIs in native space from the template ROIs Load the desired</span>
-0066     <span class="comment">% startpoint ROI from the AAL template and transform it</span>
-0067     <span class="comment">% into the individual's native space</span>
-0068     [~, invDef, roiStart] = dtiCreateRoiFromMniNifti(dt6Path,AAL,invDef,0,Lnum1);
-0069     [~,~, roiEnd]  = dtiCreateRoiFromMniNifti(dt6Path,AAL,invDef,0,Lnum2);
-0070     <span class="comment">% Make a function to compute the distance between fiber endpoints and</span>
-0071     <span class="comment">% the desired start and endpoint</span>
-0072     distfun1 = @(x) nearpoints([x(:,1) x(:,end)],roiStart.coords');
-0073     distfun2 = @(x) nearpoints([x(:,1) x(:,end)],roiEnd.coords');
-0074     <span class="comment">% Compute distance for each fiber to the start and end ROIs</span>
-0075     [~, dist1] = cellfun(distfun1,fg(jj).fibers,<span class="string">'UniformOutput'</span>,false);
-0076     [~, dist2] = cellfun(distfun2,fg(jj).fibers,<span class="string">'UniformOutput'</span>,false);
-0077     <span class="comment">% record which fibers need to be flipped</span>
-0078     flipped{jj} = cellfun(@(x) x(1)&gt;x(2), dist1,<span class="string">'UniformOutput'</span>,false);
-0079     <span class="comment">% Flip fibers that need to be flipped CHECK THIS!!!</span>
-0080     fg(jj).fibers = cellfun(@<a href="#_sub1" class="code" title="subfunction fibOut = flipfun(fibIn,ind)">flipfun</a>,fg(jj).fibers,flipped{jj},<span class="string">'UniformOutput'</span>,false);
-0081     <span class="comment">% Discard fibers that don't have a startpoint and endpoint within 4mm</span>
-0082     <span class="comment">% of the defining ROIs</span>
-0083     keep{jj} = cellfun(@(x1,x2) min(x1) &lt; dCritSq &amp;&amp; min(x2) &lt; dCritSq,dist1,dist2);
-0084     fg(jj).fibers = fg(jj).fibers(keep{jj});
-0085 <span class="keyword">end</span>
-0086 
-0087 
-0088 <span class="keyword">return</span>
-0089 
-0090 <a name="_sub1" href="#_subfunctions" class="code">function fibOut = flipfun(fibIn,ind)</a>
-0091 <span class="comment">% Function to flip fibers</span>
-0092 <span class="keyword">if</span>(ind ==1)
-0093     fibOut = fliplr(fibIn);
-0094 <span class="keyword">else</span>
-0095     fibOut = fibIn;
-0096 <span class="keyword">end</span>
-0097 
-0098 <span class="keyword">return</span>
-0099 
-0100 <a name="_sub2" href="#_subfunctions" class="code">function Lnum = getLabelNumber(Lname)</a>
-0101 
-0102 <span class="comment">% Get the AFQ base directory</span>
-0103 AFQbase = <a href="AFQ_directories.html" class="code" title="function [AFQbase AFQdata AFQfunc AFQutil AFQdoc AFQgui] = AFQ_directories">AFQ_directories</a>;
-0104 <span class="comment">% Template directory</span>
-0105 tdir = fullfile(AFQbase,<span class="string">'templates'</span>,<span class="string">'labelMaps'</span>);
-0106 <span class="comment">% Load template region names</span>
-0107 labels = readTab(fullfile(tdir,<span class="string">'MNI_AAL.txt'</span>),<span class="string">','</span>);
-0108 <span class="comment">% Get the desired label number for the startpoint</span>
-0109 Lnum = find(strcmpi(Lname,labels(:,2)));
-0110 <span class="comment">% If the name was not in the label file check if it is a composite region</span>
-0111 <span class="keyword">if</span> isempty(Lnum)
-0112     <span class="keyword">switch</span>(Lname)
-0113         <span class="keyword">case</span>'occipital'
-0114             <span class="comment">% We do not include the fusiform</span>
-0115             Lnum = 43:54;
-0116         <span class="keyword">case</span> <span class="string">'leftoccipital'</span>
-0117             Lnum = [43:2:53];
-0118         <span class="keyword">case</span> <span class="string">'rightoccipital'</span>
-0119             Lnum = [44:2:54];
-0120         <span class="keyword">case</span>'temporal'
-0121             <span class="comment">% We include the fusiform</span>
-0122             Lnum = [55, 56, 79:90];
-0123         <span class="keyword">case</span> <span class="string">'lefttemporal'</span>
-0124             [55 79:2:89];
-0125         <span class="keyword">case</span> <span class="string">'righttemporal'</span>
-0126             [56 80:2:90];
-0127     <span class="keyword">end</span>
-0128 <span class="keyword">end</span>
-0129</pre></div>
-<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+0017 <span class="keyword">if</span> ~exist(<span class="string">'fg'</span>,<span class="string">'var'</span>) || isempty(fg)
+0018     error(<span class="string">'please supply a fiber group'</span>)
+0019 <span class="keyword">elseif</span> isfield(fg,<span class="string">'subgroup'</span>) &amp;&amp; isfield(fg,<span class="string">'subgroupNames'</span>)
+0020     array = 0;
+0021     fgName = fg.name;
+0022     <span class="comment">% Convert to an array if necessary</span>
+0023     fg = fg2Array(fg);
+0024 <span class="keyword">else</span> 
+0025     array = 1;
+0026 <span class="keyword">end</span>
+0027 
+0028 <span class="comment">% Number of fiber groups</span>
+0029 nFG = length(fg);
+0030 
+0031 <span class="comment">% If there are 20 fiber groups in the structure and no start or endpoints</span>
+0032 <span class="comment">% were defined then assume it is the moriGroups and handle apropriately</span>
+0033 <span class="keyword">if</span> nFG == 20 &amp;&amp; (~exist(<span class="string">'startpoint'</span>,<span class="string">'var'</span>) || isempty(startpoint)) &amp;&amp; <span class="keyword">...</span>
+0034         (~exist(<span class="string">'endpoint'</span>,<span class="string">'var'</span>) || isempty(endpoint))
+0035     startpoint = {<span class="string">'Thalamus_L'</span> <span class="string">'Thalamus_R'</span> <span class="string">'cstinferior'</span> <span class="string">'cstinferior'</span> <span class="keyword">...</span>
+0036         <span class="string">'Cingulum_Post_L'</span> <span class="string">'Cingulum_Post_R'</span> <span class="string">'Hippocampus_L'</span> <span class="string">'Hippocampus_R'</span><span class="keyword">...</span>
+0037         <span class="string">'leftoccipital'</span> <span class="string">'leftfrontal'</span> <span class="string">'leftoccipital'</span> <span class="string">'rightoccipital'</span> <span class="keyword">...</span>
+0038         <span class="string">'leftoccipital'</span> <span class="string">'rightoccipital'</span> <span class="string">'leftinfparietal'</span> <span class="string">'rightinfparietal'</span><span class="keyword">...</span>
+0039         <span class="string">'leftanttemporal'</span> <span class="string">'rightanttemporal'</span> <span class="string">'leftfrontal'</span> <span class="string">'rightfrontal'</span>};
+0040     endpoint = {<span class="string">'leftfrontal'</span> <span class="string">'rightfrontal'</span> <span class="string">'cstsuperior'</span> <span class="string">'cstsuperior'</span>}
+0041 <span class="keyword">end</span>
+0042 
+0043 <span class="keyword">if</span> ~exist(<span class="string">'dt6Path'</span>,<span class="string">'var'</span>) || isempty(dt6Path)
+0044     error(<span class="string">'please input a dt6.mat file'</span>)
+0045 <span class="keyword">elseif</span> ischar(dt6Path)
+0046     dt = dtiLoadDt6(dt6Path);
+0047 <span class="keyword">elseif</span> isstruct(dt6Path)
+0048     dt = dt6Path;
+0049     dt6Path = dt.dataFile;
+0050 <span class="keyword">end</span>
+0051 <span class="comment">% Distance criteria for endpoints to match ROIs</span>
+0052 <span class="keyword">if</span> ~exist(<span class="string">'dCrit'</span>,<span class="string">'var'</span>) || isempty(dCrit)
+0053     <span class="keyword">if</span> ~exist(<span class="string">'endpoint'</span>,<span class="string">'var'</span>) || isempty(endpoint)
+0054         <span class="comment">% If no endoint rois were defined then assume that fibers should</span>
+0055         <span class="comment">% just be flipped but not removed</span>
+0056         dCritSq = 1000000;
+0057     <span class="keyword">else</span>
+0058         dCritSq = 16;
+0059     <span class="keyword">end</span>
+0060 <span class="keyword">else</span>
+0061     dCritSq = dCrit^2;
+0062 <span class="keyword">end</span>
+0063 <span class="comment">% Compute normalization if it was not passed in</span>
+0064 <span class="keyword">if</span> ~exist(<span class="string">'invDef'</span>,<span class="string">'var'</span>) || isempty(invDef)
+0065     <span class="comment">% MNI template</span>
+0066     template = fullfile(fileparts(which(<span class="string">'mrDiffusion.m'</span>)), <span class="string">'templates'</span>,<span class="string">'MNI_EPI.nii.gz'</span>);
+0067     <span class="comment">% Compute spatial normalization</span>
+0068     [~, ~, invDef] = mrAnatComputeSpmSpatialNorm(dt.b0, dt.xformToAcpc, template);
+0069 <span class="keyword">end</span>
+0070 <span class="comment">% Get the AFQ base directory</span>
+0071 AFQbase = <a href="AFQ_directories.html" class="code" title="function [AFQbase AFQdata AFQfunc AFQutil AFQdoc AFQgui] = AFQ_directories">AFQ_directories</a>;
+0072 <span class="comment">% Template directory</span>
+0073 tdir = fullfile(AFQbase,<span class="string">'templates'</span>,<span class="string">'labelMaps'</span>);
+0074 <span class="comment">% Path to the template</span>
+0075 Tpath = fullfile(tdir,<span class="string">'MNI_AAL_AndMore.nii.gz'</span>);
+0076 <span class="comment">% Load the template</span>
+0077 Timg = readFileNifti(Tpath);
+0078 
+0079 <span class="comment">%% Reorient the fibers within each suplied fiber group</span>
+0080 <span class="comment">% Pre allocate variables</span>
+0081 keep = cell(length(fg),1);
+0082 flipped = cell(length(fg),1);
+0083 <span class="keyword">for</span> jj = 1:nFG
+0084     <span class="comment">% Check if the fiber group is empty</span>
+0085     <span class="keyword">if</span> isempty(fg(jj).fibers)
+0086         <span class="keyword">continue</span>
+0087     <span class="keyword">end</span>
+0088     <span class="comment">% Get the numbers of numbers of the regions that define the desired ROI</span>
+0089     <span class="comment">% in the AAL template</span>
+0090     <span class="keyword">if</span> iscell(startpoint)
+0091         [Lnum1, Vnum1] = <a href="#_sub2" class="code" title="subfunction [Lnum, Vnum] = getLabelNumber(Lname)">getLabelNumber</a>(startpoint{jj});
+0092     <span class="keyword">else</span>
+0093         [Lnum1, Vnum1] = <a href="#_sub2" class="code" title="subfunction [Lnum, Vnum] = getLabelNumber(Lname)">getLabelNumber</a>(startpoint);
+0094     <span class="keyword">end</span>
+0095     <span class="keyword">if</span> iscell(endpoint)
+0096         [Lnum2, Vnum2] = <a href="#_sub2" class="code" title="subfunction [Lnum, Vnum] = getLabelNumber(Lname)">getLabelNumber</a>(endpoint{jj});
+0097     <span class="keyword">else</span>
+0098         [Lnum2, Vnum2] = <a href="#_sub2" class="code" title="subfunction [Lnum, Vnum] = getLabelNumber(Lname)">getLabelNumber</a>(endpoint);
+0099     <span class="keyword">end</span>
+0100     
+0101     <span class="comment">% Make ROIs in native space from the template ROIs Load the desired</span>
+0102     <span class="comment">% startpoint ROI from the AAL template and transform it</span>
+0103     <span class="comment">% into the individual's native space</span>
+0104     <span class="keyword">if</span> ~isempty(Lnum1)
+0105         <span class="comment">% Pull the specified volume number out of the template image</span>
+0106         Tvol = <a href="#_sub3" class="code" title="subfunction v = extractVolume(img, vnum)">extractVolume</a>(Timg,Vnum1);
+0107         [~, invDef, roiStart] = dtiCreateRoiFromMniNifti(dt6Path,Tvol,invDef,0,Lnum1);
+0108     <span class="keyword">end</span>
+0109     <span class="comment">% Only create an endpoint ROI if endpoints were defined</span>
+0110     <span class="keyword">if</span> ~isempty(Lnum2)
+0111         <span class="comment">% Pull the specified volume number out of the template image</span>
+0112         Tvol = <a href="#_sub3" class="code" title="subfunction v = extractVolume(img, vnum)">extractVolume</a>(Timg,Vnum2);
+0113         [~,~, roiEnd]  = dtiCreateRoiFromMniNifti(dt6Path,Tvol,invDef,0,Lnum2);
+0114     <span class="keyword">end</span>
+0115     <span class="comment">% Make a function to compute the distance between fibers endpoints and</span>
+0116     <span class="comment">% the desired start and endpoint</span>
+0117     <span class="keyword">if</span> ~isempty(Lnum1)
+0118         distfun1 = @(x) nearpoints([x(:,1) x(:,end)],roiStart.coords');
+0119         <span class="comment">% Compute distance for each fiber to the start and end ROIs</span>
+0120         [~, dist1] = cellfun(distfun1,fg(jj).fibers,<span class="string">'UniformOutput'</span>,false);
+0121     <span class="keyword">end</span>
+0122     <span class="comment">% Do the same for the endpoints if they were defined</span>
+0123     <span class="keyword">if</span> ~isempty(Lnum2)
+0124         distfun2 = @(x) nearpoints([x(:,1) x(:,end)],roiEnd.coords');
+0125         [~, dist2] = cellfun(distfun2,fg(jj).fibers,<span class="string">'UniformOutput'</span>,false);
+0126     <span class="keyword">end</span>
+0127     <span class="comment">% record which fibers need to be flipped. We flip any fiber who's</span>
+0128     <span class="comment">% last node is closer to the starting ROI than its first node</span>
+0129     <span class="keyword">if</span> ~isempty(Lnum1)
+0130         flipped{jj} = cellfun(@(x) x(1)&gt;x(2), dist1,<span class="string">'UniformOutput'</span>,false);
+0131     <span class="keyword">elseif</span> ~isempty(Lnum2)
+0132         <span class="comment">% Do it for the endpoint if the startpoint was not defined</span>
+0133         flipped{jj} = cellfun(@(x) x(1)&gt;x(2), dist2,<span class="string">'UniformOutput'</span>,false);
+0134     <span class="keyword">end</span>
+0135     <span class="comment">% Flip fibers that need to be flipped</span>
+0136     fg(jj).fibers = cellfun(@<a href="#_sub1" class="code" title="subfunction fibOut = flipfun(fibIn,ind)">flipfun</a>,fg(jj).fibers,flipped{jj},<span class="string">'UniformOutput'</span>,false);
+0137     <span class="comment">% Identify fibers that don't have a startpoint and endpoint within</span>
+0138     <span class="comment">% dCrit mm of the defining ROIs</span>
+0139     <span class="keyword">if</span> ~isempty(Lnum2) &amp;&amp; ~isempty(Lnum1)
+0140         keep{jj} = cellfun(@(x1,x2) min(x1) &lt; dCritSq &amp;&amp; min(x2) &lt; dCritSq,dist1,dist2);
+0141     <span class="keyword">elseif</span> ~isempty(Lnum1)
+0142         keep{jj} = cellfun(@(x1) min(x1) &lt; dCritSq, dist1);
+0143     <span class="keyword">elseif</span> ~isempty(Lnum2)
+0144         keep{jj} = cellfun(@(x1) min(x1) &lt; dCritSq, dist2);
+0145     <span class="keyword">end</span>
+0146     <span class="comment">% Discard the fibers</span>
+0147     fg(jj).fibers = fg(jj).fibers(keep{jj});
+0148 <span class="keyword">end</span>
+0149 
+0150 <span class="comment">% Convert fiber group structure to whatever type was input</span>
+0151 <span class="keyword">if</span> array == 0
+0152     fg = dtiFgArrayToFiberGroup(fg,fgName);
+0153 <span class="keyword">end</span>
+0154 
+0155 <span class="keyword">return</span>
+0156 
+0157 <a name="_sub1" href="#_subfunctions" class="code">function fibOut = flipfun(fibIn,ind)</a>
+0158 <span class="comment">% Function to flip fibers</span>
+0159 <span class="keyword">if</span>(ind ==1)
+0160     fibOut = fliplr(fibIn);
+0161 <span class="keyword">else</span>
+0162     fibOut = fibIn;
+0163 <span class="keyword">end</span>
+0164 
+0165 <span class="keyword">return</span>
+0166 
+0167 <a name="_sub2" href="#_subfunctions" class="code">function [Lnum, Vnum] = getLabelNumber(Lname)</a>
+0168 <span class="comment">% Return the label number and volume number for the desired region</span>
+0169 <span class="keyword">if</span> isempty(Lname)
+0170     Lnum = [];
+0171     Vnum = [];
+0172     <span class="keyword">return</span>
+0173 <span class="keyword">end</span>
+0174 <span class="comment">% Get the AFQ base directory</span>
+0175 AFQbase = <a href="AFQ_directories.html" class="code" title="function [AFQbase AFQdata AFQfunc AFQutil AFQdoc AFQgui] = AFQ_directories">AFQ_directories</a>;
+0176 <span class="comment">% Template directory</span>
+0177 tdir = fullfile(AFQbase,<span class="string">'templates'</span>,<span class="string">'labelMaps'</span>);
+0178 <span class="comment">% Load template region names</span>
+0179 labels = readTab(fullfile(tdir,<span class="string">'MNI_AAL.txt'</span>),<span class="string">','</span>);
+0180 <span class="comment">% Get the desired label number for the startpoint</span>
+0181 Lnum = find(strcmpi(Lname,labels(:,2)));
+0182 <span class="comment">% Set the volume number to 1 and change it below if necessary. Volume 1 is</span>
+0183 <span class="comment">% the AAL template</span>
+0184 Vnum = 1;
+0185 
+0186 <span class="comment">% If the name was not in the label file check if it is a composite region</span>
+0187 <span class="keyword">if</span> isempty(Lnum)
+0188     <span class="keyword">switch</span>(Lname)
+0189         <span class="keyword">case</span>'occipital'
+0190             <span class="comment">% We do not include the fusiform</span>
+0191             Lnum = 43:54;
+0192         <span class="keyword">case</span> {<span class="string">'leftoccipital'</span> <span class="string">'leftilfocc'</span> <span class="string">'leftifofocc'</span>}
+0193             Lnum = [43:2:53];
+0194         <span class="keyword">case</span> {<span class="string">'rightoccipital'</span> <span class="string">'rightilfocc'</span> <span class="string">'rightifofocc'</span>}
+0195             Lnum = [44:2:54];
+0196         <span class="keyword">case</span>'temporal'
+0197             <span class="comment">% We include the fusiform</span>
+0198             Lnum = [37:42 55, 56, 79:90];
+0199         <span class="keyword">case</span> <span class="string">'lefttemporal'</span>
+0200             Lnum = [37:2:41 55 79:2:89];
+0201         <span class="keyword">case</span> <span class="string">'righttemporal'</span>
+0202             Lnum = [38:2:42 56 80:2:90];
+0203         <span class="keyword">case</span> {<span class="string">'leftanttemporal'</span> <span class="string">'leftuncinatetemp'</span> <span class="string">'leftilftemp'</span>}
+0204             <span class="comment">% 41 = amygdala</span>
+0205             Lnum = [41 83 87];
+0206         <span class="keyword">case</span> {<span class="string">'rightanttemporal'</span> <span class="string">'rightuncinatetemp'</span> <span class="string">'rightilftemp'</span>}
+0207             Lnum = [42 84 88];
+0208         <span class="keyword">case</span> <span class="string">'leftuncinatefront'</span>
+0209             Lnum = [5 9 15 25];
+0210         <span class="keyword">case</span> <span class="string">'rightuncinatefront'</span>
+0211             Lnum = [6 10 16 26];
+0212         <span class="keyword">case</span> <span class="string">'leftifoffront'</span>
+0213             Lnum = [3 5 7 9 13 15 25]; 
+0214         <span class="keyword">case</span> <span class="string">'rightifoffront'</span>
+0215             Lnum = [4 6 8 10 14 16 26];
+0216         <span class="keyword">case</span> <span class="string">'leftfrontal'</span>
+0217             Lnum = [1:2:25];
+0218         <span class="keyword">case</span> <span class="string">'rightfrontal'</span>
+0219             [2:2:26];
+0220         <span class="keyword">case</span> <span class="string">'leftparietal'</span>
+0221             Lnum =  [57:67];
+0222         <span class="keyword">case</span> <span class="string">'rightparietal'</span>
+0223             Lnum = [58:68];
+0224         <span class="keyword">case</span> {<span class="string">'leftinfparietal'</span> <span class="string">'leftslfpar'</span>}
+0225             Lnum = [61 63 65];
+0226         <span class="keyword">case</span> {<span class="string">'rightinfparietal'</span> <span class="string">'rightslfpar'</span>}
+0227             Lnum = [62 64 65];
+0228         <span class="keyword">case</span> <span class="string">'cerebellum'</span>
+0229             Lnum = 91:116;
+0230         <span class="keyword">case</span> {<span class="string">'leftarcfront'</span> <span class="string">'leftslffront'</span>}
+0231             Lnum = [1 11 13];
+0232         <span class="keyword">case</span> {<span class="string">'rightarcfront'</span> <span class="string">'rightslffront'</span>}
+0233             Lnum = [2 12 14];
+0234         <span class="keyword">case</span> <span class="string">'leftarctemp'</span>
+0235             Lnum = [79 81 85  89];
+0236         <span class="keyword">case</span> <span class="string">'rightarctemp'</span>
+0237             Lnum = [80 82 86 90];
+0238         <span class="keyword">case</span> <span class="string">'cstinferior'</span>
+0239             Lnum = 1; Vnum = 2;
+0240         <span class="keyword">case</span> <span class="string">'cstsuperior'</span>
+0241             Lnum = 1; Vnum = 3;
+0242     <span class="keyword">end</span>
+0243 <span class="keyword">end</span>
+0244 
+0245 <span class="keyword">return</span>
+0246 
+0247 <a name="_sub3" href="#_subfunctions" class="code">function v = extractVolume(img, vnum)</a>
+0248 <span class="comment">% Extract a given volume from a nifti image</span>
+0249 
+0250 v = img;
+0251 v.data = squeeze(img.data(:,:,:,vnum));
+0252 v.dim = v.dim(1:3);
+0253 v.ndim = 3;
+0254 v.pixdim = v.pixdim(1:3);
+0255 
+0256 <span class="keyword">return</span></pre></div>
+<hr><address>Generated on Wed 05-Dec-2012 12:03:42 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
 </body>
 </html>

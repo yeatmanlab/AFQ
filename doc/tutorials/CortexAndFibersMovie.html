@@ -1,0 +1,187 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of CortexAndFibersMovie</title>
+  <meta name="keywords" content="CortexAndFibersMovie">
+  <meta name="description" content="% Rendering videos of the cortex and fiber tracts">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">tutorials</a> &gt; CortexAndFibersMovie.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for tutorials&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>CortexAndFibersMovie
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>% Rendering videos of the cortex and fiber tracts</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">% Rendering videos of the cortex and fiber tracts
+
+ This tutorial will show how to render a mesh of the cortical surface and
+ underlying fiber tracts and animate them in a video.  You need
+ segmentation of the white matter (the higher the resolution the better)
+ saved as a binary nifti image and .mat or .pdb files of the fiber tracts.
+
+ Copyright Jason D. Yeatman November 2012</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="../3Dvis/AFQ_RenderCorticalSurface.html" class="code" title="function [p, msh] = AFQ_RenderCorticalSurface(cortex, varargin)">AFQ_RenderCorticalSurface</a>	Render the cortical surface from a binary segmentation image</li><li><a href="../3Dvis/AFQ_RenderFibers.html" class="code" title="function lightH = AFQ_RenderFibers(fg,varargin)">AFQ_RenderFibers</a>	Render a fiber group and tract profile in 3-D</li><li><a href="../functions/AFQ_directories.html" class="code" title="function [AFQbase AFQdata AFQfunc AFQutil AFQdoc AFQgui] = AFQ_directories">AFQ_directories</a>	Returns a path to the AFQ directories</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">%% Rendering videos of the cortex and fiber tracts</span>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% This tutorial will show how to render a mesh of the cortical surface and</span>
+0004 <span class="comment">% underlying fiber tracts and animate them in a video.  You need</span>
+0005 <span class="comment">% segmentation of the white matter (the higher the resolution the better)</span>
+0006 <span class="comment">% saved as a binary nifti image and .mat or .pdb files of the fiber tracts.</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% Copyright Jason D. Yeatman November 2012</span>
+0009 
+0010 <span class="comment">%% Load the example data</span>
+0011 
+0012 <span class="comment">% Get AFQ directories</span>
+0013 [AFQbase AFQdata AFQfunc AFQutil AFQdoc AFQgui] = <a href="../functions/AFQ_directories.html" class="code" title="function [AFQbase AFQdata AFQfunc AFQutil AFQdoc AFQgui] = AFQ_directories">AFQ_directories</a>;
+0014 <span class="comment">% The subject's data is saved in the mesh directory</span>
+0015 sdir = fullfile(AFQdata,<span class="string">'mesh'</span>);
+0016 cd(sdir);
+0017 
+0018 <span class="comment">% Load up the manual segmentations of the left arcuate and inferior</span>
+0019 <span class="comment">% longitudinal fasciculus from Quench</span>
+0020 arc = dtiLoadFiberGroup(<span class="string">'L_Arcuate.pdb'</span>);
+0021 ilf = dtiLoadFiberGroup(<span class="string">'L_ILF.pdb'</span>);
+0022 
+0023 <span class="comment">% Remove the endpoints of the fibers so they don't show through the cortex.</span>
+0024 <span class="comment">% This is not necessary but I did not want the fibers to poke through the</span>
+0025 <span class="comment">% cortex.</span>
+0026 <span class="keyword">for</span> ii = 1:length(arc.fibers)
+0027     arc.fibers{ii} = arc.fibers{ii}(:,5:end-5);
+0028 <span class="keyword">end</span>
+0029 <span class="keyword">for</span> ii = 1:length(ilf.fibers)
+0030     ilf.fibers{ii} = ilf.fibers{ii}(:,5:end-5);
+0031 <span class="keyword">end</span>
+0032 
+0033 <span class="comment">%% Render the fibers and cortex</span>
+0034 
+0035 <span class="comment">% First we render the first fiber tract in a new figure window</span>
+0036 lightH = <a href="../3Dvis/AFQ_RenderFibers.html" class="code" title="function lightH = AFQ_RenderFibers(fg,varargin)">AFQ_RenderFibers</a>(arc,<span class="string">'color'</span>,[0 .5 1],<span class="string">'numfibers'</span>,500,<span class="string">'newfig'</span>,1);
+0037 <span class="comment">% Next add the other fiber tract to the same figure window</span>
+0038 <a href="../3Dvis/AFQ_RenderFibers.html" class="code" title="function lightH = AFQ_RenderFibers(fg,varargin)">AFQ_RenderFibers</a>(ilf,<span class="string">'color'</span>,[1 .5 0],<span class="string">'numfibers'</span>,500,<span class="string">'newfig'</span>,0);
+0039 
+0040 <span class="comment">% Add a rendering of the cortical surface to the same figure.</span>
+0041 <span class="comment">% segmentation.nii.gz is a binary image with ones in every voxel that is</span>
+0042 <span class="comment">% white matter and zeros everywhere else</span>
+0043 p = <a href="../3Dvis/AFQ_RenderCorticalSurface.html" class="code" title="function [p, msh] = AFQ_RenderCorticalSurface(cortex, varargin)">AFQ_RenderCorticalSurface</a>(<span class="string">'segmentation.nii.gz'</span>, <span class="string">'boxfilter'</span>, 5, <span class="string">'newfig'</span>, 0);
+0044 
+0045 <span class="comment">% Delete the light object and put a new light to the right of the camera</span>
+0046 delete(lightH);
+0047 lightH=camlight(<span class="string">'right'</span>);
+0048 <span class="comment">% Turn of the axes</span>
+0049 axis(<span class="string">'off'</span>);
+0050 
+0051 <span class="comment">%% Make a video showing the cortex and underlying tracts</span>
+0052 
+0053 <span class="comment">% These next lines of code perform the specific rotations that I desired</span>
+0054 <span class="comment">% and capture each rotation as a frame in the video. After each rotation we</span>
+0055 <span class="comment">% move the light so that it follows the camera and we set the camera view</span>
+0056 <span class="comment">% angle so that matlab maintains the same camera distance.</span>
+0057 <span class="keyword">for</span> ii = 1:45
+0058     <span class="comment">% Rotate the camera 5 degrees down</span>
+0059     camorbit(0, -2);
+0060     <span class="comment">% Set the view angle so that the image stays the same size</span>
+0061     set(gca,<span class="string">'cameraviewangle'</span>,8);
+0062     <span class="comment">% Move the light to follow the camera</span>
+0063     camlight(lightH,<span class="string">'right'</span>);
+0064     <span class="comment">% Capture the current figure window as a frame in the video</span>
+0065     mov(ii)=getframe(gcf);
+0066 <span class="keyword">end</span>
+0067 
+0068 <span class="comment">% Now rotate along the diagonal axis</span>
+0069 <span class="keyword">for</span> ii = 46:90
+0070     camorbit(2,2);
+0071     set(gca,<span class="string">'cameraviewangle'</span>,8);
+0072     camlight(lightH,<span class="string">'right'</span>);
+0073     mov(ii)=getframe(gcf);
+0074 <span class="keyword">end</span>
+0075 
+0076 <span class="comment">% Rotate to see the top of the brain</span>
+0077 <span class="keyword">for</span> ii = 91:135
+0078     camorbit(0,2);
+0079     set(gca,<span class="string">'cameraviewangle'</span>,8);
+0080     camlight(lightH,<span class="string">'right'</span>);
+0081     mov(ii)=getframe(gcf);
+0082 <span class="keyword">end</span>
+0083 
+0084 <span class="comment">% And rotate back to our starting position</span>
+0085 <span class="keyword">for</span> ii = 136:181
+0086     camorbit(-2,-2);
+0087     set(gca,<span class="string">'cameraviewangle'</span>,8);
+0088     camlight(lightH,<span class="string">'right'</span>);
+0089     mov(ii)=getframe(gcf);
+0090 <span class="keyword">end</span>
+0091 <span class="comment">% Adjust the transparence of the cortex so that the underlying fiber tracts</span>
+0092 <span class="comment">% begin to appear.</span>
+0093 
+0094 a = 1; <span class="comment">% Start off with an alpha of 1</span>
+0095 <span class="keyword">for</span> ii = 182:192
+0096     <span class="comment">% Slowly make the cortex fade away</span>
+0097     a = a-.03;
+0098     alpha(p,a);
+0099     <span class="comment">% Caputure the frame</span>
+0100     mov(ii)=getframe(gcf);
+0101 <span class="keyword">end</span>
+0102 
+0103 <span class="comment">% Continue making the cortex slowly fade and rotate the white matter tracts</span>
+0104 <span class="keyword">for</span> ii = 193:373
+0105     a = a -0.015;
+0106     <span class="comment">% Don't let the alpha go below 0 (causes an error)</span>
+0107     <span class="keyword">if</span> a &lt; 0
+0108         a = 0;
+0109     <span class="keyword">end</span>
+0110     alpha(p,a);
+0111     camorbit(2,0);
+0112     camlight(lightH,<span class="string">'right'</span>);
+0113     set(gca,<span class="string">'cameraviewangle'</span>,8);
+0114     mov(ii)=getframe(gcf);
+0115 <span class="keyword">end</span>
+0116 
+0117 <span class="comment">% Now that we are back to our starting point bring the cortex back</span>
+0118 <span class="keyword">for</span> ii = 374:408
+0119     a = a+.03;
+0120     <span class="keyword">if</span> a &gt; 1
+0121         a = 1;
+0122     <span class="keyword">end</span>
+0123     alpha(p,a);
+0124     mov(ii)=getframe(gcf);
+0125 <span class="keyword">end</span>
+0126 
+0127 <span class="comment">%% Save the movie as a .avi file to be played by any movie program</span>
+0128 
+0129 movie2avi(mov,<span class="string">'WhiteMatter.avi'</span>,<span class="string">'compression'</span>,<span class="string">'none'</span>,<span class="string">'fps'</span>,15)
+0130 
+0131 
+0132 <span class="keyword">return</span>
+0133</pre></div>
+<hr><address>Generated on Wed 05-Dec-2012 12:03:42 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

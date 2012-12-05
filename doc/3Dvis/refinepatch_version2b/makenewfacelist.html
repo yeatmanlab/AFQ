@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of makenewfacelist</title>
+  <meta name="keywords" content="makenewfacelist">
+  <meta name="description" content="Combine the edge middle points and old vertex points to faces.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">3Dvis</a> &gt; <a href="index.html">refinepatch_version2b</a> &gt; makenewfacelist.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for 3Dvis/refinepatch_version2b&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>makenewfacelist
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Combine the edge middle points and old vertex points to faces.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function Fnew=makenewfacelist(F,HT_index, HT_values) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Combine the edge middle points and old vertex points to faces.
+ (4 Split method)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="refinepatch.html" class="code" title="function [FV2]=refinepatch(FV)">refinepatch</a>	This function "refinepatch" refines a triangular mesh with</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function Fnew=makenewfacelist(F,HT_index, HT_values)</a>
+0002 <span class="comment">% Combine the edge middle points and old vertex points to faces.</span>
+0003 <span class="comment">% (4 Split method)</span>
+0004 Fnew=zeros(length(F)*4,3);
+0005 <span class="keyword">for</span> i=0:length(F)-1,
+0006     vert1=F(i+1,1); 
+0007     vert2=F(i+1,2); 
+0008     vert3=F(i+1,3);
+0009     
+0010     index=HT_index{vert1}; vals=HT_values{vert1};
+0011     verta= vals(index==vert2);
+0012     index=HT_index{vert2}; vals=HT_values{vert2};
+0013     vertb= vals(index==vert3);
+0014     index=HT_index{vert3}; vals=HT_values{vert3};
+0015     vertc= vals(index==vert1);
+0016 
+0017     Fnew(i*4+1,:)=[vert1 verta vertc];
+0018     Fnew(i*4+2,:)=[verta vert2 vertb];
+0019     Fnew(i*4+3,:)=[vertc vertb vert3];
+0020     Fnew(i*4+4,:)=[verta vertb vertc];
+0021 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 05-Dec-2012 12:03:42 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

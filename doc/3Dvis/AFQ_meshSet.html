@@ -1,0 +1,178 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of AFQ_meshSet</title>
+  <meta name="keywords" content="AFQ_meshSet">
+  <meta name="description" content="Set fields in the AFQ msh mesh structure">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">3Dvis</a> &gt; AFQ_meshSet.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for 3Dvis&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>AFQ_meshSet
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Set fields in the AFQ msh mesh structure</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function msh = AFQ_meshSet(msh, param, varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Set fields in the AFQ msh mesh structure
+
+ msh = AFQ_meshSet(msh, 'filtered', 'box5', tr)
+ msh = AFQ_meshSet(msh, 'vertices', 'filtered box 5')
+ msh = AFQ_meshSet(msh, 'vertex','name', vertices)
+ msh = AFQ_meshSet(msh, 'vertex','name', vertices, faces)
+ msh = AFQ_meshSet(msh, 'vertex','name', vertices, faces, map2origin)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="AFQ_meshGet.html" class="code" title="function val = AFQ_meshGet(msh, param, varargin)">AFQ_meshGet</a>	Get parameters from an AFQ msh, mesh structure</li><li><a href="AFQ_meshSet.html" class="code" title="function msh = AFQ_meshSet(msh, param, varargin)">AFQ_meshSet</a>	Set fields in the AFQ msh mesh structure</li><li><a href="../3Dvis/smoothpatch_version1b/smoothpatch.html" class="code" title="function FV2=smoothpatch(FV,mode,itt,lambda,sigma)">smoothpatch</a>	This function PATCHSMOOTH smooths a triangulated Mesh, with accurate</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="AFQ_meshColor.html" class="code" title="function msh = AFQ_meshColor(msh, varargin)">AFQ_meshColor</a>	Color the a mesh based on an overlay image or surface curvature</li><li><a href="AFQ_meshCreate.html" class="code" title="function msh = AFQ_meshCreate(im, varargin)">AFQ_meshCreate</a>	Create a mesh structure and build a 3d mesh from a nifti image</li><li><a href="AFQ_meshSet.html" class="code" title="function msh = AFQ_meshSet(msh, param, varargin)">AFQ_meshSet</a>	Set fields in the AFQ msh mesh structure</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function msh = AFQ_meshSet(msh, param, varargin)</a>
+0002 <span class="comment">% Set fields in the AFQ msh mesh structure</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% msh = AFQ_meshSet(msh, 'filtered', 'box5', tr)</span>
+0005 <span class="comment">% msh = AFQ_meshSet(msh, 'vertices', 'filtered box 5')</span>
+0006 <span class="comment">% msh = AFQ_meshSet(msh, 'vertex','name', vertices)</span>
+0007 <span class="comment">% msh = AFQ_meshSet(msh, 'vertex','name', vertices, faces)</span>
+0008 <span class="comment">% msh = AFQ_meshSet(msh, 'vertex','name', vertices, faces, map2origin)</span>
+0009 <span class="keyword">switch</span>(param)
+0010     <span class="keyword">case</span>(<span class="string">'vertices'</span>)
+0011         <span class="comment">% Set which vertices to render</span>
+0012         <span class="keyword">if</span> nargin &lt; 3, fprintf(<span class="string">'Please supply vertex name'</span>); <span class="keyword">end</span>
+0013         <span class="comment">% If that vertex type is a field then set it to tr.vertices. If</span>
+0014         <span class="comment">% it's not a field but can be computed then compute it and add it to</span>
+0015         <span class="comment">% tr.vertices</span>
+0016         <span class="keyword">if</span> isfield(msh.vertex, varargin{1})
+0017             <span class="comment">% Set the name of the current vertices</span>
+0018             msh.vertex.current = varargin{1};
+0019             <span class="comment">% Add them to the current vertices location</span>
+0020             msh.tr.vertices = msh.vertex.(varargin{1});
+0021             <span class="comment">% if there are unique faces saved for these vertices then use</span>
+0022             <span class="comment">% them.</span>
+0023             <span class="keyword">if</span> isnumeric(msh.face.(varargin{1}))
+0024                 <span class="comment">% If the faces are changed the set the current faces field</span>
+0025                 <span class="comment">% to reflect that</span>
+0026                 msh.face.current = varargin{1};
+0027                 <span class="comment">% And add these faces to the current faces location</span>
+0028                 msh.tr.faces = msh.face.(varargin{1});
+0029                 <span class="comment">% Otherwise if they use the same faces as the origin that</span>
+0030                 <span class="comment">% set the origin faces to be rendered</span>
+0031             <span class="keyword">elseif</span> ischar(msh.face.(varargin{1})) &amp;&amp; <span class="keyword">...</span>
+0032                     strcmp(msh.face.(varargin{1}), <span class="string">'origin'</span>)
+0033                 msh.face.current = <span class="string">'origin'</span>;
+0034                 msh.tr.faces = msh.face.origin;
+0035             <span class="keyword">end</span>
+0036         <span class="keyword">elseif</span> strfind(varargin{1},<span class="string">'smooth'</span>) == 1
+0037             <span class="comment">% If the desired vertices do not exist then compute them</span>
+0038             sIter = str2num(varargin{1}(7:end));
+0039             vName = sprintf(<span class="string">'smooth%d'</span>,sIter);
+0040             <span class="comment">% Set the vertices to the original ones so that they can be</span>
+0041             <span class="comment">% smoothed</span>
+0042             msh = <a href="AFQ_meshSet.html" class="code" title="function msh = AFQ_meshSet(msh, param, varargin)">AFQ_meshSet</a>(msh,<span class="string">'vertices'</span>,<span class="string">'origin'</span>);
+0043             <span class="comment">% Smooth them</span>
+0044             tmp = <a href="../3Dvis/smoothpatch_version1b/smoothpatch.html" class="code" title="function FV2=smoothpatch(FV,mode,itt,lambda,sigma)">smoothpatch</a>(<a href="AFQ_meshGet.html" class="code" title="function val = AFQ_meshGet(msh, param, varargin)">AFQ_meshGet</a>(msh,<span class="string">'tr'</span>), [], sIter);
+0045             <span class="comment">% Add them to the corresponding vertex field</span>
+0046             msh.vertex.(vName) = tmp.vertices;
+0047             <span class="comment">% Set these new vertices to the ones that will be rendered</span>
+0048             msh = <a href="AFQ_meshSet.html" class="code" title="function msh = AFQ_meshSet(msh, param, varargin)">AFQ_meshSet</a>(msh,<span class="string">'vertices'</span>,vName);
+0049         <span class="keyword">end</span>
+0050         
+0051         <span class="comment">% Now finally set the coloring to be consistent with the new set of</span>
+0052         <span class="comment">% vertices. If the new vertices are the same length as the old ones</span>
+0053         <span class="comment">% then the coloring can remain the same. Otherwise we need to reset</span>
+0054         <span class="comment">% it</span>
+0055         <span class="keyword">if</span> size(msh.tr.FaceVertexCData,1) ~= size(msh.tr.vertices,1)
+0056             msh = <a href="AFQ_meshSet.html" class="code" title="function msh = AFQ_meshSet(msh, param, varargin)">AFQ_meshSet</a>(msh,<span class="string">'FaceVertexCData'</span>,msh.colors.current);
+0057         <span class="keyword">end</span>
+0058         
+0059     <span class="keyword">case</span> <span class="string">'FaceVertexCData'</span>
+0060         <span class="comment">% If a single color value is in the base color field and no other</span>
+0061         <span class="comment">% color name was specified then replicate the base color for al the</span>
+0062         <span class="comment">% vertices</span>
+0063         <span class="keyword">if</span> nargin &lt; 3 &amp;&amp; size(<a href="AFQ_meshGet.html" class="code" title="function val = AFQ_meshGet(msh, param, varargin)">AFQ_meshGet</a>(msh,<span class="string">'basecolor'</span>),1) == 1
+0064             msh.colors.current = <span class="string">'base'</span>;
+0065             msh.tr.FaceVertexCData = repmat(<a href="AFQ_meshGet.html" class="code" title="function val = AFQ_meshGet(msh, param, varargin)">AFQ_meshGet</a>(msh,<span class="string">'basecolor'</span>),size(msh.tr.vertices,1),1);
+0066         <span class="keyword">elseif</span> nargin == 3 &amp;&amp; size(<a href="AFQ_meshGet.html" class="code" title="function val = AFQ_meshGet(msh, param, varargin)">AFQ_meshGet</a>(msh,<span class="string">'colors'</span>,varargin{1}),1) == size(msh.tr.vertices,1);
+0067             <span class="comment">% If the color exists then get it from the mesh structure and</span>
+0068             <span class="comment">% assign it to the current color. This call to AFQ_meshGet will</span>
+0069             <span class="comment">% handle mapping the correct colors to the correct vertices as</span>
+0070             <span class="comment">% long as there is a map2origin field in the mesh structure.</span>
+0071             msh.colors.current = varargin{1};
+0072             msh.tr.FaceVertexCData = <a href="AFQ_meshGet.html" class="code" title="function val = AFQ_meshGet(msh, param, varargin)">AFQ_meshGet</a>(msh,<span class="string">'colors'</span>,varargin{1});
+0073         <span class="keyword">end</span>
+0074         <span class="comment">% If there was only a single color provided then replicate it for</span>
+0075         <span class="comment">% all vertices</span>
+0076         <span class="keyword">if</span> size(<a href="AFQ_meshGet.html" class="code" title="function val = AFQ_meshGet(msh, param, varargin)">AFQ_meshGet</a>(msh,<span class="string">'FaceVertexCData'</span>),1) == 1
+0077             <span class="comment">% I THINK THIS CAN BE REMOVED</span>
+0078             msh.tr.FaceVertexCData = repmat(<a href="AFQ_meshGet.html" class="code" title="function val = AFQ_meshGet(msh, param, varargin)">AFQ_meshGet</a>(msh,<span class="string">'FaceVertexCData'</span>),size(msh.tr.vertices,1),1);
+0079         <span class="keyword">end</span>
+0080     <span class="keyword">case</span> {<span class="string">'vals'</span> <span class="string">'val'</span>}
+0081         <span class="keyword">if</span> nargin &lt; 4
+0082             fprintf(<span class="string">'Please provide the value name and associated vector of values\n'</span>)
+0083         <span class="keyword">elseif</span> ischar(varargin{1}) &amp;&amp; isvector(varargin{2})
+0084             msh.vals.(varargin{1}) = varargin{2};
+0085         <span class="keyword">else</span>
+0086             fprintf(<span class="string">'Correct call: msh = AFQ_meshSet(msh,''vals'',''valname'',values)\n'</span>);
+0087         <span class="keyword">end</span>
+0088     <span class="keyword">case</span> <span class="string">'colors'</span>
+0089         <span class="keyword">if</span> nargin &lt; 4
+0090             fprintf(<span class="string">'Please provide the color name and associated vector of color values)\n'</span>)
+0091         <span class="keyword">elseif</span> ischar(varargin{1}) &amp;&amp; ismatrix(varargin{2}) &amp;&amp; size(varargin{2},2) == 3;
+0092             msh.colors.(varargin{1}) = varargin{2};
+0093         <span class="keyword">else</span>
+0094             fprintf(<span class="string">'Correct call: msh = AFQ_meshSet(msh,''colors'',''valname'',values)\n'</span>);
+0095         <span class="keyword">end</span>
+0096     <span class="keyword">case</span> {<span class="string">'basecolor'</span> <span class="string">'color'</span>}
+0097         <span class="keyword">if</span> length(varargin) == 1 &amp;&amp; size(varargin{1},2) == 3
+0098             msh.colors.base = varargin{1};
+0099         <span class="keyword">else</span> 
+0100             fprintf(<span class="string">'Correct call: msh = AFQ_meshSet(msh,''basecolor'',rgbValue)\n'</span>);
+0101         <span class="keyword">end</span>
+0102     <span class="keyword">case</span> {<span class="string">'filter'</span> <span class="string">'filtered'</span>}
+0103         fname = [<span class="string">'filtered'</span> varargin{1}];
+0104         msh.vertex.(fname) = varargin{2};
+0105     <span class="keyword">case</span> <span class="string">'vertex'</span>
+0106         <span class="keyword">if</span> nargin &lt; 4
+0107             fprintf(<span class="string">'Correct call: msh = AFQ_meshSet(msh,''vertex'',''name'',vertices, faces, map2origin)\n'</span>)
+0108         <span class="keyword">elseif</span> nargin == 4
+0109             msh.vertex.(varargin{1}) = varargin{2};
+0110             <span class="comment">% if no faces were passed in then assume that the faces are the</span>
+0111             <span class="comment">% same the original faces</span>
+0112             msh.face.(varargin{1})       = <span class="string">'origin'</span>;
+0113             msh.map2origin.(varargin{1}) = <span class="string">'origin'</span>;
+0114         <span class="keyword">elseif</span> nargin == 5
+0115             msh.vertex.(varargin{1}) = varargin{2};
+0116             msh.face.(varargin{1})   = varargin{3};
+0117             <span class="keyword">if</span> ~strcmp(varargin{1},<span class="string">'origin'</span>)
+0118                 fprintf(<span class="string">'no data for ''map2origin''. Mesh surface may not be colored properly\n'</span>);
+0119             <span class="keyword">end</span>
+0120         <span class="keyword">elseif</span> nargin == 6
+0121             msh.vertex.(varargin{1})     = varargin{2};
+0122             msh.face.(varargin{1})       = varargin{3};
+0123             msh.map2origin.(varargin{1}) = varargin{4};
+0124         <span class="keyword">end</span>
+0125 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 05-Dec-2012 12:03:42 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

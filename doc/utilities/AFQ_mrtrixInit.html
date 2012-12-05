@@ -120,137 +120,141 @@ This function is called by:
 0043 fname_trunk = dwRawFile(1:strfind(dwRawFile,<span class="string">'.'</span>)-1);
 0044 raw_idx = strfind(fname_trunk,<span class="string">'raw'</span>);
 0045 <span class="keyword">if</span> isempty(raw_idx)
-0046     error(<span class="string">'Could not find raw directory'</span>)
-0047 <span class="keyword">end</span>
-0048 session = fname_trunk(1:raw_idx-1);
-0049 fname_trunk = [session, mrtrix_folder, fname_trunk(raw_idx+3:end)]; 
-0050 file_sep_idx = strfind(fname_trunk, filesep);
-0051 
-0052 mrtrix_dir = fname_trunk(1:file_sep_idx(end)); 
-0053 
-0054 <span class="keyword">if</span> ~exist(mrtrix_dir, <span class="string">'dir'</span>)
-0055     mkdir(mrtrix_dir)
-0056 <span class="keyword">end</span>
+0046     <span class="comment">% if the raw directory was not actually named raw then assume it is</span>
+0047     <span class="comment">% right above the file name</span>
+0048     [~,rname]=fileparts(fileparts(fname_trunk));
+0049     raw_idx = strfind(fname_trunk,rname);
+0050     <span class="comment">%error('Could not find raw directory')</span>
+0051 <span class="keyword">end</span>
+0052 session = fname_trunk(1:raw_idx-1);
+0053 fname_trunk = [session, mrtrix_folder, fname_trunk(raw_idx+3:end)]; 
+0054 file_sep_idx = strfind(fname_trunk, filesep);
+0055 
+0056 mrtrix_dir = fname_trunk(1:file_sep_idx(end)); 
 0057 
-0058 <span class="comment">% Build the mrtrix file names.</span>
-0059 files = <a href="#_sub2" class="code" title="subfunction files = mrtrix_build_files(fname_trunk,lmax)">mrtrix_build_files</a>(fname_trunk,lmax);
-0060 
-0061 <span class="comment">% Check wich processes were already computed and which ons need to be doen.</span>
-0062 computed = <a href="#_sub1" class="code" title="subfunction computed = mrtrix_check_processes(files)">mrtrix_check_processes</a>(files);
-0063 
-0064 <span class="comment">% Convert the raw dwi data to the mrtrix format:</span>
-0065 <span class="keyword">if</span> (~computed.(<span class="string">'dwi'</span>))
-0066   mrtrix_mrconvert(dwRawFile, files.dwi,0); 
-0067 <span class="keyword">end</span>
-0068 
-0069 <span class="comment">% This file contains both bvecs and bvals, as per convention of mrtrix</span>
-0070 <span class="keyword">if</span> (~computed.(<span class="string">'b'</span>))
-0071   bvecs = dt_info.files.alignedDwBvecs;
-0072   bvals = dt_info.files.alignedDwBvals;
-0073   mrtrix_bfileFromBvecs(bvecs, bvals, files.b);
-0074 <span class="keyword">end</span>
-0075 
-0076 <span class="comment">% Convert the brain mask from mrDiffusion into a .mif file:</span>
-0077 <span class="keyword">if</span> (~computed.(<span class="string">'brainmask'</span>))
-0078   brainMaskFile = fullfile(session, dt_info.files.brainMask); 
-0079   mrtrix_mrconvert(brainMaskFile, files.brainmask, false); 
-0080 <span class="keyword">end</span>
-0081 
-0082 <span class="comment">% Generate diffusion tensors:</span>
-0083 <span class="keyword">if</span> (~computed.(<span class="string">'dt'</span>))
-0084   mrtrix_dwi2tensor(files.dwi, files.dt, files.b,0);
-0085 <span class="keyword">end</span>
-0086 
-0087 <span class="comment">% Get the FA from the diffusion tensor estimates:</span>
-0088 <span class="keyword">if</span> (~computed.(<span class="string">'fa'</span>))
-0089   mrtrix_tensor2FA(files.dt, files.fa, files.brainmask,0);
-0090 <span class="keyword">end</span>
-0091 
-0092 <span class="comment">% Generate the eigenvectors, weighted by FA:</span>
-0093 <span class="keyword">if</span>  (~computed.(<span class="string">'ev'</span>))
-0094   mrtrix_tensor2vector(files.dt, files.ev, files.fa,0);
-0095 <span class="keyword">end</span>
-0096 
-0097 <span class="comment">% Estimate the response function of single fibers:</span>
-0098 <span class="keyword">if</span> (~computed.(<span class="string">'response'</span>))
-0099   mrtrix_response(files.brainmask, files.fa, files.sf, files.dwi,<span class="keyword">...</span>
-0100       files.response, files.b, true,[],8,0) <span class="comment">% That last 'true' means a figure of the</span>
-0101                                   <span class="comment">% response function will be displayed</span>
-0102 <span class="keyword">end</span>
-0103 
-0104 <span class="comment">% Create a white-matter mask, tracktography will act only in here.</span>
-0105 <span class="keyword">if</span> (~computed.(<span class="string">'wm'</span>))
-0106   wmMaskFile = fullfile(session, dt_info.files.wmMask);
-0107   mrtrix_mrconvert(wmMaskFile, files.wm,[],0)
-0108 <span class="keyword">end</span>
-0109 
-0110 <span class="comment">% Compute the CSD estimates:</span>
-0111 <span class="keyword">if</span> (~computed.(<span class="string">'csd'</span>))  
-0112   disp(<span class="string">'The following step takes a while (a few hours)'</span>);                                  
-0113   mrtrix_csdeconv(files.dwi, files.response, lmax, files.csd, files.b, files.brainmask,0)
-0114 <span class="keyword">end</span>
-0115 
-0116 
-0117 
-0118 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
-0119 <span class="comment">% mrtrix_check_processes %</span>
-0120 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
-0121 <a name="_sub1" href="#_subfunctions" class="code">function computed = mrtrix_check_processes(files)</a>
-0122 <span class="comment">%</span>
-0123 <span class="comment">% Check which mrtrix proceses were computed. Returns an array of 0's and</span>
-0124 <span class="comment">% 1's indicating which process was computed (1) and which one needs to be</span>
-0125 <span class="comment">% computed (0)</span>
+0058 <span class="keyword">if</span> ~exist(mrtrix_dir, <span class="string">'dir'</span>)
+0059     mkdir(mrtrix_dir)
+0060 <span class="keyword">end</span>
+0061 
+0062 <span class="comment">% Build the mrtrix file names.</span>
+0063 files = <a href="#_sub2" class="code" title="subfunction files = mrtrix_build_files(fname_trunk,lmax)">mrtrix_build_files</a>(fname_trunk,lmax);
+0064 
+0065 <span class="comment">% Check wich processes were already computed and which ons need to be doen.</span>
+0066 computed = <a href="#_sub1" class="code" title="subfunction computed = mrtrix_check_processes(files)">mrtrix_check_processes</a>(files);
+0067 
+0068 <span class="comment">% Convert the raw dwi data to the mrtrix format:</span>
+0069 <span class="keyword">if</span> (~computed.(<span class="string">'dwi'</span>))
+0070   mrtrix_mrconvert(dwRawFile, files.dwi,0); 
+0071 <span class="keyword">end</span>
+0072 
+0073 <span class="comment">% This file contains both bvecs and bvals, as per convention of mrtrix</span>
+0074 <span class="keyword">if</span> (~computed.(<span class="string">'b'</span>))
+0075   bvecs = dt_info.files.alignedDwBvecs;
+0076   bvals = dt_info.files.alignedDwBvals;
+0077   mrtrix_bfileFromBvecs(bvecs, bvals, files.b);
+0078 <span class="keyword">end</span>
+0079 
+0080 <span class="comment">% Convert the brain mask from mrDiffusion into a .mif file:</span>
+0081 <span class="keyword">if</span> (~computed.(<span class="string">'brainmask'</span>))
+0082   brainMaskFile = fullfile(session, dt_info.files.brainMask); 
+0083   mrtrix_mrconvert(brainMaskFile, files.brainmask, false); 
+0084 <span class="keyword">end</span>
+0085 
+0086 <span class="comment">% Generate diffusion tensors:</span>
+0087 <span class="keyword">if</span> (~computed.(<span class="string">'dt'</span>))
+0088   mrtrix_dwi2tensor(files.dwi, files.dt, files.b,0);
+0089 <span class="keyword">end</span>
+0090 
+0091 <span class="comment">% Get the FA from the diffusion tensor estimates:</span>
+0092 <span class="keyword">if</span> (~computed.(<span class="string">'fa'</span>))
+0093   mrtrix_tensor2FA(files.dt, files.fa, files.brainmask,0);
+0094 <span class="keyword">end</span>
+0095 
+0096 <span class="comment">% Generate the eigenvectors, weighted by FA:</span>
+0097 <span class="keyword">if</span>  (~computed.(<span class="string">'ev'</span>))
+0098   mrtrix_tensor2vector(files.dt, files.ev, files.fa,0);
+0099 <span class="keyword">end</span>
+0100 
+0101 <span class="comment">% Estimate the response function of single fibers:</span>
+0102 <span class="keyword">if</span> (~computed.(<span class="string">'response'</span>))
+0103   mrtrix_response(files.brainmask, files.fa, files.sf, files.dwi,<span class="keyword">...</span>
+0104       files.response, files.b, true,[],8,0) <span class="comment">% That last 'true' means a figure of the</span>
+0105                                   <span class="comment">% response function will be displayed</span>
+0106 <span class="keyword">end</span>
+0107 
+0108 <span class="comment">% Create a white-matter mask, tracktography will act only in here.</span>
+0109 <span class="keyword">if</span> (~computed.(<span class="string">'wm'</span>))
+0110   wmMaskFile = fullfile(session, dt_info.files.wmMask);
+0111   mrtrix_mrconvert(wmMaskFile, files.wm,[],0)
+0112 <span class="keyword">end</span>
+0113 
+0114 <span class="comment">% Compute the CSD estimates:</span>
+0115 <span class="keyword">if</span> (~computed.(<span class="string">'csd'</span>))  
+0116   disp(<span class="string">'The following step takes a while (a few hours)'</span>);                                  
+0117   mrtrix_csdeconv(files.dwi, files.response, lmax, files.csd, files.b, files.brainmask,0)
+0118 <span class="keyword">end</span>
+0119 
+0120 
+0121 
+0122 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0123 <span class="comment">% mrtrix_check_processes %</span>
+0124 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0125 <a name="_sub1" href="#_subfunctions" class="code">function computed = mrtrix_check_processes(files)</a>
 0126 <span class="comment">%</span>
-0127 
-0128 fields = fieldnames(files);
-0129 <span class="keyword">for</span> ii = 1:length(fields)
-0130   <span class="keyword">if</span> exist(files.(fields{ii}),<span class="string">'file'</span>) == 2
-0131     computed.(fields{ii}) = 1;
-0132   <span class="keyword">else</span>
-0133     computed.(fields{ii}) = 0;
-0134   <span class="keyword">end</span>
-0135 <span class="keyword">end</span>
-0136 
-0137 
-0138 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%</span>
-0139 <span class="comment">% mrtrix_build_files %</span>
-0140 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%</span>
-0141 <a name="_sub2" href="#_subfunctions" class="code">function files = mrtrix_build_files(fname_trunk,lmax)</a>
-0142 <span class="comment">%</span>
-0143 <span class="comment">% Builds a structure with the mrtrix file names.</span>
-0144 <span class="comment">%</span>
-0145 
-0146 <span class="comment">% Convert the raw dwi data to the mrtrix format:</span>
-0147 files.dwi = strcat(fname_trunk,<span class="string">'_dwi.mif'</span>);
-0148 
-0149 <span class="comment">% This file contains both bvecs and bvals, as per convention of mrtrix</span>
-0150 files.b     = strcat(fname_trunk, <span class="string">'.b'</span>);
-0151 
-0152 <span class="comment">% Convert the brain mask from mrDiffusion into a .mif file:</span>
-0153 files.brainmask = strcat(fname_trunk,<span class="string">'_brainmask.mif'</span>);
-0154 
-0155 <span class="comment">% Generate diffusion tensors:</span>
-0156 files.dt = strcat(fname_trunk, <span class="string">'_dt.mif'</span>);
-0157 
-0158 <span class="comment">% Get the FA from the diffusion tensor estimates:</span>
-0159 files.fa = strcat(fname_trunk, <span class="string">'_fa.mif'</span>);
-0160 
-0161 <span class="comment">% Generate the eigenvectors, weighted by FA:</span>
-0162 files.ev = strcat(fname_trunk, <span class="string">'_ev.mif'</span>);
-0163 
-0164 <span class="comment">% Estimate the response function of single fibers:</span>
-0165 files.sf = strcat(fname_trunk, <span class="string">'_sf.mif'</span>);
-0166 files.response = strcat(fname_trunk, <span class="string">'_response.txt'</span>);
+0127 <span class="comment">% Check which mrtrix proceses were computed. Returns an array of 0's and</span>
+0128 <span class="comment">% 1's indicating which process was computed (1) and which one needs to be</span>
+0129 <span class="comment">% computed (0)</span>
+0130 <span class="comment">%</span>
+0131 
+0132 fields = fieldnames(files);
+0133 <span class="keyword">for</span> ii = 1:length(fields)
+0134   <span class="keyword">if</span> exist(files.(fields{ii}),<span class="string">'file'</span>) == 2
+0135     computed.(fields{ii}) = 1;
+0136   <span class="keyword">else</span>
+0137     computed.(fields{ii}) = 0;
+0138   <span class="keyword">end</span>
+0139 <span class="keyword">end</span>
+0140 
+0141 
+0142 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%</span>
+0143 <span class="comment">% mrtrix_build_files %</span>
+0144 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%</span>
+0145 <a name="_sub2" href="#_subfunctions" class="code">function files = mrtrix_build_files(fname_trunk,lmax)</a>
+0146 <span class="comment">%</span>
+0147 <span class="comment">% Builds a structure with the mrtrix file names.</span>
+0148 <span class="comment">%</span>
+0149 
+0150 <span class="comment">% Convert the raw dwi data to the mrtrix format:</span>
+0151 files.dwi = strcat(fname_trunk,<span class="string">'_dwi.mif'</span>);
+0152 
+0153 <span class="comment">% This file contains both bvecs and bvals, as per convention of mrtrix</span>
+0154 files.b     = strcat(fname_trunk, <span class="string">'.b'</span>);
+0155 
+0156 <span class="comment">% Convert the brain mask from mrDiffusion into a .mif file:</span>
+0157 files.brainmask = strcat(fname_trunk,<span class="string">'_brainmask.mif'</span>);
+0158 
+0159 <span class="comment">% Generate diffusion tensors:</span>
+0160 files.dt = strcat(fname_trunk, <span class="string">'_dt.mif'</span>);
+0161 
+0162 <span class="comment">% Get the FA from the diffusion tensor estimates:</span>
+0163 files.fa = strcat(fname_trunk, <span class="string">'_fa.mif'</span>);
+0164 
+0165 <span class="comment">% Generate the eigenvectors, weighted by FA:</span>
+0166 files.ev = strcat(fname_trunk, <span class="string">'_ev.mif'</span>);
 0167 
-0168 <span class="comment">% Create a white-matter mask, tracktography will act only in here.</span>
-0169 files.wm    = strcat(fname_trunk, <span class="string">'_wm.mif'</span>);
-0170 
-0171 <span class="comment">% Compute the CSD estimates:</span>
-0172 files.csd = strcat(fname_trunk, sprintf(<span class="string">'_csd_lmax%i.mif'</span>,lmax)); 
-0173 
+0168 <span class="comment">% Estimate the response function of single fibers:</span>
+0169 files.sf = strcat(fname_trunk, <span class="string">'_sf.mif'</span>);
+0170 files.response = strcat(fname_trunk, <span class="string">'_response.txt'</span>);
+0171 
+0172 <span class="comment">% Create a white-matter mask, tracktography will act only in here.</span>
+0173 files.wm    = strcat(fname_trunk, <span class="string">'_wm.mif'</span>);
 0174 
-0175 
-0176</pre></div>
-<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+0175 <span class="comment">% Compute the CSD estimates:</span>
+0176 files.csd = strcat(fname_trunk, sprintf(<span class="string">'_csd_lmax%i.mif'</span>,lmax)); 
+0177 
+0178 
+0179 
+0180</pre></div>
+<hr><address>Generated on Wed 05-Dec-2012 12:03:42 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
 </body>
 </html>

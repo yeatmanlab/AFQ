@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of AFQ_meshColor</title>
+  <meta name="keywords" content="AFQ_meshColor">
+  <meta name="description" content="Color the a mesh based on an overlay image or surface curvature">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">3Dvis</a> &gt; AFQ_meshColor.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for 3Dvis&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>AFQ_meshColor
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Color the a mesh based on an overlay image or surface curvature</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function msh = AFQ_meshColor(msh, varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Color the a mesh based on an overlay image or surface curvature
+
+ msh = AFQ_meshColor(msh, 'overlay', overlayIm, 'thresh', [min max], 'crange', [min max], 'cmap', [cmap = 'jet'])
+
+ AFQ_meshColor takes in a msh mesh structure and adds a new colors field
+ to it that specifies an rgb value for each mesh vertex. The colors can be
+ computed from an overlay image to heatmap the mesh based on fMRI signal
+ or quantitative MRI parameters. Other options are to color the mesh based
+ on surface curvature. See help AFQ_RenderCorticalSurface and 
+ help AFQ_meshCreate for a full description of all the parameters that can
+ be set.
+
+ Arguments can be passed in in one of 2 ways. (1) In the form:
+'parameter', [value] - where the parameter is defined and then the
+ arguments or inputs follow the parameter name. (2) As a parameters
+ structure - see CreateParamsStruct.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="AFQ_meshGet.html" class="code" title="function val = AFQ_meshGet(msh, param, varargin)">AFQ_meshGet</a>	Get parameters from an AFQ msh, mesh structure</li><li><a href="AFQ_meshSet.html" class="code" title="function msh = AFQ_meshSet(msh, param, varargin)">AFQ_meshSet</a>	Set fields in the AFQ msh mesh structure</li><li><a href="../utilities/CreateParamsStruct.html" class="code" title="function params = CreateParamsStruct(c)">CreateParamsStruct</a>	Create a parameters structure from a cell array.</li><li><a href="../utilities/isparams.html" class="code" title="function L = isparams(s)">isparams</a>	Check if a variable is a params structure</li><li><a href="../utilities/vals2colormap.html" class="code" title="function rgb = vals2colormap(vals, colormap, crange)">vals2colormap</a>	Take in a vector of N values and return and return a Nx3 matrix of RGB</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="AFQ_meshCreate.html" class="code" title="function msh = AFQ_meshCreate(im, varargin)">AFQ_meshCreate</a>	Create a mesh structure and build a 3d mesh from a nifti image</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function msh = AFQ_meshColor(msh, varargin)</a>
+0002 <span class="comment">% Color the a mesh based on an overlay image or surface curvature</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% msh = AFQ_meshColor(msh, 'overlay', overlayIm, 'thresh', [min max], 'crange', [min max], 'cmap', [cmap = 'jet'])</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% AFQ_meshColor takes in a msh mesh structure and adds a new colors field</span>
+0007 <span class="comment">% to it that specifies an rgb value for each mesh vertex. The colors can be</span>
+0008 <span class="comment">% computed from an overlay image to heatmap the mesh based on fMRI signal</span>
+0009 <span class="comment">% or quantitative MRI parameters. Other options are to color the mesh based</span>
+0010 <span class="comment">% on surface curvature. See help AFQ_RenderCorticalSurface and</span>
+0011 <span class="comment">% help AFQ_meshCreate for a full description of all the parameters that can</span>
+0012 <span class="comment">% be set.</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Arguments can be passed in in one of 2 ways. (1) In the form:</span>
+0015 <span class="comment">%'parameter', [value] - where the parameter is defined and then the</span>
+0016 <span class="comment">% arguments or inputs follow the parameter name. (2) As a parameters</span>
+0017 <span class="comment">% structure - see CreateParamsStruct.</span>
+0018 
+0019 <span class="comment">% Put all the arguments into a params structure</span>
+0020 <span class="keyword">if</span> length(varargin) == 1 &amp;&amp; <a href="../utilities/isparams.html" class="code" title="function L = isparams(s)">isparams</a>(varargin{1})
+0021     params = varargin{1};
+0022 <span class="keyword">else</span>
+0023     params = <a href="../utilities/CreateParamsStruct.html" class="code" title="function params = CreateParamsStruct(c)">CreateParamsStruct</a>(varargin);
+0024 <span class="keyword">end</span>
+0025 
+0026 <span class="comment">%% If an overlay image was provided use that to color the mesh</span>
+0027 <span class="keyword">if</span> isfield(params,<span class="string">'overlay'</span>) &amp;&amp; ~isempty(params.overlay)
+0028     <span class="comment">% Load the image if overlay is a path</span>
+0029     <span class="keyword">if</span> ischar(params.overlay)
+0030         overlayIm = readFileNifti(params.overlay);
+0031     <span class="keyword">else</span>
+0032         overlayIm = params.overlay;
+0033     <span class="keyword">end</span>
+0034     <span class="comment">% Default color map is jet</span>
+0035     <span class="keyword">if</span> ~isfield(params,<span class="string">'cmap'</span>)
+0036         cmap = <span class="string">'jet'</span>;
+0037     <span class="keyword">else</span>
+0038         cmap = params.cmap;
+0039     <span class="keyword">end</span>
+0040     <span class="comment">% Default color range is defined by the values in the overlay</span>
+0041     <span class="keyword">if</span> ~isfield(params,<span class="string">'crange'</span>)
+0042         crange = [];
+0043     <span class="keyword">else</span>
+0044         crange = params.crange;
+0045     <span class="keyword">end</span>
+0046     <span class="comment">% Interpolate overlay values at each vertex of the mesh</span>
+0047     cvals = dtiGetValFromImage(overlayIm.data, <a href="AFQ_meshGet.html" class="code" title="function val = AFQ_meshGet(msh, param, varargin)">AFQ_meshGet</a>(msh, <span class="string">'vertexorigin'</span>), overlayIm.qto_ijk, <span class="string">'spline'</span>);
+0048     <span class="comment">% Remove file extensions to get the name of the image</span>
+0049     valname = prefix(prefix(overlayIm.fname));
+0050     <span class="comment">% Set these values to the vals field of the msh structure</span>
+0051     msh = <a href="AFQ_meshSet.html" class="code" title="function msh = AFQ_meshSet(msh, param, varargin)">AFQ_meshSet</a>(msh, <span class="string">'vals'</span>, valname, cvals);
+0052     <span class="comment">% Find which vertices do not surpass the overlay threshold</span>
+0053     <span class="keyword">if</span> isfield(params,<span class="string">'thresh'</span>) &amp;&amp; ~isempty(params.thresh) &amp;&amp; length(params.thresh) == 1
+0054         subthresh = cvals &lt; params.thresh;
+0055     <span class="keyword">elseif</span> isfield(params,<span class="string">'thresh'</span>) &amp;&amp; ~isempty(params.thresh) &amp;&amp; length(params.thresh) == 2
+0056         subthresh = cvals &lt; params.thresh(1) | cvals &gt; params.thresh(2);
+0057     <span class="keyword">end</span>
+0058     <span class="comment">% Convert the values to rgb colors by associating each value with a</span>
+0059     <span class="comment">% location on the colormap</span>
+0060     FaceVertexCData = <a href="../utilities/vals2colormap.html" class="code" title="function rgb = vals2colormap(vals, colormap, crange)">vals2colormap</a>(cvals,cmap,crange);
+0061     <span class="comment">% If a threshold was passed in then reasign the default cortex color to</span>
+0062     <span class="comment">% vertices that are outside the range defined by threh</span>
+0063     <span class="keyword">if</span> exist(<span class="string">'subthresh'</span>,<span class="string">'var'</span>)
+0064         basecolor = <a href="AFQ_meshGet.html" class="code" title="function val = AFQ_meshGet(msh, param, varargin)">AFQ_meshGet</a>(msh, <span class="string">'basecolor'</span>);
+0065         FaceVertexCData(subthresh,1) = basecolor(1);
+0066         FaceVertexCData(subthresh,2) = basecolor(2);
+0067         FaceVertexCData(subthresh,3) = basecolor(3);
+0068     <span class="keyword">end</span>
+0069     <span class="comment">% Add these colors to the msh structure</span>
+0070     msh = <a href="AFQ_meshSet.html" class="code" title="function msh = AFQ_meshSet(msh, param, varargin)">AFQ_meshSet</a>(msh, <span class="string">'colors'</span>, valname, FaceVertexCData);
+0071     <span class="comment">% Set this to be the default color for rendering the mesh</span>
+0072     msh = <a href="AFQ_meshSet.html" class="code" title="function msh = AFQ_meshSet(msh, param, varargin)">AFQ_meshSet</a>(msh, <span class="string">'FaceVertexCData'</span>, valname);
+0073 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 05-Dec-2012 12:03:42 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

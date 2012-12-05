@@ -56,7 +56,7 @@ This function calls:
 <li><a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>	Get value from afq structure</li><li><a href="../utilities/isafq.html" class="code" title="function log = isafq(afq)">isafq</a>	Check if a variable is an afq structure</li></ul>
 This function is called by:
 <ul style="list-style-image:url(../matlabicon.gif)">
-<li><a href="AFQ_SegmentFiberGroups.html" class="code" title="function [fg_classified,fg_unclassified,classification,fg] =AFQ_SegmentFiberGroups(dt6File, fg, Atlas,useRoiBasedApproach, useInterhemisphericSplit)">AFQ_SegmentFiberGroups</a>	Categorizes each fiber in a group into one of the 20 tracts defined in</li><li><a href="AFQ_Segment_PostArcuate.html" class="code" title="function [L_FG R_FG L_roi_2 L_roi_3 R_roi_2 R_roi_3] = AFQ_Segment_PostArcuate(dt, wholebrainFG, sub_dir, varargin)">AFQ_Segment_PostArcuate</a>	Define the posterior segment of the arcuate from a wholebrain fiber group</li><li><a href="AFQ_run.html" class="code" title="function [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)">AFQ_run</a>	Run AFQ analysis on a set of subjects to generate Tract Profiles of white</li></ul>
+<li><a href="AFQ_SegmentFiberGroups.html" class="code" title="function [fg_classified,fg_unclassified,classification,fg] =AFQ_SegmentFiberGroups(dt6File, fg, Atlas,useRoiBasedApproach, useInterhemisphericSplit)">AFQ_SegmentFiberGroups</a>	Categorizes each fiber in a group into one of the 20 tracts defined in</li><li><a href="AFQ_Segment_PostArcuate.html" class="code" title="function [L_FG, R_FG, L_roi_1, L_roi_2, R_roi_1, R_roi_2] = AFQ_Segment_PostArcuate(dt, wholebrainFG, varargin)">AFQ_Segment_PostArcuate</a>	Define the posterior segment of the arcuate from a wholebrain fiber group</li><li><a href="AFQ_run.html" class="code" title="function [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq)">AFQ_run</a>	Run AFQ analysis on a set of subjects to generate Tract Profiles of white</li><li><a href="../tutorials/AFQ_example.html" class="code" title="">AFQ_example</a>	% Example AFQ analysis</li></ul>
 <!-- crossreference -->
 
 
@@ -141,7 +141,7 @@ This function is called by:
 0077 <span class="comment">%% Track with mrtrix if the right files are there</span>
 0078 <span class="keyword">if</span> exist(<span class="string">'mrtrix'</span>,<span class="string">'var'</span>) &amp;&amp; mrtrix == 1
 0079     mrtrixpaths = <a href="AFQ_get.html" class="code" title="function val = AFQ_get(afq, param, varargin)">AFQ_get</a>(params,<span class="string">'mrtrix paths'</span>,params.currentsub);
-0080     [status, results, fg, pathstr] = mrtrix_track(mrtrixpaths.csd, mrtrixpaths.wm, mrtrixpaths.wm, <span class="string">'stream'</span>, 100000,[],[],1);
+0080     [status, results, fg, pathstr] = mrtrix_track(mrtrixpaths.csd, mrtrixpaths.wm, mrtrixpaths.wm, <span class="string">'stream'</span>, 500000,[],[],1);
 0081 <span class="keyword">else</span>
 0082     <span class="comment">%% Otherwise track with mrdiffusion</span>
 0083     <span class="comment">% Compute FA at every voxel</span>
@@ -170,6 +170,6 @@ This function is called by:
 0106 
 0107 <span class="comment">%% Comments and debugging</span>
 0108</pre></div>
-<hr><address>Generated on Wed 14-Nov-2012 17:12:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+<hr><address>Generated on Wed 05-Dec-2012 12:03:42 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
 </body>
 </html>

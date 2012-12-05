@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of patchnormals_double</title>
+  <meta name="keywords" content="patchnormals_double">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">3Dvis</a> &gt; <a href="index.html">patch_normals</a> &gt; patchnormals_double.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for 3Dvis/patch_normals&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>patchnormals_double
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [Nx,Ny,Nz]=patchnormals_double(Fa,Fb,Fc,Vx,Vy,Vz) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+  [Nx,Ny,Nz]=patchnormals_double(Fa,Fb,Fc,Vx,Vy,Vz)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="patchnormals.html" class="code" title="function N=patchnormals(FV)">patchnormals</a>	This function PATCHNORMALS calculates the normals of a triangulated</li><li><a href="../../3Dvis/patchcurvature_version1/patchcurvature.html" class="code" title="function [Cmean,Cgaussian,Dir1,Dir2,Lambda1,Lambda2]=patchcurvature(FV,usethird)">patchcurvature</a>	This function calculates the principal curvature directions and values</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [Nx,Ny,Nz]=patchnormals_double(Fa,Fb,Fc,Vx,Vy,Vz)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">%  [Nx,Ny,Nz]=patchnormals_double(Fa,Fb,Fc,Vx,Vy,Vz)</span>
+0004 <span class="comment">%</span>
+0005 
+0006 FV.vertices=zeros(length(Vx),3);
+0007 FV.vertices(:,1)=Vx;
+0008 FV.vertices(:,2)=Vy;
+0009 FV.vertices(:,3)=Vz;
+0010 
+0011 <span class="comment">% Get all edge vectors</span>
+0012 e1=FV.vertices(Fa,:)-FV.vertices(Fb,:);
+0013 e2=FV.vertices(Fb,:)-FV.vertices(Fc,:);
+0014 e3=FV.vertices(Fc,:)-FV.vertices(Fa,:);
+0015 
+0016 <span class="comment">% Normalize edge vectors</span>
+0017 e1_norm=e1./repmat(sqrt(e1(:,1).^2+e1(:,2).^2+e1(:,3).^2),1,3); 
+0018 e2_norm=e2./repmat(sqrt(e2(:,1).^2+e2(:,2).^2+e2(:,3).^2),1,3); 
+0019 e3_norm=e3./repmat(sqrt(e3(:,1).^2+e3(:,2).^2+e3(:,3).^2),1,3);
+0020 
+0021 <span class="comment">% Calculate Angle of face seen from vertices</span>
+0022 Angle =  [acos(dot(e1_norm',-e3_norm'));acos(dot(e2_norm',-e1_norm'));acos(dot(e3_norm',-e2_norm'))]';
+0023 
+0024 <span class="comment">% Calculate normal of face</span>
+0025  Normal=cross(e1,e3);
+0026 
+0027 <span class="comment">% Calculate Vertice Normals</span>
+0028 VerticeNormals=zeros([size(FV.vertices,1) 3]);
+0029 <span class="keyword">for</span> i=1:size(Fa,1),
+0030     VerticeNormals(Fa(i),:)=VerticeNormals(Fa(i),:)+Normal(i,:)*Angle(i,1);
+0031     VerticeNormals(Fb(i),:)=VerticeNormals(Fb(i),:)+Normal(i,:)*Angle(i,2);
+0032     VerticeNormals(Fc(i),:)=VerticeNormals(Fc(i),:)+Normal(i,:)*Angle(i,3);
+0033 <span class="keyword">end</span>
+0034 
+0035 V_norm=sqrt(VerticeNormals(:,1).^2+VerticeNormals(:,2).^2+VerticeNormals(:,3).^2)+eps;
+0036 VerticeNormals=VerticeNormals./repmat(V_norm,1,3);
+0037 Nx=VerticeNormals(:,1);
+0038 Ny=VerticeNormals(:,2);
+0039 Nz=VerticeNormals(:,3);</pre></div>
+<hr><address>Generated on Wed 05-Dec-2012 12:03:42 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

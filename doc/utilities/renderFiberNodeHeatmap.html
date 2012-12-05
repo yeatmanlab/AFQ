@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of renderFiberNodeHeatmap</title>
+  <meta name="keywords" content="renderFiberNodeHeatmap">
+  <meta name="description" content="Render a fiber group">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">utilities</a> &gt; renderFiberNodeHeatmap.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for utilities&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>renderFiberNodeHeatmap
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Render a fiber group</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function renderFiberNodeHeatmap(fg,numNodes,numfibers) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Render a fiber group</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="../3Dvis/AFQ_RenderFibers.html" class="code" title="function lightH = AFQ_RenderFibers(fg,varargin)">AFQ_RenderFibers</a>	Render a fiber group and tract profile in 3-D</li><li><a href="vals2colormap.html" class="code" title="function rgb = vals2colormap(vals, colormap, crange)">vals2colormap</a>	Take in a vector of N values and return and return a Nx3 matrix of RGB</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function renderFiberNodeHeatmap(fg,numNodes,numfibers)</a>
+0002 <span class="comment">% Render a fiber group</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">%</span>
+0005 <span class="keyword">if</span> ~exist(<span class="string">'numfibers'</span>,<span class="string">'var'</span>) || isempty(numfibers)
+0006     numfibers = length(fg.fibers);
+0007 <span class="keyword">end</span>
+0008 <span class="keyword">for</span> ii = 1:length(fg.fibers)
+0009     cmap{ii} = linspace(0,1,length(fg.fibers{ii}))';
+0010 <span class="keyword">end</span>
+0011 crgb = <a href="vals2colormap.html" class="code" title="function rgb = vals2colormap(vals, colormap, crange)">vals2colormap</a>(cmap);
+0012 
+0013 <span class="comment">% Render the fiber group</span>
+0014 <a href="../3Dvis/AFQ_RenderFibers.html" class="code" title="function lightH = AFQ_RenderFibers(fg,varargin)">AFQ_RenderFibers</a>(fg, <span class="string">'color'</span>,crgb, <span class="string">'numfibers'</span>,numfibers);</pre></div>
+<hr><address>Generated on Wed 05-Dec-2012 12:03:42 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

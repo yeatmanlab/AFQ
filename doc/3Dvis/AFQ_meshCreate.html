@@ -1,0 +1,268 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of AFQ_meshCreate</title>
+  <meta name="keywords" content="AFQ_meshCreate">
+  <meta name="description" content="Create a mesh structure and build a 3d mesh from a nifti image">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">3Dvis</a> &gt; AFQ_meshCreate.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for 3Dvis&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>AFQ_meshCreate
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Create a mesh structure and build a 3d mesh from a nifti image</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function msh = AFQ_meshCreate(im, varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Create a mesh structure and build a 3d mesh from a nifti image
+
+ msh = AFQ_meshCreate(im)
+
+ AFQ_meshCreat will create the AFQ msh mesh structure from a nifti image.
+ The variable im can either be a path to a nifti image or a nifti image
+ file. If no image is passed in then an empty strucure will be returned.
+ The mesh can then be rendered with AFQ_RenderCorticalSurface. There are a
+ number of parameters that can be set with the form of:
+ msh = AFQ_meshCreate(im, 'param', value). 
+ All the examples should run if you first run:
+ [~, AFQdata] = AFQ_directories; cd(fullfile(AFQdata,'mesh'));
+ im = 'segmentation.nii.gz'; overlayIm = 'Left_Arcuate_Endpoints.nii.gz';
+
+ Examples:
+
+ % Create a mesh structure where the cortex is colored a solid color (other
+ % than &quot;brain&quot; color)
+ msh = AFQ_meshCreate(im, 'color', [color = [.8 .7 .6]])
+
+ % Create a mesh structure with a set of vertices that are constructed from 
+ % a filtered version of the image ('box' is the only implimented filter).
+ % This will create a cortical surface that looks fuller -- like the gray 
+ % matter is thicker 
+ msh = AFQ_meshCreate(im ,'boxfilter', 5)
+ 
+ % Create a mesh structure and compute vertices with various numbers of
+ % smoothing iterations. More smoothing iterations makes a more inflated,
+ % less gyrified cortical surface. Set of vertices with all of the listed
+ % numbers of smoothing iterations will be saved in the mesh structure. This
+ % way you can render the mesh with a different amount of smoothing by
+ % simply setting those to be the default vertices with a call like:
+ % AFQ_meshSet(msh, 'vertices', 200)
+ msh = AFQ_meshCreate(im, 'smooth', [20 40 80 200])
+ 
+ % Create a mesh structure with a set of mesh vertice colors computed from
+ % an overlay image. The coloring can be computed with various thresholds
+ % ('thresh') meaning that values below the defined min and above the
+ % defined max will be colored &quot;cortex&quot; color and not heatmapped based on
+ % the overlay image. The color range ('crange') can also be set if you want
+ % to have the heatmap saturate below the maximum value or above the minimum
+ % value. You can also change the colormap ('cmap'). 
+ % The default is jet (see doc colormap).
+ msh = AFQ_meshCreate(im, 'overlay', overlayImage, 'thresh', [min max],...
+ 'crange', [min max], 'cmap', [cmap = 'jet'])
+
+ Copyright Jason D. Yeatman November 2012</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="AFQ_meshColor.html" class="code" title="function msh = AFQ_meshColor(msh, varargin)">AFQ_meshColor</a>	Color the a mesh based on an overlay image or surface curvature</li><li><a href="AFQ_meshGet.html" class="code" title="function val = AFQ_meshGet(msh, param, varargin)">AFQ_meshGet</a>	Get parameters from an AFQ msh, mesh structure</li><li><a href="AFQ_meshSet.html" class="code" title="function msh = AFQ_meshSet(msh, param, varargin)">AFQ_meshSet</a>	Set fields in the AFQ msh mesh structure</li><li><a href="../3Dvis/smoothpatch_version1b/smoothpatch.html" class="code" title="function FV2=smoothpatch(FV,mode,itt,lambda,sigma)">smoothpatch</a>	This function PATCHSMOOTH smooths a triangulated Mesh, with accurate</li><li><a href="../utilities/CreateParamsStruct.html" class="code" title="function params = CreateParamsStruct(c)">CreateParamsStruct</a>	Create a parameters structure from a cell array.</li><li><a href="../utilities/isparams.html" class="code" title="function L = isparams(s)">isparams</a>	Check if a variable is a params structure</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="AFQ_RenderCorticalSurface.html" class="code" title="function [p, msh] = AFQ_RenderCorticalSurface(cortex, varargin)">AFQ_RenderCorticalSurface</a>	Render the cortical surface from a binary segmentation image</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function msh = AFQ_meshCreate(im, varargin)</a>
+0002 <span class="comment">% Create a mesh structure and build a 3d mesh from a nifti image</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% msh = AFQ_meshCreate(im)</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% AFQ_meshCreat will create the AFQ msh mesh structure from a nifti image.</span>
+0007 <span class="comment">% The variable im can either be a path to a nifti image or a nifti image</span>
+0008 <span class="comment">% file. If no image is passed in then an empty strucure will be returned.</span>
+0009 <span class="comment">% The mesh can then be rendered with AFQ_RenderCorticalSurface. There are a</span>
+0010 <span class="comment">% number of parameters that can be set with the form of:</span>
+0011 <span class="comment">% msh = AFQ_meshCreate(im, 'param', value).</span>
+0012 <span class="comment">% All the examples should run if you first run:</span>
+0013 <span class="comment">% [~, AFQdata] = AFQ_directories; cd(fullfile(AFQdata,'mesh'));</span>
+0014 <span class="comment">% im = 'segmentation.nii.gz'; overlayIm = 'Left_Arcuate_Endpoints.nii.gz';</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% Examples:</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">% % Create a mesh structure where the cortex is colored a solid color (other</span>
+0019 <span class="comment">% % than &quot;brain&quot; color)</span>
+0020 <span class="comment">% msh = AFQ_meshCreate(im, 'color', [color = [.8 .7 .6]])</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">% % Create a mesh structure with a set of vertices that are constructed from</span>
+0023 <span class="comment">% % a filtered version of the image ('box' is the only implimented filter).</span>
+0024 <span class="comment">% % This will create a cortical surface that looks fuller -- like the gray</span>
+0025 <span class="comment">% % matter is thicker</span>
+0026 <span class="comment">% msh = AFQ_meshCreate(im ,'boxfilter', 5)</span>
+0027 <span class="comment">%</span>
+0028 <span class="comment">% % Create a mesh structure and compute vertices with various numbers of</span>
+0029 <span class="comment">% % smoothing iterations. More smoothing iterations makes a more inflated,</span>
+0030 <span class="comment">% % less gyrified cortical surface. Set of vertices with all of the listed</span>
+0031 <span class="comment">% % numbers of smoothing iterations will be saved in the mesh structure. This</span>
+0032 <span class="comment">% % way you can render the mesh with a different amount of smoothing by</span>
+0033 <span class="comment">% % simply setting those to be the default vertices with a call like:</span>
+0034 <span class="comment">% % AFQ_meshSet(msh, 'vertices', 200)</span>
+0035 <span class="comment">% msh = AFQ_meshCreate(im, 'smooth', [20 40 80 200])</span>
+0036 <span class="comment">%</span>
+0037 <span class="comment">% % Create a mesh structure with a set of mesh vertice colors computed from</span>
+0038 <span class="comment">% % an overlay image. The coloring can be computed with various thresholds</span>
+0039 <span class="comment">% % ('thresh') meaning that values below the defined min and above the</span>
+0040 <span class="comment">% % defined max will be colored &quot;cortex&quot; color and not heatmapped based on</span>
+0041 <span class="comment">% % the overlay image. The color range ('crange') can also be set if you want</span>
+0042 <span class="comment">% % to have the heatmap saturate below the maximum value or above the minimum</span>
+0043 <span class="comment">% % value. You can also change the colormap ('cmap').</span>
+0044 <span class="comment">% % The default is jet (see doc colormap).</span>
+0045 <span class="comment">% msh = AFQ_meshCreate(im, 'overlay', overlayImage, 'thresh', [min max],...</span>
+0046 <span class="comment">% 'crange', [min max], 'cmap', [cmap = 'jet'])</span>
+0047 <span class="comment">%</span>
+0048 <span class="comment">% Copyright Jason D. Yeatman November 2012</span>
+0049 
+0050 <span class="comment">%% Allocate the fields of the mesh structure</span>
+0051 
+0052 <span class="comment">% mesh.tr corresponds to the structure expected by matlab's patch function.</span>
+0053 msh.type                = <span class="string">'afq mesh version 1'</span>;
+0054 msh.image               = [];
+0055 msh.tr.vertices         = [];
+0056 msh.tr.faces            = [];
+0057 msh.tr.FaceVertexCData  = [.8 .7 .6];
+0058 <span class="comment">% msh.vertex saves the various vertices with different smoothing</span>
+0059 <span class="comment">% parameters</span>
+0060 msh.vertex.current   = <span class="string">'origin'</span>;
+0061 msh.vertex.origin    = [];
+0062 msh.vertex.smooth20  = [];
+0063 <span class="comment">% msh.face saves the faces corresponding to each set of vertices. These are</span>
+0064 <span class="comment">% generally the same</span>
+0065 msh.face.current     = <span class="string">'origin'</span>;
+0066 msh.face.origin      = [];
+0067 msh.face.smooth20    = <span class="string">'origin'</span>;
+0068 <span class="comment">% Values associated with mesh vertices</span>
+0069 msh.vals             = [];
+0070 <span class="comment">% Colors associated with mesh vertices</span>
+0071 msh.colors.current   = <span class="string">'base'</span>;
+0072 msh.colors.base      = [.8 .7 .6]; <span class="comment">% Base color of mesh</span>
+0073 
+0074 <span class="comment">%% Colect parameters from varargin and put them in a structure</span>
+0075 <span class="keyword">if</span> length(varargin) == 1 &amp;&amp; <a href="../utilities/isparams.html" class="code" title="function L = isparams(s)">isparams</a>(varargin{1})
+0076     params = varargin{1};
+0077 <span class="keyword">else</span>
+0078     params = <a href="../utilities/CreateParamsStruct.html" class="code" title="function params = CreateParamsStruct(c)">CreateParamsStruct</a>(varargin);
+0079 <span class="keyword">end</span>
+0080 
+0081 <span class="comment">%% Build a mesh if an image was passed in</span>
+0082 <span class="keyword">if</span> exist(<span class="string">'im'</span>,<span class="string">'var'</span>) &amp;&amp; ~isempty(im)
+0083     
+0084     <span class="comment">% Load the image</span>
+0085     <span class="keyword">if</span> ischar(im), im = readFileNifti(im); <span class="keyword">end</span>
+0086     
+0087     <span class="comment">% Save the image path in the mesh structure</span>
+0088     msh.image = im.fname;
+0089     
+0090     <span class="comment">% permute the image dimensions (This is because the x,y and z dimensions in</span>
+0091     <span class="comment">% matlab do not correspond to left-right, anterior-posterior, up-down.</span>
+0092     data = permute(im.data, [2 1 3]);
+0093     
+0094     <span class="comment">% Build the mesh</span>
+0095     tr = isosurface(data,.1);
+0096     
+0097     <span class="comment">% Transform the vertices of the mesh to acpc space.</span>
+0098     tr.vertices = mrAnatXformCoords(im.qto_xyz,tr.vertices);
+0099     
+0100     <span class="comment">% Add these vertices and faces to the mesh structure. These are the</span>
+0101     <span class="comment">% original vertices and will be used in the future to referece</span>
+0102     <span class="comment">% coordinates of overlay images</span>
+0103     msh = <a href="AFQ_meshSet.html" class="code" title="function msh = AFQ_meshSet(msh, param, varargin)">AFQ_meshSet</a>(msh,<span class="string">'vertex'</span>,<span class="string">'origin'</span>,tr.vertices,tr.faces);
+0104     msh = <a href="AFQ_meshSet.html" class="code" title="function msh = AFQ_meshSet(msh, param, varargin)">AFQ_meshSet</a>(msh, <span class="string">'vertices'</span>,<span class="string">'origin'</span>);
+0105     
+0106     <span class="comment">%% Smooth the mesh</span>
+0107     
+0108     <span class="comment">% Smooth the vertices and add them to the structure. Start with 20</span>
+0109     <span class="comment">% smoothing iterations and work our way up. The smooth mesh function</span>
+0110     <span class="comment">% will act on the vertices stored in msh.vertices. So after each</span>
+0111     <span class="comment">% smoothing iteration we add the new vertices to this field and the</span>
+0112     <span class="comment">% perform the operation again.</span>
+0113     <span class="keyword">if</span> ~isfield(params,<span class="string">'smooth'</span>) || isempty(params.smooth)
+0114         <span class="comment">% 20 smoothing iterations is the default</span>
+0115         params.smooth = 20;
+0116     <span class="keyword">end</span>
+0117     numiter = 0;
+0118     <span class="comment">% Get the triangle mesh so we can start smoothing it</span>
+0119     tmp = <a href="AFQ_meshGet.html" class="code" title="function val = AFQ_meshGet(msh, param, varargin)">AFQ_meshGet</a>(msh,<span class="string">'triangles'</span>);
+0120     <span class="keyword">for</span> ii = params.smooth
+0121         <span class="comment">% Keep track of the number of iterations that have already been</span>
+0122         <span class="comment">% done so we don't have to recompute what was already finished</span>
+0123         numiter = ii - numiter;
+0124         <span class="comment">% Perform the smoothing</span>
+0125         tmp = <a href="../3Dvis/smoothpatch_version1b/smoothpatch.html" class="code" title="function FV2=smoothpatch(FV,mode,itt,lambda,sigma)">smoothpatch</a>(tmp, [], numiter);
+0126         <span class="comment">% Add these data to the mesh structure in a properly named field</span>
+0127         name = sprintf(<span class="string">'smooth%d'</span>, ii);
+0128         msh = <a href="AFQ_meshSet.html" class="code" title="function msh = AFQ_meshSet(msh, param, varargin)">AFQ_meshSet</a>(msh, <span class="string">'vertex'</span>, name, tmp.vertices);
+0129     <span class="keyword">end</span>
+0130     
+0131     <span class="comment">%% Create a mesh from a smoothed version of the segmentation image</span>
+0132     <span class="keyword">if</span> isfield(params, <span class="string">'boxfilter'</span>) &amp;&amp; ~isempty(params.boxfilter)
+0133         fname = sprintf(<span class="string">'filteredbox%d'</span>,params.boxfilter);
+0134         <span class="comment">% smooth the image with the desired filter size</span>
+0135         data = smooth3(data,<span class="string">'box'</span>,params.boxfilter);
+0136         <span class="comment">% make a mesh</span>
+0137         tr = isosurface(data,.1);
+0138         <span class="comment">% transform the vertices to acpc space</span>
+0139         tr.vertices = mrAnatXformCoords(im.qto_xyz, tr.vertices);
+0140         <span class="comment">% smooth the vertices with 20 smoothing iterations</span>
+0141         tr = <a href="../3Dvis/smoothpatch_version1b/smoothpatch.html" class="code" title="function FV2=smoothpatch(FV,mode,itt,lambda,sigma)">smoothpatch</a>(tr,[],20);
+0142         <span class="comment">% Find the correspoding vertices in the unfiltered image. This is</span>
+0143         <span class="comment">% essential for propperly mapping data to the surface of this mesh</span>
+0144         tr.map2origin = nearpoints(tr.vertices', msh.vertex.origin');
+0145         <span class="comment">% Save this within the mesh structure</span>
+0146         msh = <a href="AFQ_meshSet.html" class="code" title="function msh = AFQ_meshSet(msh, param, varargin)">AFQ_meshSet</a>(msh, <span class="string">'vertex'</span>,fname, tr.vertices, tr.faces, tr.map2origin); 
+0147         <span class="comment">% Set these to be the vertices that are rendered</span>
+0148         msh = <a href="AFQ_meshSet.html" class="code" title="function msh = AFQ_meshSet(msh, param, varargin)">AFQ_meshSet</a>(msh, <span class="string">'vertices'</span>, fname);
+0149     <span class="keyword">end</span>
+0150     
+0151     <span class="comment">%% Color the mesh vertices</span>
+0152     
+0153     <span class="comment">% Set the base color of the mesh if it was defined</span>
+0154     <span class="keyword">if</span> isfield(params,<span class="string">'color'</span>)
+0155         <span class="comment">% Or if a color was defined for the mesh set that as the base color</span>
+0156         msh = <a href="AFQ_meshSet.html" class="code" title="function msh = AFQ_meshSet(msh, param, varargin)">AFQ_meshSet</a>(msh,<span class="string">'basecolor'</span>, params.color);
+0157     <span class="keyword">end</span>
+0158     
+0159     <span class="comment">% If an overlay image was provided then use that to color the mesh</span>
+0160     <span class="keyword">if</span> isfield(params,<span class="string">'overlay'</span>) &amp;&amp; ~isempty(params.overlay)
+0161         msh = <a href="AFQ_meshColor.html" class="code" title="function msh = AFQ_meshColor(msh, varargin)">AFQ_meshColor</a>(msh, params);
+0162     <span class="keyword">end</span>
+0163     
+0164     <span class="comment">%% Set the default vertices and color for mesh rendering</span>
+0165     
+0166     <span class="comment">% By default we render with 20 smoothing iterations</span>
+0167     <span class="keyword">if</span> ~isfield(params, <span class="string">'boxfilter'</span>) || isempty(params.boxfilter)
+0168         msh = <a href="AFQ_meshSet.html" class="code" title="function msh = AFQ_meshSet(msh, param, varargin)">AFQ_meshSet</a>(msh, <span class="string">'vertices'</span>, <span class="string">'smooth20'</span>);
+0169     <span class="keyword">end</span>
+0170     <span class="comment">% If no overlay was sent in then color each vertex the base color</span>
+0171     <span class="keyword">if</span> ~isfield(params,<span class="string">'overlay'</span>) || isempty(params.overlay) 
+0172         msh = <a href="AFQ_meshSet.html" class="code" title="function msh = AFQ_meshSet(msh, param, varargin)">AFQ_meshSet</a>(msh, <span class="string">'FaceVertexCData'</span>, <span class="string">'base'</span>);
+0173     <span class="keyword">end</span>
+0174     
+0175 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Wed 05-Dec-2012 12:03:42 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

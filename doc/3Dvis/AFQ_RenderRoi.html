@@ -1,0 +1,213 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of AFQ_RenderRoi</title>
+  <meta name="keywords" content="AFQ_RenderRoi">
+  <meta name="description" content="Render an ROI as a 3D surface">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">3Dvis</a> &gt; AFQ_RenderRoi.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for 3Dvis&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>AFQ_RenderRoi
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Render an ROI as a 3D surface</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function h = AFQ_RenderRoi(roi, color, method, render, varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Render an ROI as a 3D surface
+
+ h = AFQ_RenderRoi(roi, color , [method = 'trimesh'], [render = 'surface'])
+
+ Inputs:
+
+ roi    = Roi structure or an Nx3 matrix of X,Y,Z coordinates
+ color  = The color to render the roi. Default is red: color = [1 0 0]
+ method = There are many ways to build a surface mesh from coordinates.
+          The default is method = 'mesh' which uses the AFQ_meshCreate
+          function to build and AFQ mesh and render it. This is by far the
+          best and other options are only left in for legacy.
+          method = 'isosurface' converts the coordinates to an image than
+          uses isosurface to build a mesh. method = 'trimesh' builds a
+          triangle mesh out of the coordinates and redners that as a
+          surface mesh.
+ render = What to render. Either the roi surface: render = 'surface' or a
+          wire frame: render = 'wire' 
+
+ Example: fg = dtiReadFibers('L_Arcuate.mat');
+ roi = dtiReadRoi('roi1.mat'); AFQ_RenderFiber(fg); % Render the fibers
+ AFQ_RenderRoi(roi, [1 .5 0]); % Render the roi in orange
+
+ Copyright Jason D Yeatman June 2012</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="AFQ_RenderCorticalSurface.html" class="code" title="function [p, msh] = AFQ_RenderCorticalSurface(cortex, varargin)">AFQ_RenderCorticalSurface</a>	Render the cortical surface from a binary segmentation image</li><li><a href="../utilities/CoordsToImg.html" class="code" title="function [roiImg, imgXform, bb] = dtiRoiToImg(coords, imgXform, bb)">CoordsToImg</a>	</li><li><a href="../utilities/CreateParamsStruct.html" class="code" title="function params = CreateParamsStruct(c)">CreateParamsStruct</a>	Create a parameters structure from a cell array.</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="AFQ_RenderFibers.html" class="code" title="function lightH = AFQ_RenderFibers(fg,varargin)">AFQ_RenderFibers</a>	Render a fiber group and tract profile in 3-D</li><li><a href="../functions/AFQ_Segment_PostArcuate.html" class="code" title="function [L_FG, R_FG, L_roi_1, L_roi_2, R_roi_1, R_roi_2] = AFQ_Segment_PostArcuate(dt, wholebrainFG, varargin)">AFQ_Segment_PostArcuate</a>	Define the posterior segment of the arcuate from a wholebrain fiber group</li><li><a href="../tutorials/AFQ_example_GroupComparison.html" class="code" title="">AFQ_example_GroupComparison</a>	% Run AFQ analysis for 2 groups (patients and controls)</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function h = AFQ_RenderRoi(roi, color, method, render, varargin)</a>
+0002 <span class="comment">% Render an ROI as a 3D surface</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% h = AFQ_RenderRoi(roi, color , [method = 'trimesh'], [render = 'surface'])</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Inputs:</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% roi    = Roi structure or an Nx3 matrix of X,Y,Z coordinates</span>
+0009 <span class="comment">% color  = The color to render the roi. Default is red: color = [1 0 0]</span>
+0010 <span class="comment">% method = There are many ways to build a surface mesh from coordinates.</span>
+0011 <span class="comment">%          The default is method = 'mesh' which uses the AFQ_meshCreate</span>
+0012 <span class="comment">%          function to build and AFQ mesh and render it. This is by far the</span>
+0013 <span class="comment">%          best and other options are only left in for legacy.</span>
+0014 <span class="comment">%          method = 'isosurface' converts the coordinates to an image than</span>
+0015 <span class="comment">%          uses isosurface to build a mesh. method = 'trimesh' builds a</span>
+0016 <span class="comment">%          triangle mesh out of the coordinates and redners that as a</span>
+0017 <span class="comment">%          surface mesh.</span>
+0018 <span class="comment">% render = What to render. Either the roi surface: render = 'surface' or a</span>
+0019 <span class="comment">%          wire frame: render = 'wire'</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">% Example: fg = dtiReadFibers('L_Arcuate.mat');</span>
+0022 <span class="comment">% roi = dtiReadRoi('roi1.mat'); AFQ_RenderFiber(fg); % Render the fibers</span>
+0023 <span class="comment">% AFQ_RenderRoi(roi, [1 .5 0]); % Render the roi in orange</span>
+0024 <span class="comment">%</span>
+0025 <span class="comment">% Copyright Jason D Yeatman June 2012</span>
+0026 
+0027 <span class="comment">%% Check arguments</span>
+0028 <span class="keyword">if</span> ~exist(<span class="string">'roi'</span>,<span class="string">'var'</span>) || isempty(roi)
+0029     error(<span class="string">'You must supply an ROI'</span>)
+0030 <span class="keyword">elseif</span> isstruct(roi)
+0031     coords = roi.coords;
+0032 <span class="keyword">end</span>
+0033 <span class="keyword">if</span> ~exist(<span class="string">'color'</span>,<span class="string">'var'</span>) || isempty(color)
+0034     color = [1 0 0];
+0035 <span class="keyword">end</span>
+0036 <span class="keyword">if</span> ~exist(<span class="string">'method'</span>, <span class="string">'var'</span>) || isempty(method)
+0037     method = <span class="string">'mesh'</span>;
+0038 <span class="keyword">end</span>
+0039 <span class="keyword">if</span> ~exist(<span class="string">'render'</span>,<span class="string">'var'</span>) || isempty(render)
+0040     render = <span class="string">'surf'</span>;
+0041 <span class="keyword">end</span>
+0042 
+0043 <span class="comment">% % Remove internal coordinates from the ROI so that all that are</span>
+0044 <span class="comment">% % left are the surface coordinates.</span>
+0045 <span class="comment">% % Convert coordinates to an image</span>
+0046 <span class="comment">% [roiImg, imgXform, bb] = dtiRoiToImg(coords);</span>
+0047 <span class="comment">% % Define the perimeter of the image</span>
+0048 <span class="comment">% roiImg = bwperim(roiImg);</span>
+0049 <span class="comment">% % Convert the image back to x,y,z coordinates</span>
+0050 <span class="comment">% roi = dtiRoiFromImg(roiImg, inv(imgXform), bb);</span>
+0051 <span class="comment">% coords = roi.coords;</span>
+0052 
+0053 <span class="comment">%% Render the ROI</span>
+0054 
+0055 <span class="comment">% If an variables are in varargin put them in an afq params structure</span>
+0056 params = <a href="../utilities/CreateParamsStruct.html" class="code" title="function params = CreateParamsStruct(c)">CreateParamsStruct</a>(varargin);
+0057 
+0058 <span class="comment">% Get the current figure window handle</span>
+0059 f = gcf;
+0060 <span class="comment">% Check if there is anything plotted in the figure window already and only</span>
+0061 <span class="comment">% open a new plotting window if necesary</span>
+0062 newfig = isempty(get(f,<span class="string">'children'</span>));
+0063 
+0064 <span class="comment">% Compute the range of the coordinates in the roi</span>
+0065 roi_min = min(coords);
+0066 roi_max = max(coords);
+0067 
+0068 <span class="comment">% Choose which method to use for rendering</span>
+0069 <span class="keyword">switch</span>(method)
+0070     <span class="keyword">case</span> {<span class="string">'mesh'</span>}
+0071         
+0072         <span class="comment">% Convert the array of coordinates to an image</span>
+0073         [roiImg, imgXform] = dtiRoiToImg(roi);
+0074         
+0075         <span class="comment">% Set ROI as a nifti struct and save</span>
+0076         ni = niftiCreate(<span class="string">'data'</span>,uint8(roiImg),<span class="string">'qto_xyz'</span>,imgXform);
+0077         <span class="comment">% ni = niftiCreate(uint8(roiImg),imgXform);%Old code</span>
+0078         
+0079         <span class="comment">% Set up a parameters structure</span>
+0080         params.color = color; params.newfig = newfig;
+0081         
+0082         <span class="comment">% Close the figure window that was opened because we will open a</span>
+0083         <span class="comment">% new one with a number of properties set how we like</span>
+0084         <span class="keyword">if</span> params.newfig==1,close(f);<span class="keyword">end</span>
+0085         
+0086         <span class="comment">% Build a mesh from the nifti image of the roi</span>
+0087         h = <a href="AFQ_RenderCorticalSurface.html" class="code" title="function [p, msh] = AFQ_RenderCorticalSurface(cortex, varargin)">AFQ_RenderCorticalSurface</a>(ni, params);
+0088         <span class="keyword">if</span> strcmp(render,<span class="string">'wire'</span>)
+0089             warning(<span class="string">'\nWire mesh not implimented yet'</span>);
+0090         <span class="keyword">end</span>  
+0091         
+0092     <span class="keyword">case</span> {<span class="string">'isosurface'</span>, <span class="string">'isosurf'</span>}
+0093         <span class="comment">% Create a binary image from the ROI</span>
+0094         im = <a href="../utilities/CoordsToImg.html" class="code" title="function [roiImg, imgXform, bb] = dtiRoiToImg(coords, imgXform, bb)">CoordsToImg</a>(coords);
+0095         <span class="comment">% Specify the corresponding X,Y,Z coordinate of each image index</span>
+0096         [X Y Z] = meshgrid(roi_min(1)-1:roi_max(1)+1,roi_min(2)-1:roi_max(2)+1,roi_min(3)-1:roi_max(3)+1);
+0097         <span class="comment">% Meshgrid outputs the dimensions in a different order so they must be</span>
+0098         <span class="comment">% permuted</span>
+0099         X = permute(X,[2 1 3]);Y = permute(Y,[2 1 3]);Z = permute(Z,[2 1 3]);
+0100         <span class="comment">% Build a surface mesh of the image</span>
+0101         m = isosurface(X,Y,Z,im);
+0102         <span class="comment">% Render the surface.</span>
+0103         h = patch(m,<span class="string">'FaceColor'</span>,color,<span class="string">'EdgeColor'</span>,<span class="string">'none'</span>);
+0104         <span class="comment">% h = isonormals(im,h);</span>
+0105     <span class="keyword">case</span> {<span class="string">'trimesh'</span> <span class="string">'triangle'</span> <span class="string">'delaunay'</span> <span class="string">'trianglemesh'</span>}
+0106         <span class="comment">% Build the triangle mesh from the coordinates. Matlab changed the</span>
+0107         <span class="comment">% delaunay function at some point so first check whether it is the</span>
+0108         <span class="comment">% new or old version of the function</span>
+0109         <span class="keyword">if</span> exist(<span class="string">'delaunay'</span>,<span class="string">'builtin'</span>)
+0110             Tri = delaunay(coords);
+0111         <span class="keyword">else</span>
+0112             Tri = delaunay3(coords(:,1),coords(:,2),coords(:,3));
+0113         <span class="keyword">end</span>
+0114         <span class="keyword">switch</span>(render)
+0115             <span class="keyword">case</span> {<span class="string">'surface'</span> <span class="string">'surf'</span>}
+0116                 <span class="comment">% Render the mesh as a surface</span>
+0117                 trisurf(Tri, coords(:,1), coords(:,2), coords(:,3),<span class="keyword">...</span>
+0118                     <span class="string">'facecolor'</span>,color,<span class="string">'edgecolor'</span>,<span class="string">'none'</span>,<span class="keyword">...</span>
+0119                         <span class="string">'FaceAlpha'</span>,1,<span class="string">'FaceLighting'</span>,<span class="string">'gouraud'</span>, <span class="keyword">...</span>
+0120                         <span class="string">'SpecularColorReflectance'</span>,.2,<span class="string">'ambientstrength'</span>,.6);
+0121             <span class="keyword">case</span> {<span class="string">'wire'</span>}
+0122                 <span class="comment">% Render a wire mesh</span>
+0123                 trimesh(Tri, coords(:,1), coords(:,2), coords(:,3),<span class="keyword">...</span>
+0124                     <span class="string">'edgecolor'</span>,color);
+0125         <span class="keyword">end</span>
+0126 <span class="keyword">end</span>
+0127 
+0128 <span class="comment">% Old axis limits</span>
+0129 ax = axis;
+0130 <span class="comment">% If the axis only has X and Y limits set, then add Z limits</span>
+0131 <span class="keyword">if</span> length(ax) == 4
+0132     ax(5) = roi_min(3); ax(6) = roi_max(3);
+0133 <span class="keyword">end</span>
+0134 <span class="comment">% New axis scaling</span>
+0135 ax2 = [roi_min(1) roi_max(1) roi_min(2) roi_max(2) roi_min(3) roi_max(3)];
+0136 <span class="comment">% Check if any part of the ROI will not be visible in the current axis and</span>
+0137 <span class="comment">% rescale the axis if needed.</span>
+0138 axnew(1:2:6) = min(vertcat(ax(1:2:6), ax2(1:2:6)));
+0139 axnew(2:2:6) = max(vertcat(ax(2:2:6), ax2(2:2:6)));
+0140 axis(axnew);
+0141 
+0142 <span class="comment">% Turn hold on in case other features are added to the rendering</span>
+0143 hold on;</pre></div>
+<hr><address>Generated on Wed 05-Dec-2012 12:03:42 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>
