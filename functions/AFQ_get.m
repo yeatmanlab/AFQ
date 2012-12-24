@@ -246,6 +246,8 @@ switch(param)
         end
     case {'currentsubject' 'cursub'}
         val = afq.currentsub;
+    case {'outdir' 'outputdirectory'}
+        val = afq.params.outdir;
     otherwise
         error('Uknown afq parameter');
 end
