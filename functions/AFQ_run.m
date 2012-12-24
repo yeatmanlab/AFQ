@@ -246,7 +246,7 @@ for ii=1:length(sub_dirs)
                 % Read the image file
                 image = readFileNifti(afq.files.images(jj).path{ii});
                 % Compute a Tract Profile for that image
-                imagevals = AFQ_ComputeTractProperties(fg_classified, image, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii}, fWeight);
+                imagevals = AFQ_ComputeTractProperties(fg_classified, image, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii}, fWeight, afq);
                 % Add values to the afq structure
                 afq = AFQ_set(afq,'vals','subnum',ii,afq.files.images(jj).name, imagevals);
                 clear imagevals
@@ -254,6 +254,12 @@ for ii=1:length(sub_dirs)
         end
     else
         fprintf('\nTract Profiles already computed for subject %s',sub_dirs{ii});
+    end
+    
+    % Save each iteration of afq run if an output directory was defined
+    if ~isempty(AFQ_get(afq,'outdir')) && exist(AFQ_get(afq,'outdir'),'dir')
+        outname = fullfile(AFQ_get(afq,'outdir'),['afq_' date]);
+        save(outname,'afq');
     end
 end
 
