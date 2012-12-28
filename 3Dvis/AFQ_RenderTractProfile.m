@@ -1,8 +1,8 @@
-function [lightH] = AFQ_RenderTractProfile(coords, radius, color, subdivs, cmap, crange)
+function [lightH] = AFQ_RenderTractProfile(coords, radius, color, subdivs, cmap, crange, newfig)
 
 % Render Tract Profile as a tube colored based on the Tract Profile values
 %
-%   [lightH] = AFQ_RenderTractProfile(coords, radius, color, subdivs, cmap, crange)
+%   [lightH] = AFQ_RenderTractProfile(coords, radius, color, subdivs, cmap, crange, [newfig=0])
 %
 % Inputs:
 % 
@@ -14,6 +14,7 @@ function [lightH] = AFQ_RenderTractProfile(coords, radius, color, subdivs, cmap,
 %           tube is more circular. Less subdivs makes tube blocky
 % cmap    = Desired colormap. eg. 'jet' 'hot' 'autumn' 'winter' 
 % crange  = Maximum and minimum values of the colormap
+% newfig  = whether or not to open a new figure window
 %
 % Outputs:
 %
@@ -44,6 +45,12 @@ end
 % if the color range is not defined set to the defaul, jet.
 if ~exist('crange','var') || isempty(crange)
     crange = [.3 .6]; % defualt color range
+end
+% default is no new figure window
+if ~exist('newfig','var') || isempty(newfig)
+    newfig = 0;
+elseif newfig == 1
+    figure;
 end
 % Compute number of coordinates
 N=size(coords,1);
@@ -107,13 +114,18 @@ end
 colormap(cmap) 
 shading('interp');
 lighting('gouraud');
-lightH = camlight('headlight');
-axis('equal');
 % set the axis and the color range
-axis([min(x)-r(1) max(x)+r(1) min(y)-r(1) max(y)+r(1)...
-    min(z)-r(1) max(z)+r(1) crange(1) crange(2)]);
+% axis([min(x)-r(1) max(x)+r(1) min(y)-r(1) max(y)+r(1)...
+%     min(z)-r(1) max(z)+r(1) crange(1) crange(2)]);
+caxis(crange);
 % add a colorbar
 colorbar;
+
+% Set figure window properties if it is a new window
+if newfig == 1
+    lightH = camlight('headlight');
+    axis('image');
+end
 
 % set(gca,'cameraposition',[min(x)-r(1) 0 0],'cameratarget',[0 0 0]);
 % xlabel('X mm'); ylabel('Y mm'); zlabel('Z mm')
