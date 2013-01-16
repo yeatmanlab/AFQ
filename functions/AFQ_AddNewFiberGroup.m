@@ -27,9 +27,16 @@ function afq = AFQ_AddNewFiberGroup(afq,fgName,roi1Name,roi2Name,cleanFibers,com
 %              If the fgName file does not exist then the fiber group will
 %              be defined by intersecting the subject's wholeBrainFG with
 %              the two ROIs.
-% roi1Name   - A string containing the name of the first waypoint ROI.
-%              The ROI should be in each subject's ROIs directory
-% roi2Name   - A string containing the name of the second ROI
+% roi1Name   - A string containing the name of the first waypoint ROI. This
+%              can either be a .mat file that is in each subject's ROIs 
+%              directory or it can be a nifti image containing the ROI
+%              defined in MNI space. If it is a nifti image than that image
+%              will be warped into each subject's native space and saved as
+%              a .mat ROI. This allows new segmentations to be added to AFQ
+%              simply by defining the ROIs on the MNI template
+% roi2Name   - A string containing the name of the second ROI (either .mat
+%              files that are in each subject's directory or a single nfiti
+%              image in MNI space)
 % cleanFibers- Locigal defining whether the fibers should be cleaned. See
 %              AFQ_removeFiberOutliers
 % computeVals- Logical defining whether TractProfiles should be calculated
@@ -49,8 +56,24 @@ elseif ~(strcmp(fgName(end-3:end),'.mat') || strcmp(fgName(end-3:end),'.pdb'))
     % add file extension
     fgName = [fgName '.mat'];
 end
+% Check that the roi names were defined correctly
 if ~exist('roi1Name','var') || isempty(roi1Name) || ~ischar(roi1Name)
     error('Please enter the name of the first ROI')
+elseif ~isempty(strfind('.nii',roi1Name))
+    % If the roi names were nifti images then we are assuming they are
+    % defined in MNI space and should be transformed to each individual's
+    % brain
+    if exist(roi1Name,'file') && exist(roi2Name,'file')
+        xformRois = 1;
+        fprintf('\nAssuming the ROI is defined in MNI space. It will be xformed to each individuals brain\n')
+        % Assigne roi names to template roi variables
+        Troi1 = roi1Name; Troi2 = roi2Name;
+        % Get the names of the rois without paths and .nii suffix
+        [~,tmp] = fileparts(roi1Name); roi1Name = [prefix(tmp) '.mat'];
+        [~,tmp] = fileparts(roi2Name); roi2Name = [prefix(tmp) '.mat'];
+    else
+        error('Could not find template ROI file')
+    end
 elseif ~strcmp(roi1Name(end-3:end),'.mat')
     roi1Name = [roi1Name '.mat'];
 end
@@ -66,12 +89,39 @@ if ~exist('computeVals','var') || isempty(computeVals)
     computeVals = true;
 end
 
+% If the ROIs were not defined as a nifti image in MNI space than they do
+% not need to be transformed
+if ~exist('xformRois','var') || isempty(xformRois)
+   xformRois = 0; 
+end
 %% Add the new fiber groups and ROIs to the afq structure
 afq = AFQ_set(afq,'new fiber group', fgName);
 afq = AFQ_set(afq, 'new roi', roi1Name, roi2Name);
 % Get the fiber group number. This will be equal to the number of fiber
 % groups since it is the last one to be added
 fgNumber = AFQ_get(afq,'numfg');
+
+%% Make individual ROIs from a templat ROI if a template was passed in
+if xformRois == 1
+    % Path to the templates directory
+    tdir = fullfile(fileparts(which('mrDiffusion.m')), 'templates');
+    template = fullfile(tdir,'MNI_EPI.nii.gz');
+    for ii = 1:AFQ_get(afq,'numsubs')
+        % Get the subject's dt6 file
+        dtpath = AFQ_get(afq,'dt6path',ii); dt = dtiLoadDt6(dtpath);
+        % Subject's directory
+        sdir = fileparts(dtpath);
+        % Compute spatial normalization
+        [sn, Vtemplate, invDef] = mrAnatComputeSpmSpatialNorm(dt.b0, dt.xformToAcpc, template);
+        % Load up template ROIs in MNI space and transform them to the subjects
+        % native space. 
+        [~, ~, roi1]=dtiCreateRoiFromMniNifti(dt.dataFile, Troi1, invDef, 0);
+        [~, ~, roi2]=dtiCreateRoiFromMniNifti(dt.dataFile, Troi2, invDef, 0);
+        % Save the ROIs as .mat files
+        dtiWriteRoi(roi1,fullfile(sdir,roi1Name));
+        dtiWriteRoi(roi2,fullfile(sdir,roi2Name));
+    end
+end
 
 %% Segment the fiber groups if they don't exist
 for ii = 1:AFQ_get(afq,'numsubs')
