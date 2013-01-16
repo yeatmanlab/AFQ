@@ -435,8 +435,8 @@ if newfig ==1
     elseif size(camera,2) == 3
         campos(camera);
     end
-    lightH = camlight;
-    set(lightH, 'position',lightPosition);
+    lightH = camlight('right');
+    %set(lightH, 'position',lightPosition);
     lighting('gouraud');
     cameratoolbar('Show');
     cameratoolbar('SetMode','orbit');
