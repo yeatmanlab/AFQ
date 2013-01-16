@@ -45,10 +45,11 @@ if ~isempty(varargin)
             saveFiles = varargin{ii+1};
         end
     end
-    % Save figures by default
-    if ~exist('saveFiles','var') || isempty(saveFiles)
-        saveFiles = 1;
-    end
+end
+
+% Save figures by default
+if ~exist('saveFiles','var') || isempty(saveFiles)
+    saveFiles = 1;
 end
 
 %% Create ROIs and segment the posterior segment of the arcuate
