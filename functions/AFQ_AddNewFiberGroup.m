@@ -59,7 +59,7 @@ end
 % Check that the roi names were defined correctly
 if ~exist('roi1Name','var') || isempty(roi1Name) || ~ischar(roi1Name)
     error('Please enter the name of the first ROI')
-elseif ~isempty(strfind('.nii',roi1Name))
+elseif ~isempty(strfind(roi1Name,'.nii'))
     % If the roi names were nifti images then we are assuming they are
     % defined in MNI space and should be transformed to each individual's
     % brain
