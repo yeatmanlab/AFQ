@@ -32,12 +32,17 @@ nFG = length(fg);
 % were defined then assume it is the moriGroups and handle apropriately
 if nFG == 20 && (~exist('startpoint','var') || isempty(startpoint)) && ...
         (~exist('endpoint','var') || isempty(endpoint))
-    startpoint = {'Thalamus_L' 'Thalamus_R' 'cstinferior' 'cstinferior' ...
-        'Cingulum_Post_L' 'Cingulum_Post_R' 'Hippocampus_L' 'Hippocampus_R'...
+    % Still need to fix ATR, cingulum
+    startpoint = {[], [], 'cstinferior' 'cstinferior' ...
+        'leftcingpost', 'rightcingpost', [], [],...
         'leftoccipital' 'leftfrontal' 'leftoccipital' 'rightoccipital' ...
         'leftoccipital' 'rightoccipital' 'leftinfparietal' 'rightinfparietal'...
         'leftanttemporal' 'rightanttemporal' 'leftfrontal' 'rightfrontal'};
-    endpoint = {'leftfrontal' 'rightfrontal' 'cstsuperior' 'cstsuperior'}
+    endpoint = {'leftfrontal', 'rightfrontal', 'cstsuperior', 'cstsuperior',...
+        [], [], [], [], 'rightoccipital', 'rightfrontal', 'leftifoffront',...
+        'rightifoffront','leftilftemporal', 'rightilftemporal','leftslffront'...
+        'rightslffront', 'leftuncinatefront', 'rightuncinatefront',...
+        'leftarctemp','rightarctemp'};
 end
 
 if ~exist('dt6Path','var') || isempty(dt6Path)
@@ -132,6 +137,11 @@ for jj = 1:nFG
         % Do it for the endpoint if the startpoint was not defined
         flipped{jj} = cellfun(@(x) x(1)>x(2), dist2,'UniformOutput',false);
     end
+    % If there were no start or endpoint rois than no fibers need to be
+    % flipped
+    if isempty(flipped{jj})
+        flipped{jj} = cellfun(@(x) 0, fg(jj).fibers,'UniformOutput',false);
+    end
     % Flip fibers that need to be flipped 
     fg(jj).fibers = cellfun(@flipfun,fg(jj).fibers,flipped{jj},'UniformOutput',false);
     % Identify fibers that don't have a startpoint and endpoint within
@@ -216,7 +226,7 @@ if isempty(Lnum)
         case 'leftfrontal'
             Lnum = [1:2:25];
         case 'rightfrontal'
-            [2:2:26];
+            Lnum = [2:2:26];
         case 'leftparietal'
             Lnum =  [57:67];
         case 'rightparietal'
@@ -239,6 +249,10 @@ if isempty(Lnum)
             Lnum = 1; Vnum = 2;
         case 'cstsuperior'
             Lnum = 1; Vnum = 3;
+        case 'leftcingpost'
+            Lnum = 1; Vnum = 4;
+        case 'rightcingpost'
+            Lnum = 1; Vnum = 5;
     end
 end
 
