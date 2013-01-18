@@ -118,8 +118,8 @@ if xformRois == 1
         [~, ~, roi1]=dtiCreateRoiFromMniNifti(dt.dataFile, Troi1, invDef, 0);
         [~, ~, roi2]=dtiCreateRoiFromMniNifti(dt.dataFile, Troi2, invDef, 0);
         % Save the ROIs as .mat files
-        dtiWriteRoi(roi1,fullfile(sdir,roi1Name));
-        dtiWriteRoi(roi2,fullfile(sdir,roi2Name));
+        dtiWriteRoi(roi1,fullfile(sdir,'ROIs',roi1Name));
+        dtiWriteRoi(roi2,fullfile(sdir,'ROIs',roi2Name));
     end
 end
 
@@ -129,7 +129,7 @@ for ii = 1:AFQ_get(afq,'numsubs')
         % Load the wholebrain fiber group
         wholebrainFG = AFQ_get(afq,'wholebrain fg', ii);
         % Load the defining ROIs
-        [roi1, roi2] = AFQ_LoadROIs(fgNumber,afq.sub_dir{ii}, afq);
+        [roi1, roi2] = AFQ_LoadROIs(fgNumber,afq.sub_dirs{ii}, afq);
         % Intersect the wholebrain fibers with each ROI
         fg_classified = dtiIntersectFibersWithRoi([],'and', 2, roi1, wholebrainFG);
         fg_classified = dtiIntersectFibersWithRoi([],'and', 2, roi2, fg_classified);
