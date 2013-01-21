@@ -144,6 +144,14 @@ for ii=1:length(sub_dirs)
         end
         % Segment fiber file
         fg_classified = AFQ_SegmentFiberGroups(dtFile, fg);
+        % If the full trajectory of each fiber group will be analyzed (eg.
+        % from cortical start to endpoint) then all fibers that terminate
+        % before cortex will be removed and each fiber within a group will
+        % be flipped so that startpoints and endpoints are consistent
+        % within the group
+        if AFQ_get(afq,'clip2rois') == 0
+            fg_classified = AFQ_DefineFgEndpoints(fg_classified,dtFile);
+        end
         % Save segmented fiber group
         dtiWriteFiberGroup(fg_classified, fullfile(fibDir,'MoriGroups.mat'));
         % Set the path to the fibers in the afq structure
