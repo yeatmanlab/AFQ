@@ -230,6 +230,8 @@ switch(param)
         val = logical(afq.params.showfigs);
     case{'fiberweighting'}
         val = afq.params.fiberWeighting;
+    case{'clip2rois'}
+        val = afq.params.clip2rois;
     case {'roi1' 'roi1path'}
         if nargin~=4
             error('correct call: AFQ_get(afq, ''roi1'',[roi number], [subject number])')
