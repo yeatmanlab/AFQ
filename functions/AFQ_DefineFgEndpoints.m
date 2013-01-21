@@ -8,9 +8,27 @@ function [fg, keep, flipped] = AFQ_DefineFgEndpoints(fg,startpoint,endpoint,dt6P
 % [fg keep flipped] = AFQ_DefineFgEndpoints(fg,startpoint,endpoint,dt6Path,[dCrit],[invDef])
 %
 % Inputs:
+% fg        - A fiber group or a fiber group array containing multiple
+%             fiber groups (eg. MoriGroups)
+% startpoint- A cell array with as many entries as there are fiber groups
+%             in fg. Each entry contains a name of a cortical region that
+%             the fiber group must start in. The regions are taken from the
+%             AAL atlas. See templates/labelMaps/MNI_AAL.txt for names of
+%             cortical regions. If the fiber group is the MoriGroups than
+%             this can be left blank and we will assume that we know the
+%             correct endpoints
+% endpoint  - A cell array defining fiber group endpoints
+% dt6Path   - A path to a dt6 file or the actual preloaded dt6
+% dCrit     - The maximum distance a fiber endpoint can be from the
+%             cortical region defined in startpoint and endpoint
+% invDef    - Precomputed normalization parameters
 %
 % Outputs:
-%
+% fg        - The output fiber group. Each fiber has been flipped so that
+%             its start and endpoints are consistent and fibers that do not
+%             get close enough to the start and endpoints are removed
+% keep      - Defines which fibers from the original group were kept
+% flipped   - Defines which fibers from the original group were flipped
 %
 % Copyright Jason D. Yeatman October 2012
 
@@ -152,6 +170,9 @@ for jj = 1:nFG
         keep{jj} = cellfun(@(x1) min(x1) < dCritSq, dist1);
     elseif ~isempty(Lnum2)
         keep{jj} = cellfun(@(x1) min(x1) < dCritSq, dist2);
+    else
+        % Keep all fibers if no ROIs were passed in
+        keep{jj} = ones(length(fg(jj).fibers),1);
     end
     % Discard the fibers
     fg(jj).fibers = fg(jj).fibers(keep{jj});
