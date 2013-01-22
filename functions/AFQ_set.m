@@ -30,7 +30,7 @@ function afq = AFQ_set(afq,param,varargin)
 %                    'valname2', vals2 ...
 %                    varargin = 'subnum', subnum, 'fgnum', fgnum, ...
 %                    'valname1', vals1, 'valname2', val2 ...
-%                  
+%
 % 'norms'          - Compute and assign control group norms to afq.norms
 %                    varargin = no argument needed
 % 'sub_group'      - Define subject group (patient=1 control=0) to afq
@@ -110,7 +110,7 @@ switch(param)
                 val1 = argnum+2;
             else
                 % If the fiber group number was not defined then assume
-                % that they are the mori groups meaning fiber group number 
+                % that they are the mori groups meaning fiber group number
                 % 1 to 20.
                 fgnum = 1:size(varargin{val1 + 1},2);
             end
@@ -161,6 +161,22 @@ switch(param)
             % Otherwise overwrite for all subjects
             afq.overwrite.fibers.wholebrain(:)= 1;
             afq.overwrite.fibers.segmented(:)= 1;
+            afq.overwrite.fibers.clean(:)= 1;
+        end
+    case 'overwritesegmentation' % Recompute fiber groups for subject # varargin
+        % If a subject number is defined only overwrite for that subject
+        if nargin == 3
+            afq.overwrite.fibers.segmented(varargin{1})  = 1;
+        else
+            % Otherwise overwrite for all subjects
+            afq.overwrite.fibers.segmented(:)= 1;
+        end
+    case 'overwritecleaning' % Recompute fiber groups for subject # varargin
+        % If a subject number is defined only overwrite for that subject
+        if nargin == 3
+            afq.overwrite.fibers.clean(varargin{1})  = 1;
+        else
+            % Otherwise overwrite for all subjects
             afq.overwrite.fibers.clean(:)= 1;
         end
         
