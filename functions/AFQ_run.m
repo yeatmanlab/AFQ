@@ -150,7 +150,7 @@ for ii=1:length(sub_dirs)
         % be flipped so that startpoints and endpoints are consistent
         % within the group
         if AFQ_get(afq,'clip2rois') == 0
-            fg_classified = AFQ_DefineFgEndpoints(fg_classified,dtFile);
+            fg_classified = AFQ_DefineFgEndpoints(fg_classified, [], [], dt);
         end
         % Save segmented fiber group
         dtiWriteFiberGroup(fg_classified, fullfile(fibDir,'MoriGroups.mat'));
