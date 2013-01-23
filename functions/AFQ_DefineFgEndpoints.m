@@ -172,7 +172,7 @@ for jj = 1:nFG
         keep{jj} = cellfun(@(x1) min(x1) < dCritSq, dist2);
     else
         % Keep all fibers if no ROIs were passed in
-        keep{jj} = ones(length(fg(jj).fibers),1);
+        keep{jj} = true(length(fg(jj).fibers),1);
     end
     % Discard the fibers
     fg(jj).fibers = fg(jj).fibers(keep{jj});
