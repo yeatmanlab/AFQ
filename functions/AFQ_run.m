@@ -144,6 +144,10 @@ for ii=1:length(sub_dirs)
         end
         % Segment fiber file
         fg_classified = AFQ_SegmentFiberGroups(dtFile, fg);
+        % Name for the segmented fiber group
+        segName = 'MoriGroups.mat';
+        % Save segmented fiber group
+        dtiWriteFiberGroup(fg_classified, fullfile(fibDir,segName));
         % If the full trajectory of each fiber group will be analyzed (eg.
         % from cortical start to endpoint) then all fibers that terminate
         % before cortex will be removed and each fiber within a group will
@@ -151,11 +155,11 @@ for ii=1:length(sub_dirs)
         % within the group
         if AFQ_get(afq,'clip2rois') == 0
             fg_classified = AFQ_DefineFgEndpoints(fg_classified, [], [], dt);
+            segName = 'MoriGroups_Cortex.mat';
+            dtiWriteFiberGroup(fg_classified, fullfile(fibDir,segName));
         end
-        % Save segmented fiber group
-        dtiWriteFiberGroup(fg_classified, fullfile(fibDir,'MoriGroups.mat'));
         % Set the path to the fibers in the afq structure
-        afq = AFQ_set(afq, 'segmented fg path', 'subnum', ii, fullfile(fibDir,'MoriGroups.mat'));
+        afq = AFQ_set(afq, 'segmented fg path', 'subnum', ii, fullfile(fibDir,segName));
         % Segemented fiber group is already in memory and does not need to
         % be loaded
         loadSegmentation = 0;
@@ -174,7 +178,7 @@ for ii=1:length(sub_dirs)
     if afq.params.cleanFibers == 1 && AFQ_get(afq, 'do cleaning', ii) == 1
         % Load segmented fiber group if necessary
         if loadSegmentation == 1
-            fg_classified = dtiLoadFiberGroup(fullfile(fibDir,'MoriGroups.mat'));
+            fg_classified = dtiLoadFiberGroup(fullfile(fibDir, segName));
         end
         % Remove all fibers that are too long and too far from the core of
         % the group.  This algorithm will constrain the fiber group to
