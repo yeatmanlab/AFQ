@@ -124,6 +124,8 @@ afq.params.fiberWeighting = 1;
 afq.params.cleanClippedFibers = 0;
 % The directory to save all output figures and results
 afq.params.outdir = [];
+% The name to give the saved afq structure
+afq.params.outname = [];
 % Show figures? yes or no
 afq.params.showfigs = true;
 % Save figures? yes or no
@@ -131,6 +133,8 @@ afq.params.savefigs = false;
 % Whether or not to compute constrained spherical deconvolution using
 % mrtrix
 afq.params.computeCSD = 0;
+% Whether or not to comput control group norms
+afq.params.computenorms = 1;
 %% AFQ Fiber Tracking parameters
 % Do fiber tracking with mrdiffusion by default. The other option is
 % 'mrtrix' if it is installed and the data is HARDI
@@ -192,11 +196,19 @@ afq.files.fibers.segmented  = cell(AFQ_get(afq,'num subs'),1);
 afq.files.fibers.clean      = cell(AFQ_get(afq,'num subs'),1);
 
 %% Add files from previous AFQ runs to afq structure
+
+% The name of the segmented fiber group depends on whether we are clipping
+% it to the ROIs or not
+if AFQ_get(afq,'clip2rois') == 0
+    segName = 'MoriGroups_Cortex.mat';
+else
+    segName = 'MoriGroups.mat';
+end
 for ii = 1:AFQ_get(afq,'num subs')
     fibDir = fullfile(afq.sub_dirs{ii},'fibers');
     wholebrainFG = fullfile(fibDir,'WholeBrainFG.mat');
-    segmentedFG = fullfile(fibDir,'MoriGroups.mat');
-    cleanFG = fullfile(fibDir,['MoriGroups_clean_D' num2str(afq.params.maxDist) '_L'  num2str(afq.params.maxLen) '.mat']);
+    segmentedFG = fullfile(fibDir,segName);
+    cleanFG = fullfile(fibDir,[prefix(segName) '_clean_D' num2str(afq.params.maxDist) '_L'  num2str(afq.params.maxLen) '.mat']);
     if exist(wholebrainFG,'file')
         afq.files.fibers.wholebrain{ii} = wholebrainFG;
     end

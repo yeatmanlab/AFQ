@@ -5,6 +5,7 @@ function val = AFQ_get(afq, param, varargin)
 %
 % param list:              - arguments:
 %
+% 'sub_dirs'
 % 'fiber group names'
 % 'number of images'
 % 'subject group'
@@ -20,6 +21,7 @@ function val = AFQ_get(afq, param, varargin)
 % 'wholebrain fg'         - [subject number]
 % 'segmentfibers'         - [subject number]
 % 'cleanfibers'           - [subject number]
+% 'computenorms' 
 %
 % % To get the path to a fiber group
 % 'fgname path'           - [subject number]
@@ -45,6 +47,8 @@ function val = AFQ_get(afq, param, varargin)
 % 'roi1 path'             - [fg number], [subject number]
 % 'roi2 path'             - [fg number], [subject number]
 % 'current subject'
+% 'seg fg name'           - [subject number]
+% 'clean fg name'         - [subject number]
 % To get any of the parameters save in the afq structure (see AFQ_Create),
 % enter the name of the parameter. Some have not been implimented yet, but
 % will be soon.
@@ -62,12 +66,20 @@ end
 
 %% Get the requested parameter
 switch(param)
+    case{'sub_dirs' 'subs' 'subjectdirectories'}
+        val = afq.sub_dirs;
+        if isempty(val)
+            error('no subject directories');
+        end
     case{'fibergroupnames' 'fgnames'}
         val = afq.fgnames;
     case{'numimages', 'numberofimages'}
         val = length(afq.files.images);
     case({'sub_group' 'subgroup' 'subjectgroup'})
         val = afq.sub_group;
+        if isempty(val)
+            error('no subject group');
+        end
     case({'patient_data' 'patientdata'})
         val = afq.patient_data;
     case({'control_data' 'controldata'})
@@ -126,6 +138,10 @@ switch(param)
             ~ischar(afq.files.fibers.clean{varargin{1}});
     case{'cleanfibers' 'cleanedfibers' 'cleanfg'}
         val = dtiReadFibers(afq.files.fibers.clean{varargin{1}});
+    case{'segname' 'segmentedfibersname' 'segfgname'}
+        [~, val] = fileparts(afq.files.fibers.segmented{varargin{1}});
+    case{'cleanfgname'}
+        [~, val] = fileparts(afq.files.fibers.clean{varargin{1}});
     case{'computevals' 'computeprofiles' 'computetractprofiles' 'compute'}
         % Check if user wants to overwrite values for this subject or
         % No values have been computed yet or
@@ -133,6 +149,13 @@ switch(param)
         val = logical(afq.overwrite.vals(varargin{1})) || ...
             isempty(afq.vals.fa) || ...
             size(afq.vals.fa{1},1) < varargin{1};
+    case 'computenorms'
+        % Check if norms should be computed
+        if isfield(afq.params,'computenorms') && ~isempty(afq.params.computenorms)
+            val = logical(afq.params.computenorms);
+        else
+            val = true;
+        end
     case{'vals' 'allvals' 'valsall' fgnames{:}}
         % Check if the user defined a specific fiber group and if so get
         % that fiber group number
@@ -250,6 +273,23 @@ switch(param)
         val = afq.currentsub;
     case {'outdir' 'outputdirectory'}
         val = afq.params.outdir;
+    case {'outname' 'outputname'}
+        if isfield(afq.params,'outname')
+            val = afq.params.outname;
+        else
+            val = [];
+        end
+    case {'runsubs' 'runsubjects'}
+        if ~isfield(afq, 'runsubs') || isempty(afq.runsubs) || ischar(afq.runsubs)
+            val = 1:AFQ_get(afq,'numberofsubjects');
+        else
+            val = afq.runsubs;
+        end
+        % transpose if it's a column vector
+        if size(val,1) > size(val,2)
+            val = val';
+        end
+        
     otherwise
         error('Uknown afq parameter');
 end

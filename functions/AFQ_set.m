@@ -61,6 +61,14 @@ function afq = AFQ_set(afq,param,varargin)
 % 'new roi'        - Add the rois that define a new fiber group to the AFQ
 %                    structure
 %                    varargin = 'roi 1 name', 'roi 2 name'
+% 'runsubjects'    - Set which subjects should be run in AFQ_run.
+%                    varargin = vector of subject numbers;
+% 'outdir'         - Directory to save afq structure
+%                    varargin = '/path'
+% 'outname'        - Name to save afq structure
+%                    varargin = 'afq name'
+% 'computenorms'   - Set whether or not to compute norms
+%                    varargin = logical
 % Example:
 %
 % afq = AFQ_set(afq, 'segemented fg path','subnum',10,'/data/sub10/fibers/'Morigroups.mat')
@@ -182,7 +190,8 @@ switch(param)
         
     case 'overwritevals' % Recompute values for subject # varargin
         afq.overwrite.vals(varargin{1}) = 1;
-        
+    case 'computenorms'
+        afq.params.computenorms = varargin{1};
     case {'wholebrainfgpath' 'wholebrainpath' 'wholebrainfg' 'wholebrainfibergroup'}
         % Add the values to the correct row of the data matrix
         if strcmp('subnum',varargin{1})
@@ -277,10 +286,24 @@ switch(param)
         for ii = 1:AFQ_get(afq,'numsubs')
             afq.files.fibers.(prefix(varargin{1})){ii} = fullfile(afq.sub_dirs{ii},'fibers',varargin{1});
         end
+        
     case {'newroi'}
         % Add the name of the new rois for a fiber group
         afq.roi1names{end+1} = prefix(varargin{1});
         afq.roi2names{end+1} = prefix(varargin{2});
+        
+    case {'runsubs' 'runsubjects'}
+        afq.runsubs = varargin{1};
+        % transpose if it's a column vector
+        if size(afq.runsubs,1) > size(afq.runsubs,2)
+            afq.runsubs = afq.runsubs';
+        end
+        
+    case {'outdir' 'outputdirectory'}
+        afq.params.outdir = varargin{1};
+    case {'outname' 'outputname'}
+        afq.params.outname = varargin{1};
+
     otherwise
         error('Uknown afq parameter');
 end

@@ -79,9 +79,17 @@ function [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs,
 % Brian A. Wandell and Robert F. Dougherty
 
 %% Check Inputs
-if notDefined('sub_dirs'), error('No subject directories');  end
+if notDefined('sub_dirs') && exist('afq','var') && ~isempty(afq)
+    sub_dirs = AFQ_get(afq,'sub_dirs');
+elseif notDefined('sub_dirs')
+    error('No subject directories');
+end
 if ~iscell(sub_dirs), sub_dirs = cellstr(sub_dirs); end
-if ~exist('sub_group', 'var') || isempty(sub_group), error('Must define subject group'); end
+if notDefined('sub_group') && exist('afq','var') && ~isempty(afq)
+    sub_group = AFQ_get(afq,'sub_group');
+elseif notDefined('sub_group')
+    error('Must define subject group');
+end
 if length(sub_group) ~= size(sub_dirs,1) && length(sub_group) ~= size(sub_dirs,2)
     error('Mis-match between subject group description and subject data directories');
 end
@@ -95,8 +103,11 @@ end
 if isempty(afq.sub_dirs)
     afq = AFQ_set(afq,'sub_dirs',sub_dirs);
 end
+% Check which subjects should be run
+runsubs = AFQ_get(afq,'run subjects');
+
 %%  Loop over every subject
-for ii=1:length(sub_dirs)
+for ii = runsubs
     % Define the current subject to process
     afq = AFQ_set(afq,'current subject',ii);
     
@@ -209,19 +220,19 @@ for ii=1:length(sub_dirs)
             end
         end
         % Save cleaned fibers
-        cleanFgName = fullfile(fibDir,['MoriGroups_clean_D' num2str(afq.params.maxDist) '_L'  num2str(afq.params.maxLen) '.mat']);
+        cleanFgName = fullfile(fibDir,[prefix(segName) '_clean_D' num2str(afq.params.maxDist) '_L'  num2str(afq.params.maxLen) '.mat']);
         dtiWriteFiberGroup(fg_clean, cleanFgName);
         % Set the path to the fibers in the afq structure
         afq = AFQ_set(afq, 'clean fg path', 'subnum', ii, cleanFgName);
         % Convert fiber group back to a 1 cell structure for future
         % computations
-        fg_classified = dtiFgArrayToFiberGroup(fg_clean, 'MoriGroups');
+        fg_classified = dtiFgArrayToFiberGroup(fg_clean, segName);
         
     elseif afq.params.cleanFibers == 1
         % If cleaning was already done then load the cleaned fiber group
         fprintf('\nFiber tract cleaning was already done for subject %s',sub_dirs{ii});
         fg_classified = AFQ_get(afq, 'cleaned fibers',ii);
-        fg_classified = dtiFgArrayToFiberGroup(fg_classified, 'MoriGroups');  
+        fg_classified = dtiFgArrayToFiberGroup(fg_classified, AFQ_get(afq,'cleanfgname',ii));  
     end
     
     %% Compute Tract Profiles
@@ -270,22 +281,29 @@ for ii=1:length(sub_dirs)
     
     % Save each iteration of afq run if an output directory was defined
     if ~isempty(AFQ_get(afq,'outdir')) && exist(AFQ_get(afq,'outdir'),'dir')
-        outname = fullfile(AFQ_get(afq,'outdir'),['afq_' date]);
+        if ~isempty(AFQ_get(afq,'outname'))
+            outname = fullfile(AFQ_get(afq,'outdir'),AFQ_get(afq,'outname'));
+        else
+            outname = fullfile(AFQ_get(afq,'outdir'),['afq_' date]);
+        end
         save(outname,'afq');
     end
 end
 
-%% Generate Control Group Norms
+%% Compute Control Group Norms
 
-% If no control group was entered then norms will only contain nans.
-[norms, patient_data, control_data, afq] = AFQ_ComputeNorms(afq);
+% Check if norms should be computed
+if AFQ_get(afq,'computenorms')
+    % If no control group was entered then norms will only contain nans.
+    [norms, patient_data, control_data, afq] = AFQ_ComputeNorms(afq);
+end
 
 %% Identify Patients With Abnormal Diffusion Measurements
 
 property = 'FA';
 % Only run AFQ_ComparePatientsToNorms if norms were computed for the
 % property of interest for each tract
-if sum(isnan(eval(['norms.mean' property '(1,:)']))) == 20
+if AFQ_get(afq,'computenorms') == 0 || sum(isnan(eval(['norms.mean' property '(1,:)']))) == 20
     fprintf('\nnorms are empty. skipping AFQ_ComparePatientsToNorms\n')
     % If there are no norms than we can not identify which subjects are
     % abnormal.  Hence these variables will be set to nan.
@@ -300,7 +318,7 @@ end
 %% Plot Abnormal Patients Against Control Population
 
 % Only plot if norms were computed for each tract
-if sum(isnan(eval(['norms.mean' property '(1,:)']))) == 20
+if AFQ_get(afq,'computenorms') == 0 || sum(isnan(eval(['norms.mean' property '(1,:)']))) == 20
     fprintf('\nnorms are empty. Skipping AFQ_plot\n')
 elseif ~exist('abn','var') || sum(isnan(abn))==1
     fprintf('\nNo patients. Skipping AFQ_plot\n')
