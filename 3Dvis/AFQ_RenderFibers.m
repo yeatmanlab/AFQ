@@ -1,7 +1,7 @@
-function lightH = AFQ_RenderFibers(fg,varargin)
+function [lightH, fiberMesh] = AFQ_RenderFibers(fg,varargin)
 % Render a fiber group and tract profile in 3-D
 %
-%   AFQ_RenderFibers(fg,'PropertyName',PropertyValue, ...)
+%   [lightH. fiberMesh] = AFQ_RenderFibers(fg,'PropertyName',PropertyValue, ...)
 %
 % Given an mrDiffusion fiber group structure, AFQ_RenderFibers(fg), will
 % make a 3-D rendering of that fiber group.  The 3-d rendering can be
@@ -368,6 +368,14 @@ if tubes == 1
         
         % Render fiber tubes
         surf(X,Y,Z,C,'facealpha',alpha);
+        
+        % Collect fiber coordinates to be returned
+        if nargout > 1
+            fiberMesh.X{ii} = X;
+            fiberMesh.Y{ii} = Y;
+            fiberMesh.Z{ii} = Z;
+            fiberMesh.C{ii} = C;
+        end
     end
     
     % Plot the fibers as lines (much faster than tubes) if the input tubes == 0
@@ -385,6 +393,14 @@ else
         C(C < 0) = 0;
         % plot the fibers as lines
         plot3(x,y,z,'-','color',C);
+        
+        % Collect fiber coordinates to be returned
+        if nargout > 1
+            fiberMesh.X{ii} = x;
+            fiberMesh.Y{ii} = y;
+            fiberMesh.Z{ii} = z;
+            fiberMesh.C{ii} = C;
+        end
     end
 end
 
