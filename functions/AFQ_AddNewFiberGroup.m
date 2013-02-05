@@ -140,18 +140,15 @@ for ii = 1:AFQ_get(afq,'numsubs')
     end
 end
 
-%% Clean the fibers if desired
-
-% Loop over subjects
+%% Loop over subjects
 for ii = 1:AFQ_get(afq,'numsubs')
     
+    %% Clean the fibers if desired
     % Define the current subject to process
     afq = AFQ_set(afq,'current subject',ii);
     
     % Load the fibers
-    if ~exist('fg_classified','var')
-        fg_classified = dtiLoadFiberGroup(AFQ_get(afq,[prefix(fgName) 'path'],ii));
-    end
+    fg_classified = dtiLoadFiberGroup(AFQ_get(afq,[prefix(fgName) 'path'],ii));
     
     % Only clean if desired
     if cleanFibers == 1
@@ -184,7 +181,6 @@ for ii = 1:AFQ_get(afq,'numsubs')
         % And add them to the afq structure
         afq.files.fibers.([prefix(fgName) '_clean']){ii} = fgpath;
     end
-    
     
     %% Compute tract profiles
     
@@ -222,7 +218,7 @@ for ii = 1:AFQ_get(afq,'numsubs')
                 % Read the image file
                 image = readFileNifti(afq.files.images(jj).path{ii});
                 % Compute a Tract Profile for that image
-                imagevals = AFQ_ComputeTractProperties(fg_classified, image, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii}, fWeight);
+                imagevals = AFQ_ComputeTractProperties(fg_classified, image, afq.params.numberOfNodes, afq.params.clip2rois, afq.sub_dirs{ii}, fWeight);
                 % Add values to the afq structure
                 afq = AFQ_set(afq,'vals','subnum',ii,'fgnum',fgNumber, afq.files.images(jj).name, imagevals);
                 clear imagevals
