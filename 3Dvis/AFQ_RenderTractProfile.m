@@ -40,7 +40,7 @@ function [lightH] = AFQ_RenderTractProfile(coords, radius, color, subdivs, cmap,
 
 % if the colormap is not defined set to the defaul, jet.
 if ~exist('cmap','var') || isempty(cmap)
-    cmap = 'jet'
+    cmap = 'jet';
 end
 % if the color range is not defined set to the defaul, jet.
 if ~exist('crange','var') || isempty(crange)
