@@ -1,7 +1,7 @@
 function [h, xyzData] = AFQ_RenderEllipsoid(Q,C,N,color,newFigure,render)
 %Plot a diffusion ellipsoid from a tensor
 %
-%    [h, xyzData] = ellipsoidFromTensor(Q,[C=[0,0,0]],[N=12],[newFigure=1],,[render=1])
+%    [h, xyzData] = ellipsoidFromTensor(Q,[C=[0,0,0]],[N=12],color,[newFigure=1],,[render=1])
 %
 % Q:  The tensor  ADC = uQu'
 % C:  an x,y,z coordinate for the tensor center in 3 space
