@@ -13,6 +13,7 @@ TractProfile.fibercov     = [];
 TractProfile.fiberCurvature = [];
 TractProfile.fiberTorsion = [];
 TractProfile.fiberVolume = [];
+TractProfile.fiberCovVolume = [];
 %% Set fields
 TractProfile = afqVarargin(TractProfile,varargin);
 %% Check if the old super fiber structure was passed in
