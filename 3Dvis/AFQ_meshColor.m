@@ -45,8 +45,10 @@ if isfield(params,'overlay') && ~isempty(params.overlay)
     end
     % Interpolate overlay values at each vertex of the mesh
     cvals = dtiGetValFromImage(overlayIm.data, AFQ_meshGet(msh, 'vertexorigin'), overlayIm.qto_ijk, 'spline');
-    % Remove file extensions to get the name of the image
-    valname = prefix(prefix(overlayIm.fname));
+    % Remove file extension and path to get the name of the image
+    [~,valname] = fileparts(overlayIm.fname);
+    % Remove a secondary extension if there is one
+    valname = prefix(valname);
     % Set these values to the vals field of the msh structure
     msh = AFQ_meshSet(msh, 'vals', valname, cvals);
     % Find which vertices do not surpass the overlay threshold

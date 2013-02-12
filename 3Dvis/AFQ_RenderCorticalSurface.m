@@ -62,9 +62,11 @@ function [p, msh] = AFQ_RenderCorticalSurface(cortex, varargin)
 % % Get data
 % [~, AFQdata] = AFQ_directories; 
 % cortex = fullfile(AFQdata,'mesh','segmentation.nii.gz');
-% overlay = fullfile(AFQdata,'mesh','t1.nii.gz');
-% % Render the cortical surface colored by the T1 values at each vertex
-% p = AFQ_RenderCorticalSurface(cortex, 'overlay' , overlay)
+% overlay = fullfile(AFQdata,'mesh','Left_Arcuate_Endpoints.nii.gz');
+% thresh = .01; % Threshold for the overlay image
+% crange = [.01 .8]; % Color range of the overlay image
+% % Render the cortical surface colored by the arcuate endpoint density 
+% p = AFQ_RenderCorticalSurface(cortex, 'overlay' , overlay, 'crange', crange, 'thresh', thresh)
 %
 % Copyright Jason D. Yeatman November 2012
 
