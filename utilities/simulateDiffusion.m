@@ -1,4 +1,10 @@
 function simulateDiffusion(step,d,myelinLayers,colors,outname)
+% Mave a diffusion simulation movie
+%
+% simulateDiffusion(step,d,myelinLayers,colors,outname)
+%
+% Inputs:
+
 %% Simulate diffusion
 % Tolerance. Distance water can get from axons
 tol = .1;
