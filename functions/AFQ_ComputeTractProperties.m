@@ -111,6 +111,7 @@ md=nan(numberOfNodes,numfg);
 rd=nan(numberOfNodes,numfg);
 ad=nan(numberOfNodes,numfg);
 cl=nan(numberOfNodes,numfg);
+volume=nan(numberOfNodes,numfg);
 % loop over the fiber groups
 for jj=1:numfg
     % There are 20 fiber groups saved within the same structure. We will
