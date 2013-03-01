@@ -117,6 +117,15 @@ else
     property = 'fa';
 end
 
+% Check if there is a defined output directory
+p = strcmpi('outdir', varargin);
+if sum(p) > 0
+    outdir = varargin{find(p)+1};
+else
+    % default property to plot
+    outdir = [];
+end
+
 % Check if there are defined subjects to plot otherwise plot all subjects
 s = strcmpi('subjects', varargin);
 if sum(s) > 0
@@ -232,8 +241,26 @@ if sum(strcmpi('individual',arg)) == 1
         case 'md'
             Meanvals = norms.meanMD;
             SDvals   = norms.sdMD;
-            axisScale = [1 nnodes .6 1.3];
+            axisScale = 'auto';
             label = 'Mead Diffusivity';
+        otherwise
+            % look for the value in the structure and change the case if
+            % needed
+            if isfield(norms, ['mean' property]);
+                fprintf('\nPlotting %s\n',property);
+            elseif isfield(norms, ['mean' upper(property)]);
+                property = upper(property);
+                fprintf('\nPlotting %s\n',property);
+            elseif isfield(norms, ['mean' lower(property)]);
+                property = lower(property);
+                fprintf('\nPlotting %s\n',property);
+            else
+                error('Property %s could not be found',property);
+            end
+            Meanvals = norms.(['mean' property]);
+            SDvals = norms.(['sd' property]);
+            axisScale = 'auto';
+            label = property;
     end
     % make a legend if desired
     if sum(strcmpi('legend',varargin)) > 0
@@ -261,7 +288,7 @@ if sum(strcmpi('individual',arg)) == 1
         fill(x,y, [.6 .6 .6]);
         clear y
         % plot the 25 and 75 percentile bands
-        y = vertcat(Meanvals(:,jj)+max(cutZ2)*SDvals(:,jj), flipud(Meanvals(:,jj)+min(cutZ2)*norms.sdFA(:,jj)));
+        y = vertcat(Meanvals(:,jj)+max(cutZ2)*SDvals(:,jj), flipud(Meanvals(:,jj)+min(cutZ2)*SDvals(:,jj)));
         fill(x,y, [.3 .3 .3]);
         clear y
         % plot the mean
@@ -292,6 +319,8 @@ if sum(strcmpi('individual',arg)) == 1
                 subVals = subData(jj).AD;
             case 'md'
                 subVals = subData(jj).MD;
+            otherwise
+                subVals = subData(jj).(property);
         end
         % For each tract loop over the number of subjects and plot each
         % on the same plot with the norms
@@ -302,7 +331,17 @@ if sum(strcmpi('individual',arg)) == 1
         if ~isempty(L)
             legend(h(subjects),L);
         end
-    end   
+    end 
+    
+    % Save the figures if desired
+    if ~isempty(outdir)
+        cd(outdir);
+         for jj = tracts
+            figure(fignums(jj));
+            fname = [fgNames{jj} property];
+            print(gcf, '-depsc',fname)
+         end
+    end
 end
 
 %% Colormap plots
