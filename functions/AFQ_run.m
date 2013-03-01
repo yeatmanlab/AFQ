@@ -242,7 +242,7 @@ for ii = runsubs
         fWeight = AFQ_get(afq,'fiber weighting');
         % By default Tract Profiles of diffusion properties will always be
         % calculated
-        [fa, md, rd, ad, cl, TractProfile] = AFQ_ComputeTractProperties(fg_classified, dt, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii}, fWeight, afq);
+        [fa, md, rd, ad, cl, vol, TractProfile] = AFQ_ComputeTractProperties(fg_classified, dt, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii}, fWeight, afq);
         
         % Parameterize the shape of each fiber group with calculations of
         % curvature and torsion at each point and add it to the tract
@@ -254,7 +254,7 @@ for ii = runsubs
         
         % Add values to the afq structure
         afq = AFQ_set(afq,'vals','subnum',ii,'fa',fa,'md',md,'rd',rd,...
-            'ad',ad,'cl',cl,'curvature',curv,'torsion',tors);
+            'ad',ad,'cl',cl,'curvature',curv,'torsion',tors,'volume',vol);
         
         % Add Tract Profiles to the afq structure
         afq = AFQ_set(afq,'tract profile','subnum',ii,TractProfile);

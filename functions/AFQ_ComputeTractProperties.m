@@ -1,9 +1,9 @@
-function [fa, md, rd, ad, cl, TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,numberOfNodes,clip2rois,subDir, weighting, afq)
+function [fa, md, rd, ad, cl, volume, TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,numberOfNodes,clip2rois,subDir, weighting, afq)
 % Compute diffusion properties along the trajectory of the fiber groups.
 % The function returns vectors of diffusion properties and TractProfile
 % structure for each fiber group
 %
-% [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,[numberOfNodes=30],[clip2rois=1],[subDir], [weighting = 1], afq)
+% [fa md rd ad cl volume TractProfile] = AFQ_ComputeTractProperties(fg_classified,dt,[numberOfNodes=30],[clip2rois=1],[subDir], [weighting = 1], afq)
 %
 % The input fiber group can either be a single fiber group or an array of
 % fiber groups (See fg2Array). Each fiber group is clipped to its 2
@@ -56,6 +56,7 @@ function [fa, md, rd, ad, cl, TractProfile] = AFQ_ComputeTractProperties(fg_clas
 % rd               = vector of Radial Diffusivity values along fiber core.
 % ad               = vector of Axial Diffusivity values along fiber core.
 % cl               = vector of linearity values along fiber core.
+% volume           = vector of volume estimates along the tract.
 % TractProfile     = TractProfile structure (see AFQ_CreateTractProfile).
 %                    Contains fiber group core, fiber covariance, and
 %                    fiber tract properties at each node.
@@ -110,6 +111,7 @@ md=nan(numberOfNodes,numfg);
 rd=nan(numberOfNodes,numfg);
 ad=nan(numberOfNodes,numfg);
 cl=nan(numberOfNodes,numfg);
+volume=nan(numberOfNodes,numfg);
 % loop over the fiber groups
 for jj=1:numfg
     % There are 20 fiber groups saved within the same structure. We will
@@ -146,7 +148,8 @@ for jj=1:numfg
     % or noise in the data.  If a fiber group is empty we will ad NaNs to
     % the database
     if isempty(fgtmp.fibers)
-        fa(:, jj)=nan;md(:, jj)=nan;rd(:, jj)=nan;ad(:, jj)=nan;cl(:, jj)=nan;
+        fa(:, jj)=nan;md(:, jj)=nan;rd(:, jj)=nan;ad(:, jj)=nan;
+        cl(:, jj)=nan;volume(:,jj)=nan;
         TractProfile(jj) = AFQ_CreateTractProfile('name',fgtmp.name);
         continue
     end
@@ -155,11 +158,18 @@ for jj=1:numfg
     % there is a problem such as only having 1 fiber in the fiber group.
     % To avoid breaking the whole loop we use the try catch loop
     try
-        [fa(:, jj),md(:, jj),rd(:, jj),ad(:, jj),cl(:, jj),SuperFibersGroup(jj)]=dtiComputeDiffusionPropertiesAlongFG(fgtmp, dt, roi1, roi2, numberOfNodes,weighting);
+        [fa(:, jj),md(:, jj),rd(:, jj),ad(:, jj),cl(:, jj),...
+            SuperFibersGroup(jj),~,~,~,fgResampled]=...
+            dtiComputeDiffusionPropertiesAlongFG(fgtmp, dt, roi1, roi2, numberOfNodes,weighting);
+        % Compute tract volume at each node
+        volume(:,jj) = AFQ_TractProfileVolume(fgResampled);
         % Put mean fiber into Tract Profile structure
         TractProfile(jj) = AFQ_CreateTractProfile('name',fgtmp.name,'superfiber',SuperFibersGroup(jj));
+        % Add the volume measurement
+        TractProfile(jj).fiberVolume = volume(:,jj)';
     catch
-        fa(:, jj)=nan;md(:, jj)=nan;rd(:, jj)=nan;ad(:, jj)=nan;cl(:, jj)=nan;
+        fa(:, jj)=nan;md(:, jj)=nan;rd(:, jj)=nan;ad(:, jj)=nan;
+        cl(:, jj)=nan;volume(:,jj) = nan;
         TractProfile(jj) = AFQ_CreateTractProfile('name',fgtmp.name);
     end
 end
