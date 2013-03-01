@@ -219,6 +219,8 @@ for ii = 1:AFQ_get(afq,'num subs')
         afq.files.fibers.clean{ii} = cleanFG;
     end
 end
+% Save the name name of the segmented fiber group
+afq.files.fibers.segName = segName;
 %% Allow previous analyses to be overwritten
 afq.overwrite.fibers.wholebrain = zeros(AFQ_get(afq,'num subs'),1);
 afq.overwrite.fibers.segmented = zeros(AFQ_get(afq,'num subs'),1);

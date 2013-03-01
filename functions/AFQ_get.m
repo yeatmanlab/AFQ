@@ -49,6 +49,7 @@ function val = AFQ_get(afq, param, varargin)
 % 'current subject'
 % 'seg fg name'           - [subject number]
 % 'clean fg name'         - [subject number]
+% 'segfilename'            -
 % To get any of the parameters save in the afq structure (see AFQ_Create),
 % enter the name of the parameter. Some have not been implimented yet, but
 % will be soon.
@@ -289,7 +290,14 @@ switch(param)
         if size(val,1) > size(val,2)
             val = val';
         end
-        
+    case 'segfilename'
+        if isfield(afq.files.fibers,'segName')
+            val = afq.files.fibers.segName;
+        elseif AFQ_get(afq,'clip2rois') == 1
+            val = 'MoriGroups.mat';
+        elseif AFQ_get(afq,'clip2rois') == 0
+            val = 'MoriGroups_Cortex.mat';
+        end
     otherwise
         error('Uknown afq parameter');
 end

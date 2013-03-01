@@ -105,7 +105,8 @@ if isempty(afq.sub_dirs)
 end
 % Check which subjects should be run
 runsubs = AFQ_get(afq,'run subjects');
-
+% Define the name of the segmented fiber group
+segName = AFQ_get(afq,'segfilename');
 %%  Loop over every subject
 for ii = runsubs
     % Define the current subject to process
@@ -155,8 +156,6 @@ for ii = runsubs
         end
         % Segment fiber file
         fg_classified = AFQ_SegmentFiberGroups(dtFile, fg);
-        % Name for the segmented fiber group
-        segName = 'MoriGroups.mat';
         % Save segmented fiber group
         dtiWriteFiberGroup(fg_classified, fullfile(fibDir,segName));
         % If the full trajectory of each fiber group will be analyzed (eg.
@@ -166,7 +165,6 @@ for ii = runsubs
         % within the group
         if AFQ_get(afq,'clip2rois') == 0
             fg_classified = AFQ_DefineFgEndpoints(fg_classified, [], [], dt);
-            segName = 'MoriGroups_Cortex.mat';
             dtiWriteFiberGroup(fg_classified, fullfile(fibDir,segName));
         end
         % Set the path to the fibers in the afq structure

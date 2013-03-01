@@ -1,8 +1,8 @@
-function afq = AFQ_AddNewFiberGroup(afq,fgName,roi1Name,roi2Name,cleanFibers,computeVals)
+function afq = AFQ_AddNewFiberGroup(afq,fgName,roi1Name,roi2Name,cleanFibers,computeVals,showFibers)
 % THIS FUNCTION IS STILL BEING DEVELOPED
 % Add new fiber groups from any segmentation proceedure to an afq structure
 %
-% afq = AFQ_AddNewFiberGroup(afq, fgName, roi1Name, roi2Name, [cleanFibers = true],[computeVals = true])
+% afq = AFQ_AddNewFiberGroup(afq, fgName, roi1Name, roi2Name, [cleanFibers = true],[computeVals = true], [showFibers = false])
 %
 % By default AFQ_run will segment the 20 fiber groups defined in the Mori
 % white matter atlas and save all the relevant information in the afq
@@ -42,6 +42,8 @@ function afq = AFQ_AddNewFiberGroup(afq,fgName,roi1Name,roi2Name,cleanFibers,com
 % computeVals- Logical defining whether TractProfiles should be calculated
 %              for the new fiber group for all of the diffusion (and other)
 %              parameters that are  already contained in the afq structure
+% showFibers - Logical indicating whether to render each segmented and
+%              cleaned fiber group.
 %
 % Copyright Jason D. Yeatman November 2012
 
@@ -87,6 +89,9 @@ if ~exist('cleanFibers','var') || isempty(cleanFibers)
 end
 if ~exist('computeVals','var') || isempty(computeVals)
     computeVals = true;
+end
+if ~exist('showFibers','var') || isempty(showFibers)
+    showFibers = false;
 end
 
 % If the ROIs were not defined as a nifti image in MNI space than they do
@@ -150,6 +155,12 @@ for ii = 1:AFQ_get(afq,'numsubs')
     % Load the fibers
     fg_classified = dtiLoadFiberGroup(AFQ_get(afq,[prefix(fgName) 'path'],ii));
     
+    % Render the segmented fibers if desired
+    if showFibers == 1
+        fprintf('\n Rendering %s in red\n',AFQ_get(afq,[prefix(fgName) 'path'],ii));
+        AFQ_RenderFibers(fg_classified, 'numfibers',70,'color',[1 0 0])
+    end
+    
     % Only clean if desired
     if cleanFibers == 1
         % only clean if there are enough fibers for it to be worthwhile
@@ -180,6 +191,13 @@ for ii = 1:AFQ_get(afq,'numsubs')
         dtiWriteFiberGroup(fg_classified, fgpath);
         % And add them to the afq structure
         afq.files.fibers.([prefix(fgName) '_clean']){ii} = fgpath;
+        
+        % Render the cleaned fibers if desired
+        if showFibers == 1
+            fprintf('\n Rendering %s in blue\n',AFQ_get(afq,[prefix(fgName) 'path'],ii));
+            AFQ_RenderFibers(fg_classified, 'numfibers',70,'color',[0 0 1])
+        end
+
     end
     
     %% Compute tract profiles

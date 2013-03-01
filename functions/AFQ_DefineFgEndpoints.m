@@ -249,9 +249,9 @@ if isempty(Lnum)
         case 'rightfrontal'
             Lnum = [2:2:26];
         case 'leftparietal'
-            Lnum =  [57:67];
+            Lnum =  [57:2:67];
         case 'rightparietal'
-            Lnum = [58:68];
+            Lnum = [58:2:68];
         case {'leftinfparietal' 'leftslfpar'}
             Lnum = [61 63 65];
         case {'rightinfparietal' 'rightslfpar'}
