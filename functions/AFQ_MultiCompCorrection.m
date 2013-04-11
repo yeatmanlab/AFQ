@@ -75,6 +75,8 @@ if ~exist('y','var') || isempty(y)
 elseif length(y)==sum(y==0 | y==1) || length(y)==sum(y==1 | y==2)
     y = logical(y);
     stattest = 'ttest';
+else
+    stattest = 'corr';
 end
 
 switch(method)
