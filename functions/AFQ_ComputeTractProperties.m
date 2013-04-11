@@ -111,6 +111,8 @@ md=nan(numberOfNodes,numfg);
 rd=nan(numberOfNodes,numfg);
 ad=nan(numberOfNodes,numfg);
 cl=nan(numberOfNodes,numfg);
+cs=nan(numberOfNodes,numfg);
+cp=nan(numberOfNodes,numfg);
 volume=nan(numberOfNodes,numfg);
 % loop over the fiber groups
 for jj=1:numfg
@@ -149,7 +151,7 @@ for jj=1:numfg
     % the database
     if isempty(fgtmp.fibers)
         fa(:, jj)=nan;md(:, jj)=nan;rd(:, jj)=nan;ad(:, jj)=nan;
-        cl(:, jj)=nan;volume(:,jj)=nan;
+        cl(:, jj)=nan;cp(:,jj)=nan;cs(:,jj)=nan;volume(:,jj)=nan;
         TractProfile(jj) = AFQ_CreateTractProfile('name',fgtmp.name);
         continue
     end
@@ -159,7 +161,7 @@ for jj=1:numfg
     % To avoid breaking the whole loop we use the try catch loop
     try
         [fa(:, jj),md(:, jj),rd(:, jj),ad(:, jj),cl(:, jj),...
-            SuperFibersGroup(jj),~,~,~,fgResampled]=...
+            SuperFibersGroup(jj),~,cp(:,jj),cs(:,jj),fgResampled]=...
             dtiComputeDiffusionPropertiesAlongFG(fgtmp, dt, roi1, roi2, numberOfNodes,weighting);
         % Compute tract volume at each node
         volume(:,jj) = AFQ_TractProfileVolume(fgResampled);
@@ -167,9 +169,14 @@ for jj=1:numfg
         TractProfile(jj) = AFQ_CreateTractProfile('name',fgtmp.name,'superfiber',SuperFibersGroup(jj));
         % Add the volume measurement
         TractProfile(jj).fiberVolume = volume(:,jj)';
+        % Add planarity and sphericity measures to the tract profile. We
+        % could return them as outputs from the main function but the list
+        % of outputs keeps growing...
+        TractProfile(jj) = AFQ_TractProfileSet(TractProfile(jj),'vals','planarity',cp(:,jj)');
+        TractProfile(jj) = AFQ_TractProfileSet(TractProfile(jj),'vals','sphericity',cs(:,jj)');
     catch
         fa(:, jj)=nan;md(:, jj)=nan;rd(:, jj)=nan;ad(:, jj)=nan;
-        cl(:, jj)=nan;volume(:,jj) = nan;
+        cl(:, jj)=nan;cp(:,jj)=nan;cs(:,jj)=nan;volume(:,jj) = nan;
         TractProfile(jj) = AFQ_CreateTractProfile('name',fgtmp.name);
     end
 end
