@@ -39,6 +39,11 @@ function val = AFQ_get(afq, param, varargin)
 % 'tractname'             - 'valname', 'group'
 % 'left arcuate'          - 'fa'     , 'controls'
 %
+% To get values that are saved within the tract profiles rather than in the
+% vals field:
+% 'TractProfile vals'      - 'tract name', 'valname'
+% 'TractProfile vals'      - 'Left Arcuate', 'fa'
+%
 % 'use mrtrix'
 % 'dt6path'               - [subject number]
 % 'tracking parameters'
@@ -227,6 +232,19 @@ switch(param)
                 otherwise
                     error('Do you want vals for patients or controls?')
             end
+        end
+    case {'tractprofilevals' 'valstractprofile'}
+        % Get the number of the tract. This is the first input argumet
+        tnum = find(strcmp(varargin{1},AFQ_get(afq,'fgnames')));
+        if isempty(tnum)
+            fprintf('\n please provide valid tract name\n')
+            fprintf('correct call AFQ_get(afq,''tractprofilevals'',''Left Arcuate'',''fa'')\n')
+        end
+        % Loop over each subject's tract profile and get the requested
+        % values
+        valname = varargin{2};
+        for ii = 1:AFQ_get(afq, 'numsubs')
+           val(ii,:) = afq.TractProfiles(ii,tnum).vals.(valname);
         end
     case{'usemrtrix'}
         if afq.software.mrtrix == 1 && ...
