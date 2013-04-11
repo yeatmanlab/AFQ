@@ -17,5 +17,5 @@ for ii = numsubs
    % Set the name of the saved file
    afq = AFQ_set(afq, 'outname', ['afq_' num2str(ii)]);
    % Process this subject on the grid
-   sgerun2('AFQ_run([],[],afq);',sprintf('AFQ%d',ii),1);
+   sgerun2('AFQ_run([],[],afq);',sprintf('AFQ%d_%d',ii,round(rand*100)),1);
 end
