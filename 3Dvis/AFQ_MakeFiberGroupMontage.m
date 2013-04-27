@@ -1,0 +1,54 @@
+function AFQ_MakeFiberGroupMontage(afq, fgNames, fgColors, subNums, plotDims)
+
+
+%% Argument checking
+% By default render for all subjects
+if ~exist('subNums','var') || isempty(subNums)
+    subNums = 1:AFQ_get(afq,'num subs');
+end
+% By default render the fibers using hsv colors
+if ~exist('fgColors','var') || isempty(fgColors)
+    fgColors = hsv(length(fgNames)).*.8;
+end
+% By default render fibers in a 3x3 subplot window
+if ~exist('plotDims','var') || isempty(plotDims)
+    plotDims = [3 3];
+end
+
+% Calculate the number of plots in a window
+numplots = prod(plotDims);
+
+
+%% Load fibers and render
+
+% Start count and open figure window
+c = 0;figure; 
+% Loop over subjects
+for ii = subNums
+    % Initialize a variable to store fiber colors
+    colors = [];
+    % Initialize a variable for the combined fiber group
+    fgCombined = [];
+    % Count plots in this window
+    c = c+1;
+    % Open a new figure window if the plotting window is full
+    if c == numplots+1
+        c = 1;
+        figure;
+    end
+    
+    % Load fiber groups
+    for jj = 1:length(fgNames)
+        % Load fibers
+        fg = dtiLoadFiberGroup(AFQ_get(afq,[prefix(fgNames{jj}) 'path'],ii));
+        % Designate the color of these fibers
+        colors = vertcat(colors,repmat(fgColors(jj,:),length(fg.fibers),1));
+        % Concatenate fibers
+        fgCombined = vertcat(fgCombined,fg.fibers(:));
+    end
+    % Put concatenated fibers into a fiber group
+    fg = dtiNewFiberGroup('all',[],[],[],fgCombined);
+    % Render the fibers
+    AFQ_RenderFibers(fg, 'color', colors, 'numfibers',300, 'subplot',[3 3 c]);
+
+end
