@@ -136,6 +136,32 @@ switch(param)
                 val = afq.files.fibers.(name){varargin{1}};
             end
         end
+    case horzcat(strcat(fgnames,'fg'))
+        % find the fiber group number (get rid of the 'fg' at the end
+        n = find(strcmpi(param(1:end-2),fgnames));
+        if n <= 20
+            % If it is one of the mori groups than get the path to that
+            % fiber group (preferably cleaned)
+            try
+                path = afq.files.fibers.clean{varargin{1}};
+            catch
+                path = afq.files.fibers.segmented{varargin{1}};
+            end
+            % Load the fiber group
+            fg = dtiReadFibers(path);
+            % Pull out the desired fiber group number
+            val = fg(n);
+        else
+            % get the name (because we formated the parameter)
+            name = afq.fgnames{n};
+            try
+                path = afq.files.fibers.([name 'clean']){varargin{1}};
+            catch
+                path = afq.files.fibers.(name){varargin{1}};
+            end
+            % Load the fiber group
+            val = dtiLoadFiberGroup(path);
+        end
     case{'docleaning'}
         % Check if user wants to overwrite cleaned fibers for this subject or
         % Fibers have not yet been cleaned
