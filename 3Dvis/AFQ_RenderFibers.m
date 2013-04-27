@@ -101,6 +101,10 @@ function [lightH, fiberMesh] = AFQ_RenderFibers(fg,varargin)
 % AFQ_RenderFibers(fg,'newfig', [1]) - Check if rendering should be in new
 % window [1] or added to an old window [0]. Default is new figure.
 %
+% AFQ_RenderFibers(fg, 'subplot', [row col num]) - Render the fiber in a
+% subplot. This is like using the command subplot(row,col,num) to designate
+% the position of the figure in the subplot.
+%
 % AFQ_RenderFibers(fg,'numfibers', numfibers) - Only render as many fibers
 % as are defined in numfibers. This many fibers will randomly be chosen
 % from the fiber group.  This is useful to save time when rendering large
@@ -284,6 +288,11 @@ else
     newfig = 1;
 end
 
+% Check if the figure should be in a subplot
+if sum(strcmpi('subplot',varargin)) > 0
+    splotnum = varargin{find(strcmpi('subplot',varargin))+1};
+end
+
 % Randomly choose the desired number of fibers to be rendered.
 if sum(strcmpi('numfibers',varargin)) > 0
     numfib = varargin{find(strcmpi('numfibers',varargin))+1};
@@ -312,8 +321,10 @@ end
 %% Loop over fibers and render them in 3-D
 
 % Only render in a new figure window if desired (default)
-if newfig == 1
+if newfig == 1 && ~exist('splotnum','var')
     figure; hold('on');
+elseif exist('splotnum','var') && ~isempty('splotnum')
+    subplot(splotnum(1),splotnum(2),splotnum(3)); hold('on');
 end
 
 % Render each fiber as a tube (slow) if the parameter tubes == 1
