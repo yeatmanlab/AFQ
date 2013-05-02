@@ -69,6 +69,13 @@ function afq = AFQ_set(afq,param,varargin)
 %                    varargin = 'afq name'
 % 'computenorms'   - Set whether or not to compute norms
 %                    varargin = logical
+% 'spatial normalization' - Save a subject's spatial normalization
+%                           parameters (sn). These are computed with
+%                           mrAnatComputeSpmSpatialNorm
+%                           varargin = sn, subject number
+% 'inverse deformation'   - Save a subject's inverse spatial normalization
+%                           parameters (invDef).   
+%                           varargin = invDef, subject number
 % Example:
 %
 % afq = AFQ_set(afq, 'segemented fg path','subnum',10,'/data/sub10/fibers/'Morigroups.mat')
@@ -303,6 +310,10 @@ switch(param)
         afq.params.outdir = varargin{1};
     case {'outname' 'outputname'}
         afq.params.outname = varargin{1};
+    case {'spatialnormalization' 'sn'}
+        afq.xform.sn(varargin{2}) = varargin{1};
+    case {'inversedeformation' 'invdef'}
+        afq.xform.invDef{varargin{2}} = varargin{1};
 
     otherwise
         error('Uknown afq parameter');
