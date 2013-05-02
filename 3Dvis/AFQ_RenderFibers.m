@@ -397,7 +397,7 @@ else
         y = fg.fibers{ii}(2,:)';
         z = fg.fibers{ii}(3,:)';
         % Jitter color and shading
-        C = color + [rand(1,3).*2 - 1].*jf+[rand(1).*2 - 1].*js;
+        C = color(ii,:) + [rand(1,3).*2 - 1].*jf+[rand(1).*2 - 1].*js;
         % Make sure that after adding the jitter the colors don't exceed the
         % range of 0 to 1
         C(C > 1) = 1;
