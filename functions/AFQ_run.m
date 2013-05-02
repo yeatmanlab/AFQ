@@ -286,6 +286,9 @@ for ii = runsubs
         end
         save(outname,'afq');
     end
+    
+    % clear the files that were computed for this subject
+    clear fg fg_classified TractProfile
 end
 
 %% Compute Control Group Norms
