@@ -71,6 +71,10 @@ afq.TractProfiles = AFQ_CreateTractProfile;
 %     afq.TractProfiles.(fgNames{ii}) = AFQ_CreateTractProfile('name',fgNames{ii});
 % end
 
+%% Attatch a field for spatial normalization
+afq.xform.sn = [];
+afq.xform.invDef = [];
+
 %% Check which software packages are installed
 afq.software.mrvista = check_mrvista;
 afq.software.mrtrix = check_mrTrix;
