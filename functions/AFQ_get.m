@@ -54,7 +54,9 @@ function val = AFQ_get(afq, param, varargin)
 % 'current subject'
 % 'seg fg name'           - [subject number]
 % 'clean fg name'         - [subject number]
-% 'segfilename'            -
+% 'segfilename'           - 
+% 'spatial normalization' - [subject number]
+% 'inverse deformation'   - [subject number]
 % To get any of the parameters save in the afq structure (see AFQ_Create),
 % enter the name of the parameter. Some have not been implimented yet, but
 % will be soon.
@@ -341,6 +343,18 @@ switch(param)
             val = 'MoriGroups.mat';
         elseif AFQ_get(afq,'clip2rois') == 0
             val = 'MoriGroups_Cortex.mat';
+        end
+    case {'spatialnormalization' 'sn'}
+        try
+            val = afq.xform.sn(varargin{1});
+        catch
+            val = [];
+        end
+    case {'sinversedeformation' 'invdef'}
+        try
+            val = afq.xform.invDef(varargin{1});
+        catch
+            val = [];
         end
     otherwise
         error('Uknown afq parameter');
