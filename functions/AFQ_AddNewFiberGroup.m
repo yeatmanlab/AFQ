@@ -1,8 +1,9 @@
-function afq = AFQ_AddNewFiberGroup(afq,fgName,roi1Name,roi2Name,cleanFibers,computeVals,showFibers)
+function afq = AFQ_AddNewFiberGroup(afq,fgName,roi1Name,roi2Name,cleanFibers,computeVals,showFibers,segFgName)
 % THIS FUNCTION IS STILL BEING DEVELOPED
 % Add new fiber groups from any segmentation proceedure to an afq structure
 %
-% afq = AFQ_AddNewFiberGroup(afq, fgName, roi1Name, roi2Name, [cleanFibers = true],[computeVals = true], [showFibers = false])
+% afq = AFQ_AddNewFiberGroup(afq, fgName, roi1Name, roi2Name, [cleanFibers = true], ...
+%          [computeVals = true], [showFibers = false], [segFgName = 'WholeBrainFG.mat'])
 %
 % By default AFQ_run will segment the 20 fiber groups defined in the Mori
 % white matter atlas and save all the relevant information in the afq
@@ -28,7 +29,7 @@ function afq = AFQ_AddNewFiberGroup(afq,fgName,roi1Name,roi2Name,cleanFibers,com
 %              be defined by intersecting the subject's wholeBrainFG with
 %              the two ROIs.
 % roi1Name   - A string containing the name of the first waypoint ROI. This
-%              can either be a .mat file that is in each subject's ROIs 
+%              can either be a .mat file that is in each subject's ROIs
 %              directory or it can be a nifti image containing the ROI
 %              defined in MNI space. If it is a nifti image than that image
 %              will be warped into each subject's native space and saved as
@@ -44,6 +45,12 @@ function afq = AFQ_AddNewFiberGroup(afq,fgName,roi1Name,roi2Name,cleanFibers,com
 %              parameters that are  already contained in the afq structure
 % showFibers - Logical indicating whether to render each segmented and
 %              cleaned fiber group.
+% segFgName  - There are some case where you may want to perform the
+%              segmentation on a fiber group other than the wholebrain
+%              group (eg. for the callosum). If you would like to use
+%              another fiber group you can supply it's name here otherwise
+%              WholeBrainFG.mat will be used
+%
 %
 % Copyright Jason D. Yeatman November 2012
 
@@ -93,11 +100,13 @@ end
 if ~exist('showFibers','var') || isempty(showFibers)
     showFibers = false;
 end
-
+if ~exist('segFgName','var') || isempty(segFgName)
+    segFgName = 'WholeBrainFG.mat';
+end
 % If the ROIs were not defined as a nifti image in MNI space than they do
 % not need to be transformed
 if ~exist('xformRois','var') || isempty(xformRois)
-   xformRois = 0; 
+    xformRois = 0;
 end
 %% Add the new fiber groups and ROIs to the afq structure
 afq = AFQ_set(afq,'new fiber group', fgName);
@@ -116,10 +125,14 @@ if xformRois == 1
         dtpath = AFQ_get(afq,'dt6path',ii); dt = dtiLoadDt6(dtpath);
         % Subject's directory
         sdir = fileparts(dtpath);
-        % Compute spatial normalization
-        [sn, Vtemplate, invDef] = mrAnatComputeSpmSpatialNorm(dt.b0, dt.xformToAcpc, template);
+        % Check if there is a precomputed spatial normalization.
+        % Otherwise compute spatial normalization 
+        sn = AFQ_get(afq,'spatial normalization',ii);
+        if isempty(sn)
+            [sn, Vtemplate, invDef] = mrAnatComputeSpmSpatialNorm(dt.b0, dt.xformToAcpc, template);
+        end
         % Load up template ROIs in MNI space and transform them to the subjects
-        % native space. 
+        % native space.
         [~, ~, roi1]=dtiCreateRoiFromMniNifti(dt.dataFile, Troi1, invDef, 0);
         [~, ~, roi2]=dtiCreateRoiFromMniNifti(dt.dataFile, Troi2, invDef, 0);
         % Save the ROIs as .mat files
@@ -131,8 +144,16 @@ end
 %% Segment the fiber groups if they don't exist
 for ii = 1:AFQ_get(afq,'numsubs')
     if ~exist(AFQ_get(afq,[prefix(fgName) 'path'],ii),'file')
-        % Load the wholebrain fiber group
-        wholebrainFG = AFQ_get(afq,'wholebrain fg', ii);
+        % Load the wholebrain fiber group as default
+        % or use another fiber group if desired (eg. callosum)
+        segFgPath = fullfile(afq.sub_dirs{ii}, 'fibers', segFgName);
+        if exist(segFgPath,'file')
+            fprintf('\nPerforming segmentation on %s',segFgPath)
+            wholebrainFG = dtiLoadFiberGroup(segFgPath);
+        else
+            error('\nCould not find %s',segFgPath);
+        end
+
         % Load the defining ROIs
         [roi1, roi2] = AFQ_LoadROIs(fgNumber,afq.sub_dirs{ii}, afq);
         % Intersect the wholebrain fibers with each ROI
@@ -197,7 +218,7 @@ for ii = 1:AFQ_get(afq,'numsubs')
             fprintf('\n Rendering %s in blue\n',AFQ_get(afq,[prefix(fgName) 'path'],ii));
             AFQ_RenderFibers(fg_classified, 'numfibers',70,'color',[0 0 1])
         end
-
+        
     end
     
     %% Compute tract profiles
@@ -211,7 +232,7 @@ for ii = 1:AFQ_get(afq,'numsubs')
         fWeight = AFQ_get(afq,'fiber weighting');
         % By default Tract Profiles of diffusion properties will always be
         % calculated
-        [fa, md, rd, ad, cl, TractProfile] = AFQ_ComputeTractProperties(fg_classified, dt, afq.params.numberOfNodes, afq.params.clip2rois, afq.sub_dirs{ii}, fWeight, afq);
+        [fa, md, rd, ad, cl, volume, TractProfile] = AFQ_ComputeTractProperties(fg_classified, dt, afq.params.numberOfNodes, afq.params.clip2rois, afq.sub_dirs{ii}, fWeight, afq);
         
         % Parameterize the shape of each fiber group with calculations of
         % curvature and torsion at each point and add it to the tract
@@ -223,7 +244,7 @@ for ii = 1:AFQ_get(afq,'numsubs')
         
         % Add values to the afq structure
         afq = AFQ_set(afq,'vals','subnum',ii,'fgnum',fgNumber, 'fa',fa, ...
-            'md',md,'rd',rd,'ad',ad,'cl',cl,'curvature',curv,'torsion',tors);
+            'md',md,'rd',rd,'ad',ad,'cl',cl,'volume',volume,'curvature',curv,'torsion',tors);
         
         % Add Tract Profiles to the afq structure
         afq = AFQ_set(afq,'tract profile','subnum',ii,'fgnum',fgNumber,TractProfile);
