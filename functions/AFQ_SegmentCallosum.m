@@ -11,11 +11,11 @@ function afq = AFQ_SegmentCallosum(afq)
 %% Create callosum ROIs and fiber groups
 % First creat a callosal fiber group from the wholebrain fiber group for
 % each subject
-for ii = 1:length(AFQ_get(afq,'numsubs'))
+for ii = 1:AFQ_get(afq,'numsubs')
     % Load Dt6
     dt = dtiLoadDt6(AFQ_get(afq,'dt6path',ii));
     % Create an ROI of the corpus callosum
-    ccRoi = dtiNewRoi('callosum','r',dtiFindCallosum(dt.dt6,dt.b0,dt.xformToAcpc,[],[],1));
+    ccRoi = dtiNewRoi('callosum','r',dtiFindCallosum(dt.dt6,dt.b0,dt.xformToAcpc,.25,[],1));
     % Load wholebrain fiber group
     wholebrainFg = AFQ_get(afq,'wholebrain fg', ii);
     % Create callosum fiber group
@@ -24,6 +24,7 @@ for ii = 1:length(AFQ_get(afq,'numsubs'))
     % Save callosum ROI and fiber group
     fgPath = fullfile(afq.sub_dirs{ii},'fibers',ccFg.name);
     roiPath = fullfile(afq.sub_dirs{ii},'ROIs',ccRoi.name);
+    fprintf('\nSaving %s',fgPath)
     dtiWriteFiberGroup(ccFg,fgPath);
     dtiWriteRoi(ccRoi,roiPath);
 end
@@ -56,5 +57,11 @@ segFgName = 'callosumFG.mat';
 for ii = 1:length(fgNames)
     afq = AFQ_AddNewFiberGroup(afq,fgNames{ii},roi1Names{ii},roi2Names{ii},1,1,0,segFgName);   
 end
+
+%% Render montage of callosal fiber groups
+fgNames = {'CC_Occipital' 'CC_Post_Parietal' ...
+    'CC_Sup_Parietal' 'CC_Motor' 'CC_Sup_Frontal' ...
+    'CC_Ant_Frontal' 'CC_Orb_Frontal'};
+AFQ_MakeFiberGroupMontage(afq, fgNames)
 
 return
