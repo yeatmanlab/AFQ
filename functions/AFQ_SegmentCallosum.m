@@ -1,32 +1,40 @@
-function afq = AFQ_SegmentCallosum(afq)
+function afq = AFQ_SegmentCallosum(afq,overwriteFiles)
 % THIS FUNCTION IS STILL BEING DEVELOPED
 % Segment the callosal fibers into 7 segments
 %
-% afq = AFQ_SegmentCallosum(afq)
+% afq = AFQ_SegmentCallosum(afq,overwriteFiles)
 %
 %
 %
 % Copyright Jason D. Yeatman April 2012
 
+%% Argument checking
+if ~exist('overwriteFiles','var') || isempty(overwriteFiles)
+    overwriteFiles = false;
+end
+
 %% Create callosum ROIs and fiber groups
 % First creat a callosal fiber group from the wholebrain fiber group for
 % each subject
 for ii = 1:AFQ_get(afq,'numsubs')
-    % Load Dt6
-    dt = dtiLoadDt6(AFQ_get(afq,'dt6path',ii));
-    % Create an ROI of the corpus callosum
-    ccRoi = dtiNewRoi('callosum','r',dtiFindCallosum(dt.dt6,dt.b0,dt.xformToAcpc,.25,[],1));
-    % Load wholebrain fiber group
-    wholebrainFg = AFQ_get(afq,'wholebrain fg', ii);
-    % Create callosum fiber group
-    ccFg = dtiIntersectFibersWithRoi([],'and',2,ccRoi,wholebrainFg);
-    ccFg.name = 'callosumFG';
-    % Save callosum ROI and fiber group
+    % Set up paths to the fiber group and ROI
     fgPath = fullfile(afq.sub_dirs{ii},'fibers',ccFg.name);
     roiPath = fullfile(afq.sub_dirs{ii},'ROIs',ccRoi.name);
-    fprintf('\nSaving %s',fgPath)
-    dtiWriteFiberGroup(ccFg,fgPath);
-    dtiWriteRoi(ccRoi,roiPath);
+    if ~exist(fgPath,'file') || ~exist(roiPath,'file') || overwriteFiles==1
+        % Load Dt6
+        dt = dtiLoadDt6(AFQ_get(afq,'dt6path',ii));
+        % Create an ROI of the corpus callosum
+        ccRoi = dtiNewRoi('callosum','r',dtiFindCallosum(dt.dt6,dt.b0,dt.xformToAcpc,.25,[],1));
+        % Load wholebrain fiber group
+        wholebrainFg = AFQ_get(afq,'wholebrain fg', ii);
+        % Create callosum fiber group
+        ccFg = dtiIntersectFibersWithRoi([],'and',2,ccRoi,wholebrainFg);
+        ccFg.name = 'callosumFG';
+        % Save callosum ROI and fiber group
+        fprintf('\nSaving %s',fgPath)
+        dtiWriteFiberGroup(ccFg,fgPath);
+        dtiWriteRoi(ccRoi,roiPath);
+    end
 end
 
 %% Set up parameters for AFQ_AddNewFiberGroup
@@ -44,7 +52,7 @@ for ii = 1:length(roi1Names)
     roi1Names{ii} = fullfile(tdir,roi1Names{ii});
     roi2Names{ii} = fullfile(tdir,roi2Names{ii});
 end
-    
+
 % List of the names of the callosal segments
 fgNames = {'CC_Occipital.mat' 'CC_Post_Parietal.mat' ...
     'CC_Sup_Parietal.mat' 'CC_Motor.mat' 'CC_Sup_Frontal.mat' ...
@@ -55,7 +63,7 @@ segFgName = 'callosumFG.mat';
 %% Segment callosum into it's different projections and add to afq struct
 
 for ii = 1:length(fgNames)
-    afq = AFQ_AddNewFiberGroup(afq,fgNames{ii},roi1Names{ii},roi2Names{ii},1,1,0,segFgName);   
+    afq = AFQ_AddNewFiberGroup(afq,fgNames{ii},roi1Names{ii},roi2Names{ii},1,1,0,segFgName);
 end
 
 %% Render montage of callosal fiber groups
