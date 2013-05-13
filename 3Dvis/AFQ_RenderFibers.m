@@ -299,7 +299,8 @@ if sum(strcmpi('numfibers',varargin)) > 0
     % check if there are more fibers than the number specified
     if length(fg.fibers) > numfib
         % generate a random index of fibers
-        fibindx = randsample(length(fg.fibers),numfib);
+        fibindx = ceil(rand(numfib,1).*length(fg.fibers));
+        % fibindx = randsample(length(fg.fibers),numfib);   
         % retain only these fibers for the rendering
         fg.fibers = fg.fibers(fibindx);
         % if there fiber specific coloring was defined make sure to retain
