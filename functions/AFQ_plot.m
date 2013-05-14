@@ -370,28 +370,31 @@ if sum(strcmpi('colormap',arg)) == 1
         % collect the property of interest for tract jj
         switch(property)
             case 'fa'
-                subVals = subData(tracts(jj)).FA;
+                subVals(:,:,tracts(jj)) = subData(tracts(jj)).FA;
                 axisScale = [1 nnodes .2 .9];
                 label = 'Fractional Anisotropy';
             case 'rd'
-                subVals = subData(tracts(jj)).RD;
+                subVals(:,:,tracts(jj)) = subData(tracts(jj)).RD;
                 axisScale = [1 nnodes .2 .9];
                 label = 'Radial Diffusivity';
             case 'ad'
-                subVals = subData(tracts(jj)).AD;
+                subVals(:,:,tracts(jj)) = subData(tracts(jj)).AD;
                 axisScale = [1 nnodes 1 2.1];
                 label = 'Axial Diffusivity';
             case 'md'
-                subVals = subData(tracts(jj)).MD;
+                subVals(:,:,tracts(jj)) = subData(tracts(jj)).MD;
                 axisScale = [1 nnodes .6 1.3];
                 label = 'Mean Diffusivity';
+            otherwise
+                subVals(:,:,tracts(jj)) = AFQ_get(afq, fgNames{tracts(jj)},property);
+                label = property;
         end
         
         figure(fignums(jj)); hold on;
         % For each tract loop over the number of subjects and plot each
         % on the same axis
         for ii = 1 : length(subVals(:,1))
-            h(ii) = plot(subVals(ii,:)','-','Color',[.5 .5 .5],'linewidth',1);
+            h(ii) = plot(subVals(ii,:,tracts(jj))','-','Color',[.5 .5 .5],'linewidth',1);
         end
         % add a legend to the plot if desired
         if ~isempty(L)
@@ -404,7 +407,7 @@ if sum(strcmpi('colormap',arg)) == 1
     for jj=1:length(tracts)
         figure(fignums(jj));hold on;
         % compute the mean tract profile
-        meanTP = nanmean(subData(tracts(jj)).FA);
+        meanTP = nanmean(subVals(:,:,tracts(jj)));
         % Interpolate the mean profile so the heatmap transitions smoothly
         meanTPinterp = interp1(1:100,meanTP,linspace(1,100,1000));
         % Set the colormap
@@ -424,7 +427,11 @@ if sum(strcmpi('colormap',arg)) == 1
             plot(k./10,meanTPinterp(k),'.','Color',c(mcolor(k),:),'markersize',40);
         end
         % scale the axes and name them
-        axis(axisScale);
+        if exist('axisScale') && ~isempty(axisScale)
+            axis(axisScale);
+        else
+            axis('normal');
+        end
         xlabel('Location','fontName','Times','fontSize',12);
         ylabel(label,'fontName','Times','fontSize',12)
         title(fgNames{tracts(jj)},'fontName','Times','fontSize',12)
