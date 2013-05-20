@@ -7,6 +7,8 @@ function AFQ_plot(varargin)
 %
 % --Group Plots--
 %
+% AFQ_plot(afq , 'group')
+% or
 % AFQ_plot('group1 name', data1, 'group2 name', data2, 'group')
 % 
 % Tract diffusion profiles can be plotted for multiple groups of subjects.
@@ -26,7 +28,9 @@ function AFQ_plot(varargin)
 % AFQ_plot('patient',patient_data,'control',control_data,'tracts',[1,2,6],'group');
 %
 % --Individual Subject Plots--
-%
+% 
+% AFQ_plot(afq,'individual')
+% or
 % AFQ_plot(norms, patient_data, 'ci',[10 90], 'legend',subnames, 'individual')
 %
 % Tract diffusion profiles will be plotted for each patient with respect to
@@ -46,6 +50,24 @@ function AFQ_plot(varargin)
 
 %% Argument checks and data formatting
 
+% Check if the first argument is an afq structure. If so we will get the
+% data from that.
+if isafq(varargin{1})
+    afq = varargin{1};
+    % Get the proper data from the afq structure depending on the plotting
+    % arguments
+    if sum(strcmpi('group',varargin))
+        data{1} = AFQ_get(afq,'control_data');
+        data{2} = AFQ_get(afq,'patient_data');
+        gnames = {'control', 'patient'};
+    elseif sum(strcmpi('individual',varargin))
+        data{1} = AFQ_get(afq,'norms');
+        data{2} = AFQ_get(afq,'patient_data');
+    elseif sum(strcmpi('colormap',varargin)) > 0
+        data{1} = AFQ_get(afq,'control_data');   
+    end
+end
+
 % Divide up the inputs into data and arguments. This is done by looping
 % over the number of input arguments and checking if they are structures or
 % strings
@@ -54,7 +76,7 @@ for ii = 1 : nargin
     if ischar(varargin{ii})
         argnum        = argnum + 1;
         arg{argnum}   = varargin{ii};
-    elseif isstruct(varargin{ii})
+    elseif isstruct(varargin{ii}) && ~isafq(varargin{ii})
         datanum       = datanum + 1;
         data{datanum} = varargin{ii};
     end
@@ -95,6 +117,15 @@ else
     property = 'fa';
 end
 
+% Check if there is a defined output directory
+p = strcmpi('outdir', varargin);
+if sum(p) > 0
+    outdir = varargin{find(p)+1};
+else
+    % default property to plot
+    outdir = [];
+end
+
 % Check if there are defined subjects to plot otherwise plot all subjects
 s = strcmpi('subjects', varargin);
 if sum(s) > 0
@@ -114,17 +145,30 @@ end
 % generate random numbers for the figure windowss
 fignums = ceil(rand(1,max(tracts)).*10000);
 
-% These are the names of the fiber groups
-fgNames={'Left Thalmic Radiation','Right Thalmic Radiation','Left Corticospinal','Right Corticospinal', 'Left Cingulum Cingulate', 'Right Cingulum Cingulate'...
-    'Left Cingulum Hippocampus','Right Cingulum Hippocampus', 'Callosum Forceps Major', 'Callosum Forceps Minor'...
-    'Left IFOF','Right IFOF','Left ILF','Right ILF','Left SLF','Right SLF','Left Uncinate','Right Uncinate','Left Arcuate','Right Arcuate'};
-
+% If an afq structure was passed in then get the fiber group names from it
+if exist('afq','var')
+    fgNames = AFQ_get(afq,'fgnames');
+else
+    % Otherwise assume that it is the mori groups and we know their names
+    fgNames={'Left Thalmic Radiation','Right Thalmic Radiation','Left Corticospinal','Right Corticospinal', 'Left Cingulum Cingulate', 'Right Cingulum Cingulate'...
+        'Left Cingulum Hippocampus','Right Cingulum Hippocampus', 'Callosum Forceps Major', 'Callosum Forceps Minor'...
+        'Left IFOF','Right IFOF','Left ILF','Right ILF','Left SLF','Right SLF','Left Uncinate','Right Uncinate','Left Arcuate','Right Arcuate'};
+end
 
 %% Group plots
 %  Plot the mean +/- 1 std. err. for each data set that is sent in 
 if sum(strcmpi('group',arg)) == 1
+    % If group names were not pulled from the afq structure then the should
+    % have been passed in
+    if ~exist('gnames','var')
+        gnames = arg(1:length(data));
+    end
     % define the colors to be used for each groups plot
     c = lines(length(data));
+    % make sure that we have enough fiber group names
+    if length(fgNames) < max(tracts)
+        fgNames{max(tracts)} = [];
+    end
     % Loop over all the tracts
     for jj = 1 : length(tracts)
         % For each tract loop over the number of groups and plot each
@@ -166,7 +210,7 @@ if sum(strcmpi('group',arg)) == 1
             set(gca,'fontName','Times','fontSize',12);
         end
         % add a legend to the plot
-        legend(h,arg(1:length(data)));
+        legend(h,gnames);
     end    
 end
 %% Individual plots
@@ -197,8 +241,26 @@ if sum(strcmpi('individual',arg)) == 1
         case 'md'
             Meanvals = norms.meanMD;
             SDvals   = norms.sdMD;
-            axisScale = [1 nnodes .6 1.3];
+            axisScale = 'auto';
             label = 'Mead Diffusivity';
+        otherwise
+            % look for the value in the structure and change the case if
+            % needed
+            if isfield(norms, ['mean' property]);
+                fprintf('\nPlotting %s\n',property);
+            elseif isfield(norms, ['mean' upper(property)]);
+                property = upper(property);
+                fprintf('\nPlotting %s\n',property);
+            elseif isfield(norms, ['mean' lower(property)]);
+                property = lower(property);
+                fprintf('\nPlotting %s\n',property);
+            else
+                error('Property %s could not be found',property);
+            end
+            Meanvals = norms.(['mean' property]);
+            SDvals = norms.(['sd' property]);
+            axisScale = 'auto';
+            label = property;
     end
     % make a legend if desired
     if sum(strcmpi('legend',varargin)) > 0
@@ -226,7 +288,7 @@ if sum(strcmpi('individual',arg)) == 1
         fill(x,y, [.6 .6 .6]);
         clear y
         % plot the 25 and 75 percentile bands
-        y = vertcat(Meanvals(:,jj)+max(cutZ2)*SDvals(:,jj), flipud(Meanvals(:,jj)+min(cutZ2)*norms.sdFA(:,jj)));
+        y = vertcat(Meanvals(:,jj)+max(cutZ2)*SDvals(:,jj), flipud(Meanvals(:,jj)+min(cutZ2)*SDvals(:,jj)));
         fill(x,y, [.3 .3 .3]);
         clear y
         % plot the mean
@@ -257,6 +319,8 @@ if sum(strcmpi('individual',arg)) == 1
                 subVals = subData(jj).AD;
             case 'md'
                 subVals = subData(jj).MD;
+            otherwise
+                subVals = subData(jj).(property);
         end
         % For each tract loop over the number of subjects and plot each
         % on the same plot with the norms
@@ -267,7 +331,17 @@ if sum(strcmpi('individual',arg)) == 1
         if ~isempty(L)
             legend(h(subjects),L);
         end
-    end   
+    end 
+    
+    % Save the figures if desired
+    if ~isempty(outdir)
+        cd(outdir);
+         for jj = tracts
+            figure(fignums(jj));
+            fname = [fgNames{jj} property];
+            print(gcf, '-depsc',fname)
+         end
+    end
 end
 
 %% Colormap plots
@@ -286,7 +360,7 @@ if sum(strcmpi('colormap',arg)) == 1
     else
         FArange = [.3 .6];
     end
-    % the second set of data will be individual subjects
+    % the first set of data will be individual subjects
     subData = data{1};
     % number of nodes to be plotted
     nnodes = length(subData(1).FA(1,:));
@@ -296,28 +370,31 @@ if sum(strcmpi('colormap',arg)) == 1
         % collect the property of interest for tract jj
         switch(property)
             case 'fa'
-                subVals = subData(tracts(jj)).FA;
+                subVals(:,:,tracts(jj)) = subData(tracts(jj)).FA;
                 axisScale = [1 nnodes .2 .9];
                 label = 'Fractional Anisotropy';
             case 'rd'
-                subVals = subData(tracts(jj)).RD;
+                subVals(:,:,tracts(jj)) = subData(tracts(jj)).RD;
                 axisScale = [1 nnodes .2 .9];
                 label = 'Radial Diffusivity';
             case 'ad'
-                subVals = subData(tracts(jj)).AD;
+                subVals(:,:,tracts(jj)) = subData(tracts(jj)).AD;
                 axisScale = [1 nnodes 1 2.1];
                 label = 'Axial Diffusivity';
             case 'md'
-                subVals = subData(tracts(jj)).MD;
+                subVals(:,:,tracts(jj)) = subData(tracts(jj)).MD;
                 axisScale = [1 nnodes .6 1.3];
                 label = 'Mean Diffusivity';
+            otherwise
+                subVals(:,:,tracts(jj)) = AFQ_get(afq, fgNames{tracts(jj)},property);
+                label = property;
         end
         
         figure(fignums(jj)); hold on;
         % For each tract loop over the number of subjects and plot each
         % on the same axis
         for ii = 1 : length(subVals(:,1))
-            h(ii) = plot(subVals(ii,:)','-','Color',[.5 .5 .5],'linewidth',1);
+            h(ii) = plot(subVals(ii,:,tracts(jj))','-','Color',[.5 .5 .5],'linewidth',1);
         end
         % add a legend to the plot if desired
         if ~isempty(L)
@@ -330,7 +407,7 @@ if sum(strcmpi('colormap',arg)) == 1
     for jj=1:length(tracts)
         figure(fignums(jj));hold on;
         % compute the mean tract profile
-        meanTP = nanmean(subData(tracts(jj)).FA);
+        meanTP = nanmean(subVals(:,:,tracts(jj)));
         % Interpolate the mean profile so the heatmap transitions smoothly
         meanTPinterp = interp1(1:100,meanTP,linspace(1,100,1000));
         % Set the colormap
@@ -350,7 +427,11 @@ if sum(strcmpi('colormap',arg)) == 1
             plot(k./10,meanTPinterp(k),'.','Color',c(mcolor(k),:),'markersize',40);
         end
         % scale the axes and name them
-        axis(axisScale);
+        if exist('axisScale') && ~isempty(axisScale)
+            axis(axisScale);
+        else
+            axis('normal');
+        end
         xlabel('Location','fontName','Times','fontSize',12);
         ylabel(label,'fontName','Times','fontSize',12)
         title(fgNames{tracts(jj)},'fontName','Times','fontSize',12)

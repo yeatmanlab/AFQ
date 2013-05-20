@@ -21,8 +21,16 @@ function afq = AFQ_set(afq,param,varargin)
 % 'images'         - Add images to compute tract profiles on.
 %                    varargin = 1xN cell array (N is number of subjects) of
 %                    paths to nifti images.
-% 'vals'           - Add Tract Profile values to afq structure.
-%                    varargin = 'subnum', subnum, 'valname', vals
+% 'vals'           - Add Tract Profile values to afq structure. If the vals
+%                    are for the mori groups then no fiber group number
+%                    needs to be defined and it is assumed that the values
+%                    are for groups 1:20. If it is a new fiber group then
+%                    you need to define the fiber group number.
+%                    varargin = 'subnum', subnum, 'valname1', vals1, ...
+%                    'valname2', vals2 ...
+%                    varargin = 'subnum', subnum, 'fgnum', fgnum, ...
+%                    'valname1', vals1, 'valname2', val2 ...
+%
 % 'norms'          - Compute and assign control group norms to afq.norms
 %                    varargin = no argument needed
 % 'sub_group'      - Define subject group (patient=1 control=0) to afq
@@ -48,7 +56,26 @@ function afq = AFQ_set(afq,param,varargin)
 %                    This should be a structure with each of the AFQ fiber
 %                    groups in it.  See AFQ_CreateTractProfile
 %                    varargin = 'subnum', [subject number], TractProfiles
-%
+% 'new fiber group - Add a new fiber group to the afq structure.
+%                    varargin = 'fiber group name'
+% 'new roi'        - Add the rois that define a new fiber group to the AFQ
+%                    structure
+%                    varargin = 'roi 1 name', 'roi 2 name'
+% 'runsubjects'    - Set which subjects should be run in AFQ_run.
+%                    varargin = vector of subject numbers;
+% 'outdir'         - Directory to save afq structure
+%                    varargin = '/path'
+% 'outname'        - Name to save afq structure
+%                    varargin = 'afq name'
+% 'computenorms'   - Set whether or not to compute norms
+%                    varargin = logical
+% 'spatial normalization' - Save a subject's spatial normalization
+%                           parameters (sn). These are computed with
+%                           mrAnatComputeSpmSpatialNorm
+%                           varargin = sn, subject number
+% 'inverse deformation'   - Save a subject's inverse spatial normalization
+%                           parameters (invDef).   
+%                           varargin = invDef, subject number
 % Example:
 %
 % afq = AFQ_set(afq, 'segemented fg path','subnum',10,'/data/sub10/fibers/'Morigroups.mat')
@@ -74,7 +101,8 @@ switch(param)
         
     case 'vals' % Add values to the afq.values field
         if length(varargin) >= 4
-            % Add the values to the correct row of the data matrix
+            % Add the values to the correct row of the data matrix by
+            % getting the subject's number
             if strcmp('subnum',varargin{1})
                 % If the subject number was defined use that row
                 subnum = varargin{2};
@@ -87,16 +115,34 @@ switch(param)
                 % The first value will be in varargin{1}
                 val1 = 1;
             end
+            % See if a fiber group number was defined otherwise assume that
+            % it is for the mori groups in which case fgnum = 1:20.
+            argnum = find(strcmpi('fgnum',varargin));
+            if ~isempty(argnum)
+                fgnum = varargin{argnum+1};
+                % The first input that is a value will come after the
+                % definition of the fiber group number
+                val1 = argnum+2;
+            else
+                % If the fiber group number was not defined then assume
+                % that they are the mori groups meaning fiber group number
+                % 1 to 20.
+                fgnum = 1:size(varargin{val1 + 1},2);
+            end
             % Loop over the values that were input
             for ii = val1:2:length(varargin)
-                % Loop over the fiber tracts
-                for jj = 1:20
+                % Loop over the fiber tracts starting with the first column
+                % of data that was input
+                col = 0;
+                for jj = fgnum
+                    % Move forward one column of data at a time
+                    col = col+1;
                     % Take the stats that were calculated in
                     % AFQ_ComputeTractProperties and add them to a sructure
                     % for the full sample of subjects.  Each fiber group
                     % has its own cell. Within each cell there is a row for
                     % each subject with numberofnodes columns
-                    afq.vals.(varargin{ii}){jj}(subnum,:) = varargin{ii + 1}(:, jj);
+                    afq.vals.(varargin{ii}){jj}(subnum,:) = varargin{ii + 1}(:, col);
                 end
             end
         end
@@ -114,6 +160,8 @@ switch(param)
         
     case 'sub_group' % Define subject groups in afq.sub_group
         afq.sub_group = varargin{1};
+    case 'sub_dirs'
+        afq.sub_dirs = varargin{1};
         
     case 'currentsubject' % Define the current subject being analyzed
         afq.currentsub = varargin{1};
@@ -130,10 +178,27 @@ switch(param)
             afq.overwrite.fibers.segmented(:)= 1;
             afq.overwrite.fibers.clean(:)= 1;
         end
+    case 'overwritesegmentation' % Recompute fiber groups for subject # varargin
+        % If a subject number is defined only overwrite for that subject
+        if nargin == 3
+            afq.overwrite.fibers.segmented(varargin{1})  = 1;
+        else
+            % Otherwise overwrite for all subjects
+            afq.overwrite.fibers.segmented(:)= 1;
+        end
+    case 'overwritecleaning' % Recompute fiber groups for subject # varargin
+        % If a subject number is defined only overwrite for that subject
+        if nargin == 3
+            afq.overwrite.fibers.clean(varargin{1})  = 1;
+        else
+            % Otherwise overwrite for all subjects
+            afq.overwrite.fibers.clean(:)= 1;
+        end
         
     case 'overwritevals' % Recompute values for subject # varargin
         afq.overwrite.vals(varargin{1}) = 1;
-        
+    case 'computenorms'
+        afq.params.computenorms = varargin{1};
     case {'wholebrainfgpath' 'wholebrainpath' 'wholebrainfg' 'wholebrainfibergroup'}
         % Add the values to the correct row of the data matrix
         if strcmp('subnum',varargin{1})
@@ -149,6 +214,7 @@ switch(param)
             val1 = 1;
         end
         afq.files.fibers.wholebrain{subnum} = varargin{val1};
+        
     case {'segmentedfgpath' 'segmentedpath' 'segmentedfg' 'segmentedfibergroup'}
         % Add the values to the correct row of the data matrix
         if strcmp('subnum',varargin{1})
@@ -164,6 +230,7 @@ switch(param)
             val1 = 1;
         end
         afq.files.fibers.segmented{subnum} = varargin{val1};
+        
     case {'cleanfgpath' 'cleanpath' 'cleanfg' 'cleanfibergroup'}
         % Add the values to the correct row of the data matrix
         if strcmp('subnum',varargin{1})
@@ -179,6 +246,7 @@ switch(param)
             val1 = 1;
         end
         afq.files.fibers.clean{subnum} = varargin{val1};
+        
     case{'tractprofiles' 'tractprofile'}
         % Add the values to the correct row of the data matrix
         if strcmp('subnum',varargin{1})
@@ -193,11 +261,60 @@ switch(param)
             % The first value will be in varargin{1}
             val1 = 1;
         end
+        
+        % See if a fiber group number was defined otherwise assume that it
+        % is for the mori groups in which case fgnum = 1:20.
+        argnum = find(strcmpi('fgnum',varargin));
+        if ~isempty(argnum)
+            fgnum = varargin{argnum+1};
+            % The first input that is a value will come after the
+            % definition of the fiber group number
+            val1 = argnum+2;
+        else
+            % If the fiber group number was not defined then assume that
+            % they are the mori groups meaning fiber group number 1 to 20.
+            fgnum = 1:length(varargin{val1});
+        end
+        
         % Loop over the number of tract profiles and assign them to the afq
         % structure
-        for jj = 1:length(varargin{val1})
-            afq.TractProfiles(subnum,jj) = varargin{val1}(jj);
+        col = 0;
+        for jj = fgnum
+            % put each tract profile in the apropriate colum of the tract
+            % profiles structure within the afq structure
+            col = col+1;
+            afq.TractProfiles(subnum,jj) = varargin{val1}(col);
         end
+        
+    case {'newfibergroup' 'newfg'}
+        % Add the name of the new fiber group without the file extension
+        afq.fgnames{end+1} = prefix(varargin{1});
+        % And add the path to it
+        for ii = 1:AFQ_get(afq,'numsubs')
+            afq.files.fibers.(prefix(varargin{1})){ii} = fullfile(afq.sub_dirs{ii},'fibers',varargin{1});
+        end
+        
+    case {'newroi'}
+        % Add the name of the new rois for a fiber group
+        afq.roi1names{end+1} = prefix(varargin{1});
+        afq.roi2names{end+1} = prefix(varargin{2});
+        
+    case {'runsubs' 'runsubjects'}
+        afq.runsubs = varargin{1};
+        % transpose if it's a column vector
+        if size(afq.runsubs,1) > size(afq.runsubs,2)
+            afq.runsubs = afq.runsubs';
+        end
+        
+    case {'outdir' 'outputdirectory'}
+        afq.params.outdir = varargin{1};
+    case {'outname' 'outputname'}
+        afq.params.outname = varargin{1};
+    case {'spatialnormalization' 'sn'}
+        afq.xform.sn(varargin{2}) = varargin{1};
+    case {'inversedeformation' 'invdef'}
+        afq.xform.invDef{varargin{2}} = varargin{1};
+
     otherwise
         error('Uknown afq parameter');
 end

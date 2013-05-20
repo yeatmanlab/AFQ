@@ -1,7 +1,7 @@
-function [alphaFWE statFWE clusterFWE stats] = AFQ_MultiCompCorrection(data,y,alpha, method)
+function [alphaFWE, statFWE, clusterFWE, stats] = AFQ_MultiCompCorrection(data,y,alpha, method)
 % Compute a multiple comparison correction for Tract Profile data
 %
-%   [alphaFWE statFWE clusterFWE] = AFQ_MultiCompCorrection(data,y,alpha, method)
+%   [alphaFWE, statFWE, clusterFWE, stats] = AFQ_MultiCompCorrection(data,y,alpha, method)
 %
 % There are 2 multiple comparison corrections implemented. Both account for
 % the correlation structure in the data but in different ways.
@@ -36,8 +36,8 @@ function [alphaFWE statFWE clusterFWE stats] = AFQ_MultiCompCorrection(data,y,al
 %            grouping variable for which pointwise statistics will be
 %            computed on the Tract Profile and the p-value adjusted for
 %            mulltiple comparisons will be determined.  If y is a
-%            continuous variable the correlations will be computed. If y is
-%            a binary vector then T-tests will be computed.
+%            continuous variable then correlations will be computed. If y 
+%            is a binary vector then T-tests will be computed.
 % alpha    = The desired alpha (pvalue) to adjust
 % method   = 'permutation' or 'chevrud'. We strongly recomend 'permutation'
 %
@@ -75,6 +75,8 @@ if ~exist('y','var') || isempty(y)
 elseif length(y)==sum(y==0 | y==1) || length(y)==sum(y==1 | y==2)
     y = logical(y);
     stattest = 'ttest';
+else
+    stattest = 'corr';
 end
 
 switch(method)

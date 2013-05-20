@@ -1,6 +1,8 @@
 function [Lnorm Lmm]=AFQ_FiberLengthHist(fg, showHist)
 % Calculate the distribution of fiber lengths for a fiber group
 %
+% [Lnorm Lmm]=AFQ_FiberLengthHist(fg, [showHist = fales])
+%
 % Inputs:
 % fg       = The input fiber group
 % showHist = 0 Don't display a histagram of lengths, 1 do display histogram
@@ -16,7 +18,7 @@ if ~exist('fg','var') || isempty(fg) || ~isfield(fg,'fibers') || isempty(fg.fibe
     Lnorm=[]; Lmm=[];
     return
 end
-if ~exist('showHIst','var') || isempty(showHist)
+if ~exist('showHist','var') || isempty(showHist)
     showHist = 0; %Default to not showing a figure
 end
 % Calculate the length in mm of each fiber in the fiber group

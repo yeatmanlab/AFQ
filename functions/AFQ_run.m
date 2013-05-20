@@ -79,9 +79,17 @@ function [afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs,
 % Brian A. Wandell and Robert F. Dougherty
 
 %% Check Inputs
-if notDefined('sub_dirs'), error('No subject directories');  end
+if notDefined('sub_dirs') && exist('afq','var') && ~isempty(afq)
+    sub_dirs = AFQ_get(afq,'sub_dirs');
+elseif notDefined('sub_dirs')
+    error('No subject directories');
+end
 if ~iscell(sub_dirs), sub_dirs = cellstr(sub_dirs); end
-if ~exist('sub_group', 'var') || isempty(sub_group), error('Must define subject group'); end
+if notDefined('sub_group') && exist('afq','var') && ~isempty(afq)
+    sub_group = AFQ_get(afq,'sub_group');
+elseif notDefined('sub_group')
+    error('Must define subject group');
+end
 if length(sub_group) ~= size(sub_dirs,1) && length(sub_group) ~= size(sub_dirs,2)
     error('Mis-match between subject group description and subject data directories');
 end
@@ -95,8 +103,12 @@ end
 if isempty(afq.sub_dirs)
     afq = AFQ_set(afq,'sub_dirs',sub_dirs);
 end
+% Check which subjects should be run
+runsubs = AFQ_get(afq,'run subjects');
+% Define the name of the segmented fiber group
+segName = AFQ_get(afq,'segfilename');
 %%  Loop over every subject
-for ii=1:length(sub_dirs)
+for ii = runsubs
     % Define the current subject to process
     afq = AFQ_set(afq,'current subject',ii);
     
@@ -145,9 +157,18 @@ for ii=1:length(sub_dirs)
         % Segment fiber file
         fg_classified = AFQ_SegmentFiberGroups(dtFile, fg);
         % Save segmented fiber group
-        dtiWriteFiberGroup(fg_classified, fullfile(fibDir,'MoriGroups.mat'));
+        dtiWriteFiberGroup(fg_classified, fullfile(fibDir,segName));
+        % If the full trajectory of each fiber group will be analyzed (eg.
+        % from cortical start to endpoint) then all fibers that terminate
+        % before cortex will be removed and each fiber within a group will
+        % be flipped so that startpoints and endpoints are consistent
+        % within the group
+        if AFQ_get(afq,'clip2rois') == 0
+            fg_classified = AFQ_DefineFgEndpoints(fg_classified, [], [], dt);
+            dtiWriteFiberGroup(fg_classified, fullfile(fibDir,segName));
+        end
         % Set the path to the fibers in the afq structure
-        afq = AFQ_set(afq, 'segmented fg path', 'subnum', ii, fullfile(fibDir,'MoriGroups.mat'));
+        afq = AFQ_set(afq, 'segmented fg path', 'subnum', ii, fullfile(fibDir,segName));
         % Segemented fiber group is already in memory and does not need to
         % be loaded
         loadSegmentation = 0;
@@ -166,7 +187,7 @@ for ii=1:length(sub_dirs)
     if afq.params.cleanFibers == 1 && AFQ_get(afq, 'do cleaning', ii) == 1
         % Load segmented fiber group if necessary
         if loadSegmentation == 1
-            fg_classified = dtiLoadFiberGroup(fullfile(fibDir,'MoriGroups.mat'));
+            fg_classified = dtiLoadFiberGroup(fullfile(fibDir, segName));
         end
         % Remove all fibers that are too long and too far from the core of
         % the group.  This algorithm will constrain the fiber group to
@@ -197,28 +218,31 @@ for ii=1:length(sub_dirs)
             end
         end
         % Save cleaned fibers
-        cleanFgName = fullfile(fibDir,['MoriGroups_clean_D' num2str(afq.params.maxDist) '_L'  num2str(afq.params.maxLen) '.mat']);
+        cleanFgName = fullfile(fibDir,[prefix(segName) '_clean_D' num2str(afq.params.maxDist) '_L'  num2str(afq.params.maxLen) '.mat']);
         dtiWriteFiberGroup(fg_clean, cleanFgName);
         % Set the path to the fibers in the afq structure
         afq = AFQ_set(afq, 'clean fg path', 'subnum', ii, cleanFgName);
         % Convert fiber group back to a 1 cell structure for future
         % computations
-        fg_classified = dtiFgArrayToFiberGroup(fg_clean, 'MoriGroups');
+        fg_classified = dtiFgArrayToFiberGroup(fg_clean, segName);
         
     elseif afq.params.cleanFibers == 1
         % If cleaning was already done then load the cleaned fiber group
         fprintf('\nFiber tract cleaning was already done for subject %s',sub_dirs{ii});
         fg_classified = AFQ_get(afq, 'cleaned fibers',ii);
-        fg_classified = dtiFgArrayToFiberGroup(fg_classified, 'MoriGroups');  
+        fg_classified = dtiFgArrayToFiberGroup(fg_classified, AFQ_get(afq,'cleanfgname',ii));  
     end
     
     %% Compute Tract Profiles
     
     if AFQ_get(afq,'compute profiles',ii)
         fprintf('\nComputing Tract Profiles for subject %s',sub_dirs{ii});
+        % Determine how much to weight each fiber's contribution to the
+        % measurement at the tract core. Higher values mean steaper falloff
+        fWeight = AFQ_get(afq,'fiber weighting');
         % By default Tract Profiles of diffusion properties will always be
         % calculated
-        [fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg_classified, dt, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii});
+        [fa, md, rd, ad, cl, vol, TractProfile] = AFQ_ComputeTractProperties(fg_classified, dt, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii}, fWeight, afq);
         
         % Parameterize the shape of each fiber group with calculations of
         % curvature and torsion at each point and add it to the tract
@@ -228,23 +252,12 @@ for ii=1:length(sub_dirs)
         % Calculate the volume of each Tract Profile
         TractProfile = AFQ_TractProfileVolume(TractProfile);
         
-        % Take the stats that were calculated in the previous function and add
-        % them to a sructure for the full sample of subjects.  Each fiber group
-        % has its own cell. Within each cell there is a row for each subject with
-        % numberofnodes columns
-        % TODO: make object oriented and get rid of this
-        for jj = 1:20
-            groupFA{jj}(ii,:) = fa(:, jj);
-            groupMD{jj}(ii,:) = md(:, jj);
-            groupRD{jj}(ii,:) = rd(:, jj);
-            groupAD{jj}(ii,:) = ad(:, jj);
-            groupCL{jj}(ii,:) = cl(:, jj);
-        end
         % Add values to the afq structure
         afq = AFQ_set(afq,'vals','subnum',ii,'fa',fa,'md',md,'rd',rd,...
-            'ad',ad,'cl',cl,'curvature',curv,'torsion',tors);
+            'ad',ad,'cl',cl,'curvature',curv,'torsion',tors,'volume',vol);
+        
         % Add Tract Profiles to the afq structure
-        afq = AFQ_set(afq,'tract profile',TractProfile);
+        afq = AFQ_set(afq,'tract profile','subnum',ii,TractProfile);
         
         % If any other images were supplied calculate a Tract Profile for that
         % parameter
@@ -254,7 +267,7 @@ for ii=1:length(sub_dirs)
                 % Read the image file
                 image = readFileNifti(afq.files.images(jj).path{ii});
                 % Compute a Tract Profile for that image
-                imagevals = AFQ_ComputeTractProperties(fg_classified, image, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii});
+                imagevals = AFQ_ComputeTractProperties(fg_classified, image, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii}, fWeight, afq);
                 % Add values to the afq structure
                 afq = AFQ_set(afq,'vals','subnum',ii,afq.files.images(jj).name, imagevals);
                 clear imagevals
@@ -263,26 +276,42 @@ for ii=1:length(sub_dirs)
     else
         fprintf('\nTract Profiles already computed for subject %s',sub_dirs{ii});
     end
+    
+    % Save each iteration of afq run if an output directory was defined
+    if ~isempty(AFQ_get(afq,'outdir')) && exist(AFQ_get(afq,'outdir'),'dir')
+        if ~isempty(AFQ_get(afq,'outname'))
+            outname = fullfile(AFQ_get(afq,'outdir'),AFQ_get(afq,'outname'));
+        else
+            outname = fullfile(AFQ_get(afq,'outdir'),['afq_' date]);
+        end
+        save(outname,'afq');
+    end
+    
+    % clear the files that were computed for this subject
+    clear fg fg_classified TractProfile
 end
 
-%% Generate Control Group Norms
+%% Compute Control Group Norms
 
-% If no control group was entered then norms will only contain nans.
-[norms patient_data control_data afq] = AFQ_ComputeNorms(afq);
+% Check if norms should be computed
+if AFQ_get(afq,'computenorms')
+    % If no control group was entered then norms will only contain nans.
+    [norms, patient_data, control_data, afq] = AFQ_ComputeNorms(afq);
+end
 
 %% Identify Patients With Abnormal Diffusion Measurements
 
 property = 'FA';
 % Only run AFQ_ComparePatientsToNorms if norms were computed for the
 % property of interest for each tract
-if sum(isnan(eval(['norms.mean' property '(1,:)']))) == 20
+if AFQ_get(afq,'computenorms') == 0 || sum(isnan(eval(['norms.mean' property '(1,:)']))) == 20
     fprintf('\nnorms are empty. skipping AFQ_ComparePatientsToNorms\n')
     % If there are no norms than we can not identify which subjects are
     % abnormal.  Hence these variables will be set to nan.
     abn       = nan(length(sub_dirs),1);
     abnTracts = nan(length(sub_dirs),20);
 elseif AFQ_get(afq,'number of patients') >=1
-    [abn abnTracts] = AFQ_ComparePatientsToNorms(patient_data, norms, afq.params.cutoff, property);
+    [abn, abnTracts] = AFQ_ComparePatientsToNorms(patient_data, norms, afq.params.cutoff, property);
 else
     abn = nan;
     abnTracts = nan;
@@ -290,7 +319,7 @@ end
 %% Plot Abnormal Patients Against Control Population
 
 % Only plot if norms were computed for each tract
-if sum(isnan(eval(['norms.mean' property '(1,:)']))) == 20
+if AFQ_get(afq,'computenorms') == 0 || sum(isnan(eval(['norms.mean' property '(1,:)']))) == 20
     fprintf('\nnorms are empty. Skipping AFQ_plot\n')
 elseif ~exist('abn','var') || sum(isnan(abn))==1
     fprintf('\nNo patients. Skipping AFQ_plot\n')

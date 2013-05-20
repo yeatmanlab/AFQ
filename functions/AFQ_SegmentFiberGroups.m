@@ -1,13 +1,17 @@
 function [fg_classified,fg_unclassified,classification,fg] = ...
     AFQ_SegmentFiberGroups(dt6File, fg, Atlas, ...
     useRoiBasedApproach, useInterhemisphericSplit)
-% Categorizes each fiber in a group based on Mori white matter atlas. 
+% Categorizes each fiber in a group into one of the 20 tracts defined in
+% the Mori white matter atlas. 
 %
-%  [fg_classified,fg_unclassified]= AFQ_SegmentFiberGroups(dt6File, fg, ...
-%      [Atlas='MNI_JHU_tracts_prob.nii.gz'], ...
-%      [useRoiBasedApproach=true] ...
-%      [useInterhemisphericSplit=true]);
+%  [fg_classified, fg_unclassified, classification, fg] = ...
+%      AFQ_SegmentFiberGroups(dt6File, fg, [Atlas='MNI_JHU_tracts_prob.nii.gz'], ...
+%      [useRoiBasedApproach=true], [useInterhemisphericSplit=true]);
 %
+%  Fibers are segmented in two steps. Fibers become candidates for a fiber
+%  group if the pass through the 2 waypoint ROIs that define the
+%  tracjectory of the tract. Then each fiber is compared to a fiber
+%  proability map and high probability fibers are retained in the group.
 %  The segmentation alogrithm is based on:
 %
 %  Hua K, Zhang J, Wakana S, Jiang H, Li X, Reich DS, Calabresi PA, Pekar
@@ -87,7 +91,7 @@ function [fg_classified,fg_unclassified,classification,fg] = ...
 % fg              - This is the origional pre-segmented fiber group.  It
 %                   may differ slightly from the input due to preprocessing
 %                   (eg splitting fibers that cross at the pons, removing 
-%                   fibers that a too short)
+%                   fibers that are too short)
 %                    
 % Example:
 %    AFQdata = '/home/jyeatman/matlab/svn/vistadata/AFQ';
@@ -145,9 +149,6 @@ if ~exist('fg','var') || isempty(fg)
 end
 % Load fiber group - Can be filename or the data
 if ischar(fg), fg = dtiLoadFiberGroup(fg); end
-% Create an array that will denote which fiber group each of these fibers
-% was assigned to.
-fiberIndex = zeros(length(fg.fibers),1);
 % Set the directory where templates can be found
 tdir = fullfile(fileparts(which('mrDiffusion.m')), 'templates');
 % Initialize spm defualts for normalization
@@ -180,8 +181,11 @@ moriTracts = readFileNifti(fullfile(tdir, Atlas));
 moriTracts.data(:,:,:,15) = moriTracts.data(:,:,:,15)-moriTracts.data(:,:,:,19);
 moriTracts.data(:,:,:,16) = moriTracts.data(:,:,:,16)-moriTracts.data(:,:,:,20);
 % Load the fiber group labels
-labels = readTab(fullfile(tdir,'MNI_JHU_tracts_prob.txt'),',',false);
-labels = labels(1:20,2);
+%labels = readTab(fullfile(tdir,'MNI_JHU_tracts_prob.txt'),',',false);
+%labels = labels(1:20,2);
+labels = {'Left Thalamic Radiation','Right Thalamic Radiation','Left Corticospinal','Right Corticospinal', 'Left Cingulum Cingulate', 'Right Cingulum Cingulate'...
+    'Left Cingulum Hippocampus','Right Cingulum Hippocampus', 'Callosum Forceps Major', 'Callosum Forceps Minor'...
+    'Left IFOF','Right IFOF','Left ILF','Right ILF','Left SLF','Right SLF','Left Uncinate','Right Uncinate','Left Arcuate','Right Arcuate'};
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 % If you wanted to inverse-normalize the maps to this subject's brain:
@@ -375,8 +379,14 @@ for(ii=1:numel(curAtlasFibers))
     fg_classified.subgroupNames(ii)=struct('subgroupIndex', ii, 'subgroupName', labels(ii));
     %fghandle.subgroupNames(ii)=struct('subgroupIndex', ii, 'subgroupName', labels(ii));
 end
+% The number of fibers in the origional preprocessed fiber group (fg) is
+% equalt to the number of fibers in fg_classified + fg_unclassified. To
+% create a new structure denoting the classification of each fiber group in
+% the origional structure first preallocate an array the length of the
+% origional (preprocessed) fiber group.
+fiberIndex = zeros(length(fg.fibers),1);
 
-% Create a structure denoting the fiber group number that each fiber in
+% Populate the structure denoting the fiber group number that each fiber in
 % the origional wholebrain group was assigned to
 for ii = 1 : length(curAtlasFibers)
     fiberIndex(curAtlasFibers{ii}) = ii;
@@ -386,6 +396,11 @@ end
 % Create a structure with fiber indices and group names.
 classification.index = fiberIndex;
 classification.names = names;
+
+% % Flip fibers so that each fiber in a fiber group has the same start and
+% % endponts
+% 
+% fg_classified = AFQ_DefineFgEndpoints(fg_classified,[],[],dt,[],invDef);
 
 return;
 

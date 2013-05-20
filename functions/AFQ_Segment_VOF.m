@@ -1,6 +1,14 @@
-function [vofFG vofROI1 vofROI2] = AFQ_Segment_VOF(dt, wholebrainFG, varargin)
-% Define the vertical occipital fasciculus from a wholebrain fiber group
+function [vofFG, vofROI1, vofROI2] = AFQ_Segment_VOF(dt, wholebrainFG, varargin)
+% THIS FUNCTION IS STILL BEING DEVELOPED
+% Define the vertical occipital fasciculus from a wholebrain fiber group.
+%
+% [vofFG, vofROI1, vofROI2] = AFQ_Segment_VOF(dt, wholebrainFG);
+%
+% 
+% Copyright Jason D Yeatman and Hiromasa Takamura, December 2012
 
+
+%% Argument checking
 if ischar(dt)
     dt = dtiLoadDt6(dt);
 end
@@ -23,8 +31,10 @@ tdir = fullfile(fileparts(which('mrDiffusion.m')), 'templates');
 template = fullfile(tdir,'MNI_EPI.nii.gz');
 
 % Path to the VOF ROIs in MNI space
-vof_roi_1 = '/Users/jyeatman/git/AFQ/templates/L_VOF_ROI1.nii.gz';
-vof_roi_2 = '/Users/jyeatman/git/AFQ/templates/L_VOF_ROI2.nii.gz';
+AFQbase = AFQ_directories;
+AFQtemplates = fullfile(AFQbase,'templates');
+vof_roi_1 = fullfile(AFQtemplates,'L_VOF_ROI1.nii.gz');
+vof_roi_2 = fullfile(AFQtemplates,'L_VOF_ROI2.nii.gz');
 
 % Compute spatial normalization
 if ~exist('invDef','var') || isempty(invDef)
