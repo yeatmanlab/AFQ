@@ -1,9 +1,10 @@
-function afq = AFQ_AddNewFiberGroup(afq,fgName,roi1Name,roi2Name,cleanFibers,computeVals,showFibers,segFgName)
+function afq = AFQ_AddNewFiberGroup(afq,fgName,roi1Name,roi2Name,cleanFibers,computeVals,showFibers,segFgName,overwrite)
 % THIS FUNCTION IS STILL BEING DEVELOPED
 % Add new fiber groups from any segmentation proceedure to an afq structure
 %
 % afq = AFQ_AddNewFiberGroup(afq, fgName, roi1Name, roi2Name, [cleanFibers = true], ...
-%          [computeVals = true], [showFibers = false], [segFgName = 'WholeBrainFG.mat'])
+%          [computeVals = true], [showFibers = false], [segFgName = 'WholeBrainFG.mat'] ...
+%          [overwrite = false])
 %
 % By default AFQ_run will segment the 20 fiber groups defined in the Mori
 % white matter atlas and save all the relevant information in the afq
@@ -50,12 +51,15 @@ function afq = AFQ_AddNewFiberGroup(afq,fgName,roi1Name,roi2Name,cleanFibers,com
 %              group (eg. for the callosum). If you would like to use
 %              another fiber group you can supply it's name here otherwise
 %              WholeBrainFG.mat will be used
+% overwrite  - Whether or not to overwrite previously computed files
 %
 %
 % Copyright Jason D. Yeatman November 2012
 
 %% Argument checking
-
+if ~exist('overwrite','var') || isempty(overwrite)
+    overwrite = false;
+end
 if ~isafq(afq)
     error('Please enter an afq structure')
 end
@@ -125,19 +129,26 @@ if xformRois == 1
         dtpath = AFQ_get(afq,'dt6path',ii); dt = dtiLoadDt6(dtpath);
         % Subject's directory
         sdir = fileparts(dtpath);
-        % Check if there is a precomputed spatial normalization.
-        % Otherwise compute spatial normalization 
-        sn = AFQ_get(afq,'spatial normalization',ii);
-        if isempty(sn)
-            [sn, Vtemplate, invDef] = mrAnatComputeSpmSpatialNorm(dt.b0, dt.xformToAcpc, template);
+        % Check if the ROIs already exist
+        if ~exist(fullfile(sdir,'ROIs',roi1Name),'file') || ...
+                ~exist(fullfile(sdir,'ROIs',roi2Name),'file') ||...
+                overwrite == 1
+            % Check if there is a precomputed spatial normalization.
+            % Otherwise compute spatial normalization
+            sn = AFQ_get(afq,'spatial normalization',ii);
+            if isempty(sn)
+                [sn, Vtemplate, invDef] = mrAnatComputeSpmSpatialNorm(dt.b0, dt.xformToAcpc, template);
+            end
+            % Load up template ROIs in MNI space and transform them to the subjects
+            % native space.
+            [~, ~, roi1]=dtiCreateRoiFromMniNifti(dt.dataFile, Troi1, invDef, 0);
+            [~, ~, roi2]=dtiCreateRoiFromMniNifti(dt.dataFile, Troi2, invDef, 0);
+            % Save the ROIs as .mat files
+            dtiWriteRoi(roi1,fullfile(sdir,'ROIs',roi1Name));
+            dtiWriteRoi(roi2,fullfile(sdir,'ROIs',roi2Name));
+        else
+            fprintf('\n %s and %s exist for subject %d',roi1Name,roi2Name,ii)
         end
-        % Load up template ROIs in MNI space and transform them to the subjects
-        % native space.
-        [~, ~, roi1]=dtiCreateRoiFromMniNifti(dt.dataFile, Troi1, invDef, 0);
-        [~, ~, roi2]=dtiCreateRoiFromMniNifti(dt.dataFile, Troi2, invDef, 0);
-        % Save the ROIs as .mat files
-        dtiWriteRoi(roi1,fullfile(sdir,'ROIs',roi1Name));
-        dtiWriteRoi(roi2,fullfile(sdir,'ROIs',roi2Name));
     end
 end
 
@@ -238,6 +249,11 @@ for ii = 1:AFQ_get(afq,'numsubs')
         % curvature and torsion at each point and add it to the tract
         % profile
         [curv, tors, TractProfile] = AFQ_ParamaterizeTractShape(fg_classified, TractProfile);
+        % Fill these variables with nans if they come out empty. This will
+        % happen if the tract profile is empty for this subject
+        if isempty(curv) || isempty(tors)
+            curv = nan(size(fa)); tors = nan(size(fa));
+        end
         
         % Calculate the volume of each Tract Profile
         TractProfile = AFQ_TractProfileVolume(TractProfile);
