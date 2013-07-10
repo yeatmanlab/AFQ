@@ -18,8 +18,8 @@ end
 % each subject
 for ii = 1:AFQ_get(afq,'numsubs')
     % Set up paths to the fiber group and ROI
-    fgPath = fullfile(afq.sub_dirs{ii},'fibers',ccFg.name);
-    roiPath = fullfile(afq.sub_dirs{ii},'ROIs',ccRoi.name);
+    fgPath = fullfile(afq.sub_dirs{ii},'fibers','callosumFG.mat');
+    roiPath = fullfile(afq.sub_dirs{ii},'ROIs','callosum.mat');
     if ~exist(fgPath,'file') || ~exist(roiPath,'file') || overwriteFiles==1
         % Load Dt6
         dt = dtiLoadDt6(AFQ_get(afq,'dt6path',ii));
