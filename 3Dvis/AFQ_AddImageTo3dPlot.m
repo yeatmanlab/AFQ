@@ -214,9 +214,9 @@ newDim = oldDim .* scale(find(plane == 0))';
 image = double(imresize(image,newDim));
 
 if ~exist('thresh','var') || isempty(thresh)
-    % Scale and clip the image values so that the lowest 25% of the values are
-    % zeroed, the top 5% are maxed and the range is 0 to 255
-    image = uint8(mrAnatHistogramClip(image,.25,.95,1).* 255);
+    % Scale and clip the image values so that the lowest 1% of the values are
+    % zeroed, the top 1% are maxed and the range is 0 to 255
+    image = uint8(mrAnatHistogramClip(image,.01,.99,1).* 255);
 else
     % If a threshold was defined then change values below that threshold to nan
     nanindx = image < thresh(1);
