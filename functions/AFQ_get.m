@@ -57,6 +57,7 @@ function val = AFQ_get(afq, param, varargin)
 % 'segfilename'           - 
 % 'spatial normalization' - [subject number]
 % 'inverse deformation'   - [subject number]
+% 'use ANTS'
 % To get any of the parameters save in the afq structure (see AFQ_Create),
 % enter the name of the parameter. Some have not been implimented yet, but
 % will be soon.
@@ -350,11 +351,20 @@ switch(param)
         catch
             val = [];
         end
-    case {'sinversedeformation' 'invdef'}
+    case {'inversedeformation' 'invdef'}
         try
             val = afq.xform.invDef(varargin{1});
         catch
             val = [];
+        end
+    case {'useants'}
+        if isfield(afq.params,'normalization') && ...
+                isfield(afq.software,'ants') && ...
+                strcmp(afq.params.normalization,'ants') && ...
+                afq.software.ants == 1;
+            val = true;
+        else
+            val = false;
         end
     otherwise
         error('Uknown afq parameter');

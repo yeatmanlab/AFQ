@@ -76,6 +76,12 @@ function afq = AFQ_set(afq,param,varargin)
 % 'inverse deformation'   - Save a subject's inverse spatial normalization
 %                           parameters (invDef).   
 %                           varargin = invDef, subject number
+% 'ants warp'             - Save the path to a subject's spatial 
+%                           normalization computed with ANTS
+%                           varargin = 'path to warp.nii.gz', subject number
+% 'ants inverse warp'     - Save the path to a subject's inverse spatial 
+%                           normalization computed with ANTS
+%                           varargin = 'path to InverseWarp.nii.gz', subject number
 % Example:
 %
 % afq = AFQ_set(afq, 'segemented fg path','subnum',10,'/data/sub10/fibers/'Morigroups.mat')
@@ -314,7 +320,10 @@ switch(param)
         afq.xform.sn(varargin{2}) = varargin{1};
     case {'inversedeformation' 'invdef'}
         afq.xform.invDef{varargin{2}} = varargin{1};
-
+    case {'antswarp' 'ants'}
+        afq.xform.ants{varargin{2}} = varargin{1};
+    case {'antsinvwarp' 'antsinversewarp' 'antsinv'}
+        afq.xform.antsinv{varargin{2}} = varargin{1};
     otherwise
         error('Uknown afq parameter');
 end

@@ -74,11 +74,14 @@ afq.TractProfiles = AFQ_CreateTractProfile;
 %% Attatch a field for spatial normalization
 afq.xform.sn = [];
 afq.xform.invDef = [];
+afq.xform.ants = [];
+afq.xform.antsinv = [];
 
 %% Check which software packages are installed
 afq.software.mrvista = check_mrvista;
 afq.software.mrtrix = check_mrTrix;
 afq.software.spm = check_spm;
+afq.software.ants = check_ants;
 
 %% Set the afq.params structure with default parameters
 %  cutoff: The percentile cutoff to be used to determine what is "abnormal"
@@ -139,6 +142,9 @@ afq.params.savefigs = false;
 afq.params.computeCSD = 0;
 % Whether or not to comput control group norms
 afq.params.computenorms = 1;
+% Which software package to use for normalization
+afq.params.normalization = 'spm';
+
 %% AFQ Fiber Tracking parameters
 % Do fiber tracking with mrdiffusion by default. The other option is
 % 'mrtrix' if it is installed and the data is HARDI
