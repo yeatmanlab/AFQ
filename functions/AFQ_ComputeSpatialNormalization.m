@@ -1,4 +1,4 @@
-function AFQ_ComputeSpatialNormalization(afq)
+function afq = AFQ_ComputeSpatialNormalization(afq)
 % Compute spatial normalization to MNI template for each subject
 
 

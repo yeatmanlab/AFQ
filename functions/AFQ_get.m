@@ -58,6 +58,7 @@ function val = AFQ_get(afq, param, varargin)
 % 'spatial normalization' - [subject number]
 % 'inverse deformation'   - [subject number]
 % 'use ANTS'
+% 'ants inverse warp'     - [subject number]
 % To get any of the parameters save in the afq structure (see AFQ_Create),
 % enter the name of the parameter. Some have not been implimented yet, but
 % will be soon.
@@ -366,6 +367,13 @@ switch(param)
         else
             val = false;
         end
+    case {'antsinvwarp' 'antsinv' 'antsinversewarp'}
+        try 
+            val = afq.xform.antsinv{varargin{1}}
+        catch
+            val = [];
+        end
+                
     otherwise
         error('Uknown afq parameter');
 end

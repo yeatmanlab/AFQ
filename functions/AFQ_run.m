@@ -107,6 +107,13 @@ end
 runsubs = AFQ_get(afq,'run subjects');
 % Define the name of the segmented fiber group
 segName = AFQ_get(afq,'segfilename');
+
+% If ANTS is installed on the system then precompute spatial normalization
+% with ANTS and save to the afq structure
+if AFQ_get(afq, 'use ANTS')
+    afq = AFQ_ComputeSpatialNormalization(afq);
+end
+
 %%  Loop over every subject
 for ii = runsubs
     % Define the current subject to process
@@ -121,6 +128,9 @@ for ii = runsubs
     dtFile = fullfile(sub_dirs{ii},'dt6.mat');
     dt     = dtiLoadDt6(dtFile);
     
+    % If ANTS was used to compute a spatial normalization then load it for
+    % this subject
+    antsInvWarp = AFQ_get(afq,'ants inverse warp',ii);
     %% Perform Whole Brain Streamlines Tractography
     
     %Check if there is a fibers directory, otherwise make one.
@@ -155,7 +165,7 @@ for ii = runsubs
             fg = AFQ_get(afq,'wholebrain fiber group',ii);
         end
         % Segment fiber file
-        fg_classified = AFQ_SegmentFiberGroups(dtFile, fg);
+        fg_classified = AFQ_SegmentFiberGroups(dtFile, fg, [], [], antsInvWarp);
         % Save segmented fiber group
         dtiWriteFiberGroup(fg_classified, fullfile(fibDir,segName));
         % If the full trajectory of each fiber group will be analyzed (eg.

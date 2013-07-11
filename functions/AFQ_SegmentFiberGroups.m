@@ -1,12 +1,12 @@
 function [fg_classified,fg_unclassified,classification,fg] = ...
     AFQ_SegmentFiberGroups(dt6File, fg, Atlas, ...
-    useRoiBasedApproach, useInterhemisphericSplit)
+    useRoiBasedApproach, useInterhemisphericSplit, antsInvWarp)
 % Categorizes each fiber in a group into one of the 20 tracts defined in
 % the Mori white matter atlas. 
 %
 %  [fg_classified, fg_unclassified, classification, fg] = ...
 %      AFQ_SegmentFiberGroups(dt6File, fg, [Atlas='MNI_JHU_tracts_prob.nii.gz'], ...
-%      [useRoiBasedApproach=true], [useInterhemisphericSplit=true]);
+%      [useRoiBasedApproach=true], [useInterhemisphericSplit=true], [antsInvWarp]);
 %
 %  Fibers are segmented in two steps. Fibers become candidates for a fiber
 %  group if the pass through the 2 waypoint ROIs that define the
@@ -67,6 +67,10 @@ function [fg_classified,fg_unclassified,classification,fg] = ...
 %                           you do not need to recompute ROIs.  E.g., to
 %                           avoid recomputing  ROIs and use minDist of 4mm
 %                           one would pass [useRoiBasedApproach=[4 0]];
+%  antsInvWarp              - Spatial normalization computed with ANTS. If
+%                           a path to a precomputed ANTS warp is passed in
+%                           then it will be used to transform the MNI ROIs
+%                           to native space
 %
 % Output parameters:
 % fg_ classified  - fibers structure containing all fibers assigned to
@@ -290,7 +294,14 @@ if useRoiBasedApproach
         ROI_img_file=fullfile(tdir, 'MNI_JHU_tracts_ROIs',  [moriRois{roiID, 1}]);
         % Transform ROI-1 to an individuals native space
         if recomputeROIs
-            [RoiFileName, invDef, roi]=dtiCreateRoiFromMniNifti(dt6File, ROI_img_file, invDef, true);
+            % Default is to use the spm normalization unless a superior
+            % ANTS normalization was passed in
+            if exist('antsInvWarp','var') && ~isempty(antsInvWarp)
+                outfile = fullfile(fileparts(dt6File),'ROIs',moriRois{roiID, 1});
+                roi = ANTS_CreateRoiFromMniNifti(ROI_img_file, antsInvWarp, [], outfile);
+            else
+                [RoiFileName, invDef, roi]=dtiCreateRoiFromMniNifti(dt6File, ROI_img_file, invDef, true);
+            end
         else
             RoiFileName=fullfile(fileparts(dt6File), 'ROIs',  [prefix(prefix(ROI_img_file, 'short'), 'short') '.mat']);
             load(RoiFileName);  
@@ -303,6 +314,15 @@ if useRoiBasedApproach
         % Transform ROI-2 to an individuals native space
         if recomputeROIs
             [RoiFileName, invDef, roi]=dtiCreateRoiFromMniNifti(dt6File, ROI_img_file, invDef, true);
+            % Default is to use the spm normalization unless a superior
+            % ANTS normalization was passed in
+            if exist('antsInvWarp','var') && ~isempty(antsInvWarp)
+                outfile = fullfile(fileparts(dt6File),'ROIs',moriRois{roiID, 2});
+                roi = ANTS_CreateRoiFromMniNifti(ROI_img_file, antsInvWarp, [], outfile);
+            else
+                [RoiFileName, invDef, roi]=dtiCreateRoiFromMniNifti(dt6File, ROI_img_file, invDef, true);
+            end
+            
         else
             RoiFileName=fullfile(fileparts(dt6File), 'ROIs',  [prefix(prefix(ROI_img_file, 'short'), 'short') '.mat']);
             load(RoiFileName);

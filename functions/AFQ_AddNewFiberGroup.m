@@ -136,6 +136,7 @@ if xformRois == 1
             % Check if there is a precomputed spatial normalization.
             % Otherwise compute spatial normalization
             sn = AFQ_get(afq,'spatial normalization',ii);
+            invDef = AFQ_get(afq, 'invdef',ii);
             if isempty(sn)
                 [sn, Vtemplate, invDef] = mrAnatComputeSpmSpatialNorm(dt.b0, dt.xformToAcpc, template);
             end
