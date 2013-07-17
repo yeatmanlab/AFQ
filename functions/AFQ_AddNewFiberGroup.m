@@ -136,7 +136,8 @@ if xformRois == 1
             % Check if there is a precomputed spatial normalization.
             % Otherwise compute spatial normalization
             sn = AFQ_get(afq,'spatial normalization',ii);
-            if isempty(sn)
+            invDef = AFQ_get(afq,'inverse deformation',ii);
+            if isempty(sn) || isempty(invDef)
                 [sn, Vtemplate, invDef] = mrAnatComputeSpmSpatialNorm(dt.b0, dt.xformToAcpc, template);
             end
             % Load up template ROIs in MNI space and transform them to the subjects
