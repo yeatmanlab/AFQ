@@ -64,7 +64,7 @@ segFgName = 'callosumFG.mat';
 %% Segment callosum into it's different projections and add to afq struct
 
 for ii = 1:length(fgNames)
-    afq = AFQ_AddNewFiberGroup(afq,fgNames{ii},roi1Names{ii},roi2Names{ii},1,1,0,segFgName);
+    afq = AFQ_AddNewFiberGroup(afq,fgNames{ii},roi1Names{ii},roi2Names{ii},1,1,0,segFgName,overwriteFiles);
 end
 
 %% Render montage of callosal fiber groups

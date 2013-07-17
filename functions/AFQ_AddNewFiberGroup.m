@@ -155,7 +155,7 @@ end
 
 %% Segment the fiber groups if they don't exist
 for ii = 1:AFQ_get(afq,'numsubs')
-    if ~exist(AFQ_get(afq,[prefix(fgName) 'path'],ii),'file')
+    if ~exist(AFQ_get(afq,[prefix(fgName) 'path'],ii),'file') || overwrite == 1
         % Load the wholebrain fiber group as default
         % or use another fiber group if desired (eg. callosum)
         segFgPath = fullfile(afq.sub_dirs{ii}, 'fibers', segFgName);
