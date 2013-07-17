@@ -19,12 +19,13 @@ end
 for ii = 1:AFQ_get(afq,'numsubs')
     % Set up paths to the fiber group and ROI
     fgPath = fullfile(afq.sub_dirs{ii},'fibers','callosumFG.mat');
-    roiPath = fullfile(afq.sub_dirs{ii},'ROIs','callosum.mat');
+    roiPath = fullfile(afq.sub_dirs{ii},'ROIs','callosum_rough.mat');
     if ~exist(fgPath,'file') || ~exist(roiPath,'file') || overwriteFiles==1
         % Load Dt6
         dt = dtiLoadDt6(AFQ_get(afq,'dt6path',ii));
         % Create an ROI of the corpus callosum
-        ccRoi = dtiNewRoi('callosum','r',dtiFindCallosum(dt.dt6,dt.b0,dt.xformToAcpc,.25,[],1));
+        %ccRoi = dtiNewRoi('callosum','r',dtiFindCallosum(dt.dt6,dt.b0,dt.xformToAcpc,.25,[],1));
+        [~,~,ccRoi]=dtiCreateRoiFromMniNifti(dt.dataFile, fullfile(AFQ_directories,'templates','callosum','callosum_rough.nii.gz'));
         % Load wholebrain fiber group
         wholebrainFg = AFQ_get(afq,'wholebrain fg', ii);
         % Create callosum fiber group
