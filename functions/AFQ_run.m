@@ -292,7 +292,7 @@ for ii = runsubs
         if ~isempty(AFQ_get(afq,'outname'))
             outname = fullfile(AFQ_get(afq,'outdir'),AFQ_get(afq,'outname'));
         else
-            outname = fullfile(AFQ_get(afq,'outdir'),['afq_' date]);
+            outname = fullfile(AFQ_get(afq,'outdir'),['afq_' date '_' ii]);
         end
         save(outname,'afq');
     end
