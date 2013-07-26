@@ -3,6 +3,11 @@ function afq = AFQ_run_sge(afq, numsubs)
 %
 % afq = AFQ_run_sge(afq, numsubs)
 
+% set a new outdir
+afq.params.outdir = fullfile(afq.params.outdir,'sge');
+if ~exist(afq.params.outdir)
+    mkdir(afq.params.outdir);
+end
 % Do not compute norms
 afq = AFQ_set(afq,'computenorms',0);
 % Get the number of subjects
@@ -19,3 +24,36 @@ for ii = numsubs
    % Process this subject on the grid
    sgerun2('AFQ_run([],[],afq);',sprintf('AFQ%d_%d',ii,round(rand*100)),1);
 end
+
+% Wait for them to be done
+done = 0;
+while done == 0
+   % wait 5 seconds
+    pause(5) 
+    % Check the job status
+    [~,stat] = system('qstat');
+    % Search for jobs with AFQ in the title
+    jobnums = strfind(stat,'AFQ');
+    if isempty(jobnums)
+        done = 1;
+    end
+end
+
+% Reconstruct AFQ structure
+afqfull = afq;
+for ii = numsubs
+    afqfile = dir(fullfile(afqfull.params.outdir,['afq*_' num2str(ii) '.mat']));
+    if ~isempty(afqfile)
+    load(fullfile(afq.params.outdir,afqfile.name));
+    afqfull = AFQ_CombineSgeRuns(afqfull, afq, ii);
+    else
+        fprintf('\nNo afq file found for subject %d',ii)
+    end
+end
+
+% reset the outdir
+afqfull.params.outdir = fileparts(afqfull.params.outdir);
+% reasign to output
+afq = afqfull;
+% save
+save(fullfile(afq.params.outdir,['AFQ_sge_' date]),'afq');
