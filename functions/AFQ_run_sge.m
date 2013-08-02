@@ -21,12 +21,15 @@ for ii = numsubs
    afq = AFQ_set(afq,'runsubs',ii);
    % Set the name of the saved file
    afq = AFQ_set(afq, 'outname', ['afq_' num2str(ii)]);
+   % Name the job
+   jobname{ii} = sprintf('AFQ%d_%d',ii,round(rand*1000));
    % Process this subject on the grid
-   sgerun2('AFQ_run([],[],afq);',sprintf('AFQ%d_%d',ii,round(rand*1000)),1);
+   sgerun2('AFQ_run([],[],afq);',jobname{ii},1);
 end
 
 % Wait for them to be done
 done = 0;
+fprintf('\n\n --Waiting for the grid to finish--\n\n')
 while done == 0
    % wait 5 seconds
     pause(5) 
@@ -59,3 +62,8 @@ afqfull.params.outdir = fileparts(afqfull.params.outdir);
 afq = afqfull;
 % save
 save(fullfile(afq.params.outdir,['AFQ_sge_' date]),'afq');
+
+%% Delete all the jobs to not waste space
+for ii = 1:length(jobname)
+    delete(fullfile('~/sgeoutput',['job_' jobname{ii} '*']));
+end

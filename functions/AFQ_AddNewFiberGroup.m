@@ -112,6 +112,9 @@ end
 if ~exist('xformRois','var') || isempty(xformRois)
     xformRois = 0;
 end
+% Check which subjects should be run
+runsubs = AFQ_get(afq,'run subjects');
+
 %% Add the new fiber groups and ROIs to the afq structure
 afq = AFQ_set(afq,'new fiber group', fgName);
 afq = AFQ_set(afq, 'new roi', roi1Name, roi2Name);
@@ -124,7 +127,7 @@ if xformRois == 1
     % Path to the templates directory
     tdir = fullfile(fileparts(which('mrDiffusion.m')), 'templates');
     template = fullfile(tdir,'MNI_EPI.nii.gz');
-    for ii = 1:AFQ_get(afq,'numsubs')
+    for ii = runsubs
         % Get the subject's dt6 file
         dtpath = AFQ_get(afq,'dt6path',ii); dt = dtiLoadDt6(dtpath);
         % Subject's directory
@@ -154,7 +157,7 @@ if xformRois == 1
 end
 
 %% Segment the fiber groups if they don't exist
-for ii = 1:AFQ_get(afq,'numsubs')
+for ii = runsubs
     
     % Define the current subject to process
     afq = AFQ_set(afq,'current subject',ii);
@@ -187,7 +190,7 @@ for ii = 1:AFQ_get(afq,'numsubs')
 end
 
 %% Clean the fibers if desired
-for ii = 1:AFQ_get(afq,'numsubs')
+for ii = runsubs
     
     % Define the current subject to process
     afq = AFQ_set(afq,'current subject',ii);
@@ -252,7 +255,7 @@ for ii = 1:AFQ_get(afq,'numsubs')
 end
 
 %% Compute tract profiles
-for ii = 1:AFQ_get(afq,'numsubs')
+for ii = runsubs
     
     % Define the current subject to process
     afq = AFQ_set(afq,'current subject',ii);
@@ -311,10 +314,22 @@ for ii = 1:AFQ_get(afq,'numsubs')
     else
         fprintf('\nTract Profiles already computed for subject %s',sub_dirs{ii});
     end
+    
+    % Save each iteration of afq run if an output directory was defined
+    if ~isempty(AFQ_get(afq,'outdir')) && exist(AFQ_get(afq,'outdir'),'dir')
+        if ~isempty(AFQ_get(afq,'outname'))
+            outname = fullfile(AFQ_get(afq,'outdir'),AFQ_get(afq,'outname'));
+        else
+            outname = fullfile(AFQ_get(afq,'outdir'),['afq_' date]);
+        end
+        save(outname,'afq');
+    end
 end
 
 %% Recompute the norms with the new fiber group
-[norms, patient_data, control_data, afq] = AFQ_ComputeNorms(afq);
+if AFQ_get(afq,'computenorms')
+    [norms, patient_data, control_data, afq] = AFQ_ComputeNorms(afq);
+end
 
 
 

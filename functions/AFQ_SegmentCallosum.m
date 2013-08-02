@@ -1,4 +1,4 @@
-function afq = AFQ_SegmentCallosum(afq,overwriteFiles)
+function afq = AFQ_SegmentCallosum(afq,overwriteFiles,sge)
 % THIS FUNCTION IS STILL BEING DEVELOPED
 % Segment the callosal fibers into 7 segments
 %
@@ -11,8 +11,20 @@ function afq = AFQ_SegmentCallosum(afq,overwriteFiles)
 %% Argument checking
 if ~exist('overwriteFiles','var') || isempty(overwriteFiles)
     overwriteFiles = false;
+elseif length(overwriteFiles) == 1;
+    if overwriteFiles == 1
+        fprintf('\nOVERWRITING ALL PREVIOUS FIBER GROUPS AND ROIS\n');
+    end
+    overwriteFiles = repmat(overwriteFiles,[1 2]);
+elseif length(overwriteFiles) == 2 && overwriteFiles(1) == 0
+    fprintf('\nUsing previous CallosumFG but overwriting all segmentations\n');
+elseif length(overwriteFiles) > 2
+    error('\noverwriteFiles must be a logical vector length 1 or 2\n');
 end
-
+if ~exist('sge','var') || isempty(sge)
+    % by default run locally not on the grid
+    sge = false;
+end
 %% Create callosum ROIs and fiber groups
 % First creat a callosal fiber group from the wholebrain fiber group for
 % each subject
@@ -20,7 +32,7 @@ for ii = 1:AFQ_get(afq,'numsubs')
     % Set up paths to the fiber group and ROI
     fgPath = fullfile(afq.sub_dirs{ii},'fibers','callosumFG.mat');
     roiPath = fullfile(afq.sub_dirs{ii},'ROIs','callosum_rough.mat');
-    if ~exist(fgPath,'file') || ~exist(roiPath,'file') || overwriteFiles==1
+    if ~exist(fgPath,'file') || ~exist(roiPath,'file') || overwriteFiles(1)==1
         % Load Dt6
         dt = dtiLoadDt6(AFQ_get(afq,'dt6path',ii));
         % Create an ROI of the corpus callosum
@@ -63,8 +75,15 @@ segFgName = 'callosumFG.mat';
 
 %% Segment callosum into it's different projections and add to afq struct
 
-for ii = 1:length(fgNames)
-    afq = AFQ_AddNewFiberGroup(afq,fgNames{ii},roi1Names{ii},roi2Names{ii},1,1,0,segFgName,overwriteFiles);
+% Run using sun grid engine if desired
+if sge == 1
+    for ii = 1:length(fgNames)
+        afq = AFQ_AddNewFiberGroup_sge(afq,fgNames{ii},roi1Names{ii},roi2Names{ii},1,1,0,segFgName,overwriteFiles(2));
+    end
+else
+    for ii = 1:length(fgNames)
+        afq = AFQ_AddNewFiberGroup(afq,fgNames{ii},roi1Names{ii},roi2Names{ii},1,1,0,segFgName,overwriteFiles(2));
+    end
 end
 
 %% Render montage of callosal fiber groups
