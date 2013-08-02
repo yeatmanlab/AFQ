@@ -175,6 +175,8 @@ for ii = 1:AFQ_get(afq,'numsubs')
         % Intersect the wholebrain fibers with each ROI
         fg_classified = dtiIntersectFibersWithRoi([],'and', 2, roi1, wholebrainFG);
         fg_classified = dtiIntersectFibersWithRoi([],'and', 2, roi2, fg_classified);
+        % Flip the fibers so they all pass through roi1 before roi2
+        fg_classified = AFQ_ReorientFibers(fg_classified,roi1,roi2);
         % Set the name
         fg_classified.name = prefix(fgName);
         % Save it
