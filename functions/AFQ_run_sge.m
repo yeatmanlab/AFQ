@@ -22,7 +22,7 @@ for ii = numsubs
    % Set the name of the saved file
    afq = AFQ_set(afq, 'outname', ['afq_' num2str(ii)]);
    % Process this subject on the grid
-   sgerun2('AFQ_run([],[],afq);',sprintf('AFQ%d_%d',ii,round(rand*100)),1);
+   sgerun2('AFQ_run([],[],afq);',sprintf('AFQ%d_%d',ii,round(rand*1000)),1);
 end
 
 % Wait for them to be done
@@ -39,7 +39,9 @@ while done == 0
     end
 end
 
-% Reconstruct AFQ structure
+%% Reconstruct AFQ structure
+% Load up the afq structure for the last subject that was run
+load(fullfile(afq.params.outdir,afq.params.outname))
 afqfull = afq;
 for ii = numsubs
     afqfile = dir(fullfile(afqfull.params.outdir,['afq*_' num2str(ii) '.mat']));
