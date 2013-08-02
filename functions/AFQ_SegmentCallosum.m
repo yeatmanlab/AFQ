@@ -41,14 +41,14 @@ end
 %% Set up parameters for AFQ_AddNewFiberGroup
 
 % List of ROI names for different callosal segments
-roi1Names = {'L_Occipital.nii.gz' 'L_Post_Parietal.nii.gz' ...
-    'L_Sup_Parietal.nii.gz' 'L_Motor.nii.gz' 'L_Sup_Frontal.nii.gz' ...
-    'L_Ant_Frontal.nii.gz' 'L_Orb_Frontal.nii.gz'};
-roi2Names = {'R_Occipital.nii.gz' 'R_Post_Parietal.nii.gz' ...
-    'R_Sup_Parietal.nii.gz' 'R_Motor.nii.gz' 'R_Sup_Frontal.nii.gz' ...
-    'R_Ant_Frontal.nii.gz' 'R_Orb_Frontal.nii.gz'};
+roi1Names = {'L_Occipital.nii.gz' 'L_PostParietal.nii.gz' ...
+    'L_SupParietal.nii.gz' 'L_Motor.nii.gz' 'L_SupFrontal.nii.gz' ...
+    'L_AntFrontal.nii.gz' 'L_Orbital.nii.gz' 'L_Temporal'};
+roi2Names = {'R_Occipital.nii.gz' 'R_PostParietal.nii.gz' ...
+    'R_SupParietal.nii.gz' 'R_Motor.nii.gz' 'R_SupFrontal.nii.gz' ...
+    'R_AntFrontal.nii.gz' 'R_Orbital.nii.gz' 'R_Temporal'};
 % Add in the path to the templates folder to the roi paths
-tdir = fullfile(AFQ_directories,'templates','callosum');
+tdir = fullfile(AFQ_directories,'templates','callosum2');
 for ii = 1:length(roi1Names)
     roi1Names{ii} = fullfile(tdir,roi1Names{ii});
     roi2Names{ii} = fullfile(tdir,roi2Names{ii});
@@ -57,7 +57,7 @@ end
 % List of the names of the callosal segments
 fgNames = {'CC_Occipital.mat' 'CC_Post_Parietal.mat' ...
     'CC_Sup_Parietal.mat' 'CC_Motor.mat' 'CC_Sup_Frontal.mat' ...
-    'CC_Ant_Frontal.mat' 'CC_Orb_Frontal.mat'};
+    'CC_Ant_Frontal.mat' 'CC_Orb_Frontal.mat' 'CC_Temporal.mat'};
 % The name of the fiber group file to segment
 segFgName = 'callosumFG.mat';
 
@@ -70,7 +70,7 @@ end
 %% Render montage of callosal fiber groups
 fgNames = {'CC_Occipital' 'CC_Post_Parietal' ...
     'CC_Sup_Parietal' 'CC_Motor' 'CC_Sup_Frontal' ...
-    'CC_Ant_Frontal' 'CC_Orb_Frontal'};
+    'CC_Ant_Frontal' 'CC_Orb_Frontal' 'CC_Temporal'};
 AFQ_MakeFiberGroupMontage(afq, fgNames)
 
 return
