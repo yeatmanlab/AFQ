@@ -164,7 +164,7 @@ for ii = runsubs
         if loadWholebrain == 1
             fg = AFQ_get(afq,'wholebrain fiber group',ii);
         end
-        % Segment fiber file
+        % Segment fiber group
         fg_classified = AFQ_SegmentFiberGroups(dtFile, fg, [], [], antsInvWarp);
         % Save segmented fiber group
         dtiWriteFiberGroup(fg_classified, fullfile(fibDir,segName));
@@ -199,11 +199,12 @@ for ii = runsubs
         if loadSegmentation == 1
             fg_classified = dtiLoadFiberGroup(fullfile(fibDir, segName));
         end
+        % Convert fiber groups into an array if they are not already 
+        fg_clean = fg2Array(fg_classified); 
+        
         % Remove all fibers that are too long and too far from the core of
         % the group.  This algorithm will constrain the fiber group to
         % something that can be reasonable represented as a 3d gaussian
-        fg_clean = fg2Array(fg_classified); % fiber groups into an array   
-        % remove fiber outliers
         for jj = 1:20
             % only clean if there are enough fibers for it to be worthwhile
             if  length(fg_clean(jj).fibers) > 20
