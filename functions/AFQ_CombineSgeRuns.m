@@ -17,4 +17,5 @@ for jj = 1:length(fgNames)
 end
 
 % Next get that subject's TractProfiles and add them to the main afq struct
-afq.TractProfiles(subnum,:) = afq_sge.TractProfiles(subnum,:);
+sz = size(afq_sge.TractProfiles);
+afq.TractProfiles(subnum,1:sz(2)) = afq_sge.TractProfiles(subnum,1:sz(2));
