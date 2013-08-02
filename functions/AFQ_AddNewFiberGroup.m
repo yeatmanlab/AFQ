@@ -155,6 +155,10 @@ end
 
 %% Segment the fiber groups if they don't exist
 for ii = 1:AFQ_get(afq,'numsubs')
+    
+    % Define the current subject to process
+    afq = AFQ_set(afq,'current subject',ii);
+    
     if ~exist(AFQ_get(afq,[prefix(fgName) 'path'],ii),'file') || overwrite == 1
         % Load the wholebrain fiber group as default
         % or use another fiber group if desired (eg. callosum)
@@ -175,27 +179,34 @@ for ii = 1:AFQ_get(afq,'numsubs')
         fg_classified.name = prefix(fgName);
         % Save it
         dtiWriteFiberGroup(fg_classified,AFQ_get(afq,[prefix(fgName) 'path'],ii));
+        % Clear variables
+        clear fg_classified wholebrainFG roi1 roi2
     end
 end
 
-%% Loop over subjects
+%% Clean the fibers if desired
 for ii = 1:AFQ_get(afq,'numsubs')
     
-    %% Clean the fibers if desired
     % Define the current subject to process
     afq = AFQ_set(afq,'current subject',ii);
+    % Define the full path to the new cleaned fiber group
+    fgclean_path = fullfile(afq.sub_dirs{ii},'fibers',[prefix(fgName) '_clean_D' num2str(afq.params.maxDist) '_L'  num2str(afq.params.maxLen) '.mat']);
     
-    % Load the fibers
-    fg_classified = dtiLoadFiberGroup(AFQ_get(afq,[prefix(fgName) 'path'],ii));
-    
-    % Render the segmented fibers if desired
-    if showFibers == 1
-        fprintf('\n Rendering %s in red\n',AFQ_get(afq,[prefix(fgName) 'path'],ii));
-        AFQ_RenderFibers(fg_classified, 'numfibers',70,'color',[1 0 0])
-    end
-    
-    % Only clean if desired
-    if cleanFibers == 1
+    % Only clean if desired and if the cleaned fibers do not already exist
+    if cleanFibers == 1 && (~exist(fgclean_path,'file') || overwrite == 1)
+        
+        % Get path to fibers
+        fg_classified_path = AFQ_get(afq,[prefix(fgName) 'path'],ii);
+        fprintf('\nCleaning %s',fg_classified_path);
+        % Load the fibers
+        fg_classified = dtiLoadFiberGroup(fg_classified_path);
+        
+        % Render the segmented fibers if desired
+        if showFibers == 1
+            fprintf('\n Rendering %s in red\n',AFQ_get(afq,[prefix(fgName) 'path'],ii));
+            AFQ_RenderFibers(fg_classified, 'numfibers',70,'color',[1 0 0])
+        end
+        
         % only clean if there are enough fibers for it to be worthwhile
         if  length(fg_classified.fibers) > 20
             % clean clipped fiber group if computations are to be done
@@ -218,27 +229,42 @@ for ii = 1:AFQ_get(afq,'numsubs')
             end
         end
         
-        % Define the full path to the new cleaned fiber group
-        fgpath = fullfile(afq.sub_dirs{ii},'fibers',[prefix(fgName) '_clean_D' num2str(afq.params.maxDist) '_L'  num2str(afq.params.maxLen) '.mat']);
         % Save the fiber group
-        dtiWriteFiberGroup(fg_classified, fgpath);
+        dtiWriteFiberGroup(fg_classified, fgclean_path);
         % And add them to the afq structure
-        afq.files.fibers.([prefix(fgName) '_clean']){ii} = fgpath;
+        afq.files.fibers.([prefix(fgName) '_clean']){ii} = fgclean_path;
         
         % Render the cleaned fibers if desired
         if showFibers == 1
             fprintf('\n Rendering %s in blue\n',AFQ_get(afq,[prefix(fgName) 'path'],ii));
             AFQ_RenderFibers(fg_classified, 'numfibers',70,'color',[0 0 1])
-        end
+        end  
+        % clear the variables
+        clear fg_classified fg_classified_path fgclean_path
         
+    elseif exist(fgclean_path,'file')
+        fprintf('\n%s already exists',fgclean_path);
+        % Add the path to the cleaned fiber group to the afq structure
+        afq.files.fibers.([prefix(fgName) 'clean']){ii} = fgclean_path;
     end
+end
+
+%% Compute tract profiles
+for ii = 1:AFQ_get(afq,'numsubs')
     
-    %% Compute tract profiles
+    % Define the current subject to process
+    afq = AFQ_set(afq,'current subject',ii);
     
     if computeVals == 1
         fprintf('\nComputing Tract Profiles for subject %s',afq.sub_dirs{ii});
         % Load the subject's dt6
         dt = dtiLoadDt6(AFQ_get(afq,'dt6path',ii));
+        % Load the propper fiber group. If they have been cleaned it will
+        % load the cleaned version
+        fg_classified_name = AFQ_get(afq,[prefix(fgName) 'path'],ii);
+        fprintf('\nFiber group: %s',fg_classified_name);
+        fg_classified = dtiReadFibers(fg_classified_name);
+        
         % Determine how much to weight each fiber's contribution to the
         % measurement at the tract core. Higher values mean steaper falloff
         fWeight = AFQ_get(afq,'fiber weighting');
