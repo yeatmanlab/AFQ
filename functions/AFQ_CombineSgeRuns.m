@@ -15,7 +15,14 @@ for jj = 1:length(fgNames)
        afq.vals.(valNames{v}){jj}(subnum,:) = afq_sge.vals.(valNames{v}){jj}(subnum,:); 
    end
 end
-
+% Check to make sure all the paths to fiber groups are set properly
+fgFiles = fieldnames(afq.files.fibers);
+for jj = 1:length(fgFiles)
+    % Check if this field contains a cell array of paths for each subject
+    if iscell(afq_sge.files.fibers.(fgFiles{jj}))
+        afq.files.fibers.(fgFiles{jj}){subnum} = afq_sge.files.fibers.(fgFiles{jj}){subnum}; 
+    end
+end
 % Next get that subject's TractProfiles and add them to the main afq struct
 sz = size(afq_sge.TractProfiles);
 afq.TractProfiles(subnum,1:sz(2)) = afq_sge.TractProfiles(subnum,1:sz(2));
