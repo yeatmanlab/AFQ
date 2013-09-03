@@ -235,7 +235,7 @@ afq.files.fibers.segName = segName;
 afq.overwrite.fibers.wholebrain = zeros(AFQ_get(afq,'num subs'),1);
 afq.overwrite.fibers.segmented = zeros(AFQ_get(afq,'num subs'),1);
 afq.overwrite.fibers.clean = zeros(AFQ_get(afq,'num subs'),1);
-afq.overwrite.vals = zeros(AFQ_get(afq,'num subs',1));
+afq.overwrite.vals = zeros(AFQ_get(afq,'num subs'),1);
 
 %% If desired compute constrained spherical deconvolution with mr trix
 

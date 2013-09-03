@@ -44,7 +44,12 @@ if isfield(params,'overlay') && ~isempty(params.overlay)
         crange = params.crange;
     end
     % Interpolate overlay values at each vertex of the mesh
-    cvals = dtiGetValFromImage(overlayIm.data, AFQ_meshGet(msh, 'vertexorigin'), overlayIm.qto_ijk, 'spline');
+    if ~isfield(params,'interp') || isempty(params.interp)
+        interpMethod = 'spline';
+    else
+        interpMethod = params.interp;
+    end
+    cvals = dtiGetValFromImage(overlayIm.data, AFQ_meshGet(msh, 'vertexorigin'), overlayIm.qto_ijk, interpMethod);
     % Remove file extension and path to get the name of the image
     [~,valname] = fileparts(overlayIm.fname);
     % Remove a secondary extension if there is one

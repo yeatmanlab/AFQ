@@ -250,7 +250,7 @@ for ii = runsubs
     elseif exist(fgclean_path,'file')
         fprintf('\n%s already exists',fgclean_path);
         % Add the path to the cleaned fiber group to the afq structure
-        afq.files.fibers.([prefix(fgName) 'clean']){ii} = fgclean_path;
+        afq.files.fibers.([prefix(fgName) '_clean']){ii} = fgclean_path;
     end
 end
 

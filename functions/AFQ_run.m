@@ -165,7 +165,7 @@ for ii = runsubs
             fg = AFQ_get(afq,'wholebrain fiber group',ii);
         end
         % Segment fiber group
-        fg_classified = AFQ_SegmentFiberGroups(dtFile, fg, [], [], antsInvWarp);
+        fg_classified = AFQ_SegmentFiberGroups(dtFile, fg, [], [],[], antsInvWarp);
         % Save segmented fiber group
         dtiWriteFiberGroup(fg_classified, fullfile(fibDir,segName));
         % If the full trajectory of each fiber group will be analyzed (eg.

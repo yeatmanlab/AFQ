@@ -10,7 +10,7 @@ function afq = AFQ_SegmentCallosum(afq,overwriteFiles,sge)
 
 %% Argument checking
 if ~exist('overwriteFiles','var') || isempty(overwriteFiles)
-    overwriteFiles = false;
+    overwriteFiles = [false false];
 elseif length(overwriteFiles) == 1;
     if overwriteFiles == 1
         fprintf('\nOVERWRITING ALL PREVIOUS FIBER GROUPS AND ROIS\n');

@@ -1,4 +1,4 @@
-function [p, msh] = AFQ_RenderCorticalSurface(cortex, varargin)
+function [p, msh, lightH] = AFQ_RenderCorticalSurface(cortex, varargin)
 % Render the cortical surface from a binary segmentation image
 %
 % [p, msh] = AFQ_RenderCorticalSurface(cortex, 'param', value ...)
@@ -56,6 +56,7 @@ function [p, msh] = AFQ_RenderCorticalSurface(cortex, varargin)
 % p       - Handel for the patch object that was added to the figure
 %           window. The rendering can be deleted with delete(p)
 % msh     - The mesh object of the cortical surface.
+% lightH  - Handle to the light object
 %
 % Example:
 %
@@ -113,5 +114,5 @@ set(p,'specularstrength',.5,'diffusestrength',.75);
 % If it was a new figure window add a light to it
 if params.newfig == 1
     view([270 0])
-    camlight('right');
+    lightH = camlight('right');
 end
