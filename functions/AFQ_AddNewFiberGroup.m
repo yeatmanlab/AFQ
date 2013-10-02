@@ -1,4 +1,4 @@
-function afq = AFQ_AddNewFiberGroup(afq,fgName,roi1Name,roi2Name,cleanFibers,computeVals,showFibers,segFgName,overwrite)
+function afq = AFQ_AddNewFiberGroup(afq,fgName,roi1Name,roi2Name,cleanFibers,computeVals,showFibers,segFgName,overwrite,fgNumber)
 % THIS FUNCTION IS STILL BEING DEVELOPED
 % Add new fiber groups from any segmentation proceedure to an afq structure
 %
@@ -116,11 +116,13 @@ end
 runsubs = AFQ_get(afq,'run subjects');
 
 %% Add the new fiber groups and ROIs to the afq structure
-afq = AFQ_set(afq,'new fiber group', fgName);
-afq = AFQ_set(afq, 'new roi', roi1Name, roi2Name);
-% Get the fiber group number. This will be equal to the number of fiber
-% groups since it is the last one to be added
-fgNumber = AFQ_get(afq,'numfg');
+if notDefined('fgNumber') || fgNumber > AFQ_get(afq,'numfg');
+    afq = AFQ_set(afq,'new fiber group', fgName);
+    afq = AFQ_set(afq, 'new roi', roi1Name, roi2Name);
+    % Get the fiber group number. This will be equal to the number of fiber
+    % groups since it is the last one to be added
+    fgNumber = AFQ_get(afq,'numfg');
+end
 
 %% Make individual ROIs from a templat ROI if a template was passed in
 if xformRois == 1
