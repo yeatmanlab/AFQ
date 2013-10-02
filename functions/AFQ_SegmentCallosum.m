@@ -82,7 +82,7 @@ if sge == 1
     end
 else
     for ii = 1:length(fgNames)
-        afq = AFQ_AddNewFiberGroup(afq,fgNames{ii},roi1Names{ii},roi2Names{ii},1,1,0,segFgName,overwriteFiles(2));
+        afq = AFQ_AddNewFiberGroup(afq,fgNames{ii},roi1Names{ii},roi2Names{ii},1,1,0,segFgName,overwriteFiles(2),20+ii);
     end
 end
 
