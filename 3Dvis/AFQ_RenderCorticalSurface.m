@@ -67,7 +67,7 @@ function [p, msh, lightH] = AFQ_RenderCorticalSurface(cortex, varargin)
 % thresh = .01; % Threshold for the overlay image
 % crange = [.01 .8]; % Color range of the overlay image
 % % Render the cortical surface colored by the arcuate endpoint density 
-% p = AFQ_RenderCorticalSurface(cortex, 'overlay' , overlay, 'crange', crange, 'thresh', thresh)
+% [p, msh, lightH] = AFQ_RenderCorticalSurface(cortex, 'overlay' , overlay, 'crange', crange, 'thresh', thresh)
 %
 % Copyright Jason D. Yeatman November 2012
 
