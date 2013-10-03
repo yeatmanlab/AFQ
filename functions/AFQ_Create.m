@@ -256,4 +256,7 @@ end
 %% Set the current subject field to subject 1
 afq.currentsub = 1;
 
+%% Add a field for meta data (eg. age, sex etc.)
+afq.metadata = [];
+
 return

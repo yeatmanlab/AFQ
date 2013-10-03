@@ -59,6 +59,7 @@ function val = AFQ_get(afq, param, varargin)
 % 'inverse deformation'   - [subject number]
 % 'use ANTS'
 % 'ants inverse warp'     - [subject number]
+% 'meta data'             - 'field name'
 % To get any of the parameters save in the afq structure (see AFQ_Create),
 % enter the name of the parameter. Some have not been implimented yet, but
 % will be soon.
@@ -373,7 +374,9 @@ switch(param)
         catch
             val = [];
         end
-                
+    case {'metadata'}
+        val = afq.metadata.(varargin{1});
+        
     otherwise
         error('Uknown afq parameter');
 end
