@@ -49,7 +49,7 @@ function [lightH, fiberMesh] = AFQ_RenderFibers(fg,varargin)
 % AFQ_RenderFibers(fg,'color', rgbValues) - Render the fiber group in a
 % specific color.  rgbValues can be defined in 3 ways to do (1) uniform
 % coloring for the fiber group, (2) fiberwise coloring or (3) pointwise
-% coloring. 
+% coloring.
 % (1) If rgbValues is a 1 x 3 vector of rgb values than each fiber is
 % colored that same color. The default color is gray [0.7 0.7 0.7]. To do
 % cyan for example rgbValues = [0 1 1].
@@ -62,7 +62,7 @@ function [lightH, fiberMesh] = AFQ_RenderFibers(fg,varargin)
 % in the fiber group, then each node on fiber n is colored based on the
 % corresponding row of rgbValues{n}. This means that each cell must have
 % the same number of rows as the corresponding fiber in the fiber group.
-% For example to color each point on each fiber based on its FA value: 
+% For example to color each point on each fiber based on its FA value:
 % vals = dtiGetValFromFibers(dt.dt6,fg,inv(dt.xformToAcpc),'fa');
 % rgb = vals2colormap(vals);
 % AFQ_RenderFibers(fg,'color',rgb);
@@ -161,9 +161,12 @@ if sum(strcmpi('camera',varargin)) > 0
     camera = varargin{find(strcmpi('camera',varargin))+1};
     if ischar(camera)
         switch(camera)
-            case 'sagittal'
+            case {'sagittal' 'leftsagittal' 'leftsag'}
                 camera = [270 0];
                 lightPosition = [-60 0 0];
+            case {'rightsagittal' 'rightsag'}
+                camera = [90 0];
+                lightPosition = [60 0 0];
             case 'axial'
                 camera = [0 90];
                 lightPosition = [-10 10 80];
@@ -300,7 +303,7 @@ if sum(strcmpi('numfibers',varargin)) > 0
     if length(fg.fibers) > numfib
         % generate a random index of fibers
         fibindx = ceil(rand(numfib,1).*length(fg.fibers));
-        % fibindx = randsample(length(fg.fibers),numfib);   
+        % fibindx = randsample(length(fg.fibers),numfib);
         % retain only these fibers for the rendering
         fg.fibers = fg.fibers(fibindx);
         % if there fiber specific coloring was defined make sure to retain
