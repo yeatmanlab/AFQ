@@ -70,7 +70,9 @@ msh.vals             = [];
 % Colors associated with mesh vertices
 msh.colors.current   = 'base';
 msh.colors.base      = [.8 .7 .6]; % Base color of mesh
-
+% A field for ROIs associated with mesh vertices
+msh.rois             = [];
+msh.roi.show         = {};
 %% Colect parameters from varargin and put them in a structure
 if length(varargin) == 1 && isparams(varargin{1})
     params = varargin{1};
