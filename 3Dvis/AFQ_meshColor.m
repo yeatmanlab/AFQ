@@ -7,7 +7,7 @@ function msh = AFQ_meshColor(msh, varargin)
 % to it that specifies an rgb value for each mesh vertex. The colors can be
 % computed from an overlay image to heatmap the mesh based on fMRI signal
 % or quantitative MRI parameters. Other options are to color the mesh based
-% on surface curvature. See help AFQ_RenderCorticalSurface and 
+% on surface curvature. See help AFQ_RenderCorticalSurface and
 % help AFQ_meshCreate for a full description of all the parameters that can
 % be set.
 %
@@ -78,3 +78,34 @@ if isfield(params,'overlay') && ~isempty(params.overlay)
     % Set this to be the default color for rendering the mesh
     msh = AFQ_meshSet(msh, 'FaceVertexCData', valname);
 end
+
+%% Combine multiple color maps if requested
+if isfield(params,'combine') && ~isempty(params.combine)
+    % Loop over all the requested color maps to combine
+    if iscell(params.combine)
+        cnames = params.combine;
+    else
+        cnames{1} = params.combine;
+    end
+    rgbvals = [];
+    for ii = 1:numel(cnames)
+        rgbvals(:,:,ii) = msh.colors.(cnames{ii});
+        % Find vertices where the colormap has the base color
+        base(:,ii) = ismember(rgbvals(:,:,ii),msh.colors.base,'rows');
+    end
+    
+    % Average the colors
+    for ii = 1:size(rgbvals,1)
+        if sum(~base(ii,:))==0
+            cdata(ii,:) = msh.colors.base;
+        else
+            cdata(ii,:) = mean(rgbvals(ii,:,~base(ii,:)),3);
+        end
+    end
+    % Add this new colormap to the mesh structure
+    msh = AFQ_meshSet(msh, 'colors', horzcat(cnames{:}), cdata);
+    % Set this to be the default color for rendering the mesh
+    msh = AFQ_meshSet(msh, 'FaceVertexCData', horzcat(cnames{:}));
+end
+
+return
