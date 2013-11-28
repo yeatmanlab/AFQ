@@ -395,6 +395,10 @@ if tubes == 1
     
     % Plot the fibers as lines (much faster than tubes) if the input tubes == 0
 else
+    % If only one color is provided then repeat it for each fiber
+    if size(color,1) == 1
+        color = repmat(color,length(fg.fibers),1);
+    end
     for ii = 1:length(fg.fibers)
         % X, Y and Z coordinates for the fiber
         x = fg.fibers{ii}(1,:)';
