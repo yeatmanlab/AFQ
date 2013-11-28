@@ -73,6 +73,9 @@ msh.colors.base      = [.8 .7 .6]; % Base color of mesh
 % A field for ROIs associated with mesh vertices
 msh.rois             = [];
 msh.roi.show         = {};
+% A field for fibers associated with mesh vertices
+msh.fibers           = [];
+msh.ribers.show      = {};
 %% Colect parameters from varargin and put them in a structure
 if length(varargin) == 1 && isparams(varargin{1})
     params = varargin{1};
@@ -167,7 +170,7 @@ if exist('im','var') && ~isempty(im)
     
     % By default we render with 20 smoothing iterations
     if ~isfield(params, 'boxfilter') || isempty(params.boxfilter)
-        msh = AFQ_meshSet(msh, 'vertices', 'smooth20');
+        msh = AFQ_meshSet(msh, 'vertices', ['smooth' num2str(params.smooth)]);
     end
     % If no overlay was sent in then color each vertex the base color
     if ~isfield(params,'overlay') || isempty(params.overlay) 
