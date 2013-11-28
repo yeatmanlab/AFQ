@@ -1,6 +1,20 @@
-function [msh, fdNii, lightH]=AFQ_RenderFibersOnCortex(fg, segmentation, afq, template,fgnums)
+function [msh, fdNii, lightH]=AFQ_RenderFibersOnCortex(fg, segmentation, afq, template, fgnums, colormap)
 
-if exist('afq','var') && exist('template','var')
+if notDefined('colormap')
+    colormap = 'jet';
+end
+if notDefined('afq')
+    afq = [];
+end
+if notDefined('template')
+    template = [];
+end
+if notDefined('fgnums')
+    fgnums = [];
+end
+
+%%
+if ~isempty(afq) && ~isempty(template)
 
     defaults = spm_get_defaults;
     params = defaults.normalise.estimate;
@@ -70,5 +84,5 @@ else
     fdNii.data = fdMax;
     fdNii.fname = ['fg_endpoints.nii.gz'];
     clear fdImg
-   [p, msh, lightH] =  AFQ_RenderCorticalSurface(segmentation, 'overlay',fdNii,'boxfilter',3,'thresh',[1 20],'interp','nearest','cmap','jet');
+   [p, msh, lightH] =  AFQ_RenderCorticalSurface(segmentation, 'overlay',fdNii,'boxfilter',3,'thresh',[1 20],'interp','nearest','cmap',colormap);
 end
