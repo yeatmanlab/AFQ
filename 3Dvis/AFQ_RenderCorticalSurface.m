@@ -87,6 +87,8 @@ end
 % sent in then build a mesh with the defined parameters
 if ismesh(cortex)
     tr = AFQ_meshGet(cortex,'triangles');
+    % Set outputs
+    msh = cortex;
 else
     msh = AFQ_meshCreate(cortex, params);
     tr = AFQ_meshGet(msh, 'triangles');
