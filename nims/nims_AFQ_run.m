@@ -115,7 +115,10 @@ for ii = 1:length(inList)
             % that should be rewritten
             dwiFile = dir(fullfile(dwiData{jj},'*_1.nii.gz'));
             dwiFile = fullfile(dwiData{jj},dwiFile.name);
-            
+            % Get a path to the associated bvals and bvecs files
+            params.bvecsFile = [prefix(prefix(dwiFile)) '.bvec'];
+            params.bvalsFile = [prefix(prefix(dwiFile)) '.bval'];
+
             % Run dti init
             dtPath{jj}=dtiInit(dwiFile,t1File,params);
             
