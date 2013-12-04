@@ -169,7 +169,8 @@ for v = 1:length(valname)
                 'crange', crange, 'camera', fgviews{ii}, 'radius', [.5 5]);
             axis('off');
             % Add an image in
-            AFQ_AddImageTo3dPlot(b0_p,slices(ii,:));
+            %AFQ_AddImageTo3dPlot(b0_p,slices(ii,:));
+            
             % Add a title
             title('Z Score','fontname','times','fontsize',18);
             % Change the font of the colorbar
