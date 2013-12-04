@@ -128,9 +128,10 @@ for v = 1:length(valname)
         plot(ii, vals_pm,'ko', 'markerfacecolor',tractcol);
         
         %% Plot tract profile
+        
         if subplots == 1
             % Tract profiles can either be separate or within the same figure
-            htp = figure; subplot('position',[.1 .25 .45 .6]); hold('on');
+            htp = figure; hold('on'); %subplot('position',[.1 .25 .45 .6]);
         else
             figure; hold('on');
         end
@@ -139,16 +140,31 @@ for v = 1:length(valname)
         y3 = [m_tp-3*sd_tp fliplr(m_tp+3*sd_tp)];
         x = [nodes fliplr(nodes)];
         %fill(x, y3, [.8 .8 .8] ,'edgecolor',[0 0 0]);
-        fill(x, y2, [.6 .6 .6] ,'edgecolor',[0 0 0]);
-        fill(x, y1, [.4 .4 .4] ,'edgecolor',[0 0 0]);
-        plot(nodes,m_tp,'-k','linewidth',3);
+        po(1) = fill(x, y2, [.6 .6 .6] ,'edgecolor',[0 0 0]);
+        po(2) = fill(x, y1, [.4 .4 .4] ,'edgecolor',[0 0 0]);
+        po(3) = plot(nodes,m_tp,'-k','linewidth',3);
         % Plot patient
-        plot(nodes, vals_p, '-r', 'linewidth',3);
+        po(4) = plot(nodes, vals_p, '-r', 'linewidth',3);
         title(fgNames{ii},'fontname','times','fontsize',24);
-        ylabel(valtitle{v},'fontname','times','fontsize',24);
+        ylabel(upper(valtitle{v}),'fontname','times','fontsize',24);
         xlabel('Location','fontname','times','fontsize',24);
         set(gca,'fontname','times','fontsize',18);
+        axis('tight');
         
+        % If a subplot was desired then grab the image frame
+        if subplots == 1
+            % Set image properties
+            set(gcf,'units','inches','position',[1 1 10 7],...
+                'color',[1 1 1],'paperpositionmode','auto');
+            % Change line thickness
+            set(po(1:2),'linewidth',2);
+            set(po(3:4),'linewidth',8)
+            % Convert the figure to an image
+            [tpim, tpimcmap] = frame2im(getframe(gcf)); close(gcf)
+            % Change to the figure with the tract profile in it
+            figure(htp); subplot('position',[.05 .1 .45 .85]);
+            imshow(tpim, tpimcmap)
+        end
         %% Render the tract profile
         
         % Check if the fiber group is empty
@@ -164,25 +180,30 @@ for v = 1:length(valname)
             tp.coords.acpc = tp.coords.acpc(:,nodes);
             
             % Render the tract profile
-            AFQ_RenderFibers(fg_p(ii),'tractprofile', tp,...
+            AFQ_RenderFibers(fg_p(ii),'tractprofile', tp, 'color', [.8 .7 .6],...
                 'val', 'zscore', 'numfibers', 200, 'cmap', cmap, ...
-                'crange', crange, 'camera', fgviews{ii}, 'radius', [.5 5]);
+                'crange', crange, 'camera', fgviews{ii}, 'radius', [1 5]);
             axis('off');
             % Add an image in
             AFQ_AddImageTo3dPlot(b0_p,slices(ii,:));
+            
             % Add a title
-            title('Z Score','fontname','times','fontsize',18);
+            title('Z Score','fontname','times','fontsize',24);
             % Change the font of the colorbar
             set(colorbar,'fontname','times','fontsize',18)
-            if subplots==1
+            if subplots == 1
+                % Set image properties
+                set(gcf,'units','inches','position',[1 1 10 7],...
+                    'color',[1 1 1],'paperpositionmode','auto');
                 % Convert the figure to an image
-                fgim = getframe(gcf); close(gcf)
+                [fgim, imcmap] = frame2im(getframe(gcf)); close(gcf)
                 % Change to the figure with the tract profile in it
-                figure(htp); subplot('position',[.55 .1 .45 .85]);
-                imshow(fgim.cdata)
+                figure(htp); subplot('position',[.5 0 .45 .95]);
+                imshow(fgim, imcmap)
             end
             % Set the figures size etc
-            set(gcf,'units','inches','position',[1 1 10.5 4],'paperpositionmode','auto');
+            set(gcf,'units','inches','position',[1 1 21 8],...
+                'color',[1 1 1],'paperpositionmode','auto');
             % Save an image
             print(gcf,'-dpng', '-r150', fullfile(vout,sprintf('fg_%d',ii)));
             % Close the figure
@@ -207,4 +228,4 @@ for v = 1:length(valname)
 end
 
 %% Save an animated gif of the rotating fiber group
-AFQ_RotatingFgGif(fg_p,[],fullfile(outdir,'000_RotatingFibers.gif'),b0,[1 0 0]);
+AFQ_RotatingFgGif(fg_p,[],fullfile(outdir,'000_RotatingFibers.gif'),b0_p,[1 0 0]);
