@@ -228,4 +228,4 @@ for v = 1:length(valname)
 end
 
 %% Save an animated gif of the rotating fiber group
-AFQ_RotatingFgGif(fg_p,[],fullfile(outdir,'000_RotatingFibers.gif'),b0,[1 0 0]);
+AFQ_RotatingFgGif(fg_p,[],fullfile(outdir,'000_RotatingFibers.gif'),b0_p,[1 0 0]);
