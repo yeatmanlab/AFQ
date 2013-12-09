@@ -1,5 +1,24 @@
 function msh = AFQ_meshAddFgEndpoints(msh, fg, colors, crange, alpha, weights, dilate)
 % Color mesh vertices based on fiber endpoints
+%
+% msh = AFQ_meshAddFgEndpoints(msh, fg, colors, crange, alpha, weights, dilate)
+% 
+% Inputs:
+%
+% msh
+% fg      - Fiber group structure or path to one
+% colors  - nx3 matrix of rgb values for which to color fiber endpoint
+%           density on the cortical surface.
+% crange  - The endpoint density to map to the minumum and maximum color
+%           values
+% weights - A vector of weights associated with each fiber.
+% dilate  - How far along the cortical surface should we dilate the fiber
+%           endpoints.
+%
+% Example:
+%
+%
+% Copyright - Jason D. Yeatman, December 2013
 
 % If weights aren't defined then use a weight of 1 for each fiber
 if notDefined('weighted')
@@ -26,8 +45,8 @@ if notDefined('dilate')
     dilate = 1;
 end
 
-% Get the fiber group name with no spaces
-% remove any characters that are not allowed for field names
+% Get the fiber group name with no spaces and remove any characters that 
+% are not allowed for field names
 rmchar = {' ','_','1','2','3','4','5','6','7','8','9','0'};
 fgname = fg.name;
 for ch = 1:length(rmchar)
@@ -66,6 +85,7 @@ elseif length(crange) == 1
     crange = [crange(1) prctile(w(w>=1),90)];
 end
 
+% Dilate the coloring to adjacent vertices if desired
 if dilate == 1
     % Find faces that touch one of the colored vertices
     msh_faces = sum(ismember(msh.face.origin, [msh_indices1 msh_indices2]),2)>0;
@@ -89,10 +109,13 @@ end
 % Get the rgb color for each mesh vertex
 rgb = vals2colormap(w, colors, crange);
 
-% Color current mesh vertices
+% Color current mesh vertices for all vertices where the weight is above
+% the defined threshold
 msh.tr.FaceVertexCData(w>=crange(1),:) = rgb(w>=crange(1),:);
 
 return
+
+
 
 %% Notes of how to handle other vertex mappings
 
