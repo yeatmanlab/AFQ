@@ -75,7 +75,7 @@ msh.rois             = [];
 msh.roi.show         = {};
 % A field for fibers associated with mesh vertices
 msh.fibers           = [];
-msh.ribers.show      = {};
+msh.fibers.show      = {};
 %% Colect parameters from varargin and put them in a structure
 if length(varargin) == 1 && isparams(varargin{1})
     params = varargin{1};
