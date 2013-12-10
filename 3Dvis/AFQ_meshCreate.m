@@ -76,6 +76,8 @@ msh.roi.show         = {};
 % A field for fibers associated with mesh vertices
 msh.fibers           = [];
 msh.fibers.show      = {};
+% Field to store affine and other transormations of mesh vertices
+msh.xform            = [];
 %% Colect parameters from varargin and put them in a structure
 if length(varargin) == 1 && isparams(varargin{1})
     params = varargin{1};
@@ -91,6 +93,10 @@ if exist('im','var') && ~isempty(im)
     
     % Save the image path in the mesh structure
     msh.image = im.fname;
+    
+    % Add the image affines to the mesh structure
+    msh.xform.qto_ijk = im.qto_ijk;
+    msh.xform.qto_xyz = im.qto_xyz;
     
     % permute the image dimensions (This is because the x,y and z dimensions in
     % matlab do not correspond to left-right, anterior-posterior, up-down.
