@@ -60,14 +60,14 @@ b0_p = readFileNifti(dt_p.files.b0);
 
 % Set the views for each fiber group
 fgviews = {'leftsag', 'rightsag', 'leftsag', 'rightsag', ...
-    'leftsag', 'rightsag', 'leftsag', 'rightsage', 'axial', 'axial',...
+    'leftsag', 'rightsag', 'leftsag', 'rightsag', 'axial', 'axial',...
     'leftsag', 'rightsag', 'leftsag', 'rightsag',  'leftsag', 'rightsag'...
     'leftsag', 'rightsag', 'leftsag', 'rightsag'};
 % Slices to add to the rendering
 slices = [-5 0 0; 5 0 0; -5 0 0; 5 0 0; -5 0 0; 5 0 0; -5 0 0; 5 0 0;...
-    0 -5 0; 0 -5 0; -5 0 0; 5 0 0; -5 0 0; 5 0 0; -5 0 0; 5 0 0; -5 0 0; 5 0 0; -5 0 0; 5 0 0];
+    0 0 -5; 0 0 -5; -5 0 0; 5 0 0; -5 0 0; 5 0 0; -5 0 0; 5 0 0; -5 0 0; 5 0 0; -5 0 0; 5 0 0];
 % Set the colormap and color range for the renderings
-cmap = 'jet'; crange = [-4 4];
+cmap = AFQ_colormap('bgr'); crange = [-4 4];
 
 % Loop over the different values
 for v = 1:length(valname)
@@ -162,7 +162,7 @@ for v = 1:length(valname)
             % Convert the figure to an image
             [tpim, tpimcmap] = frame2im(getframe(gcf)); close(gcf)
             % Change to the figure with the tract profile in it
-            figure(htp); subplot('position',[.05 .1 .45 .85]);
+            figure(htp); subplot('position',[.05 .1 .4 .8]);
             imshow(tpim, tpimcmap)
         end
         %% Render the tract profile
