@@ -102,6 +102,12 @@ if exist('im','var') && ~isempty(im)
     % matlab do not correspond to left-right, anterior-posterior, up-down.
     data = permute(im.data, [2 1 3]);
     
+    % Check if the mesh is in mrvista format. If so convert the white
+    % matter in the mesh into a binary image
+    if sum(data(:)==3)>0 && sum(data(:)==4)>0
+        data = uint8(data==3 | data==4);
+    end
+    
     % Build the mesh
     tr = isosurface(data,.1);
     
