@@ -173,7 +173,7 @@ switch(param)
         val = logical(afq.overwrite.fibers.clean(varargin{1})) || ...
             isempty(afq.files.fibers.clean{varargin{1}}) || ...
             ~ischar(afq.files.fibers.clean{varargin{1}});
-    case{'cleanfibers' 'cleanedfibers' 'cleanfg'}
+    case{'cleanfibers' 'cleanedfibers' 'cleanfg' 'fgclean'}
         val = dtiReadFibers(afq.files.fibers.clean{varargin{1}});
     case{'segname' 'segmentedfibersname' 'segfgname'}
         [~, val] = fileparts(afq.files.fibers.segmented{varargin{1}});
