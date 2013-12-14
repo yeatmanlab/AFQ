@@ -208,8 +208,11 @@ afq.files.fibers.clean      = cell(AFQ_get(afq,'num subs'),1);
 %% Add files from previous AFQ runs to afq structure
 
 % The name of the segmented fiber group depends on whether we are clipping
-% it to the ROIs or not
-if AFQ_get(afq,'clip2rois') == 0
+% it to the ROIs or not. Or it can be passed in by the user
+s = strcmp('segname',varargin) + strcmp('segName',varargin);
+if sum(s)>0
+    segName = varargin{find(s)+1};
+elseif AFQ_get(afq,'clip2rois') == 0
     segName = 'MoriGroups_Cortex.mat';
 else
     segName = 'MoriGroups.mat';
