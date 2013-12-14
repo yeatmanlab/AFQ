@@ -70,7 +70,7 @@ for ii = 1:length(inList)
     
     % Make a list of directories with spgr data
     for jj = 1:length(files)
-        if ~isempty(strfind(files(jj).name,'IR'))
+        if ~isempty(strfind(files(jj).name,'SPGR'))
             spgrData = vertcat(spgrData,{fullfile(inList{ii},files(jj).name)});
         end
     end
