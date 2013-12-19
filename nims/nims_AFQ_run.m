@@ -45,6 +45,7 @@ end
 
 % Loop over all the input directories
 for ii = 1:length(inList)
+  try
     
     %% This is all garbage that should be rewritten but will work as an example
     % List the files in the directory
@@ -162,4 +163,17 @@ for ii = 1:length(inList)
         AFQ_PlotPatientMeans(afq, afq_controls.afq, [], 21:80, figsDir);
         
     end
+  catch theCatch
+    % If anything in the above code crashes, then let's note that there was
+    % an error and write that error out to the file. 
+    fprintf('ERROR in %s\n\n', inList{ii});
+    movefile(fullfile(inList{ii},'.processing'),fullfile(inList{ii},'.error')); 
+    fprintf('\n===== Error Message ====\n');
+    fprintf('%s\n\n',theCatch.message);
+    % Write it out to the file
+    fid = fopen(fullfile(inList{ii},'.error'),'a');
+    fprintf(fid,'\n===== Error Message ====\n');
+    fprintf(fid,'%s\n',theCatch.message);
+    fclose(fid);
+  end
 end
