@@ -124,7 +124,7 @@ if notDefined('fgNumber') || fgNumber > AFQ_get(afq,'numfg');
     fgNumber = AFQ_get(afq,'numfg');
 end
 
-%% Make individual ROIs from a templat ROI if a template was passed in
+%% Make individual ROIs from a template ROI if a template was passed in
 if xformRois == 1
     % Path to the templates directory
     tdir = fullfile(fileparts(which('mrDiffusion.m')), 'templates');
@@ -307,7 +307,7 @@ for ii = runsubs
                 % Read the image file
                 image = readFileNifti(afq.files.images(jj).path{ii});
                 % Compute a Tract Profile for that image
-                imagevals = AFQ_ComputeTractProperties(fg_classified, image, afq.params.numberOfNodes, afq.params.clip2rois, afq.sub_dirs{ii}, fWeight);
+                imagevals = AFQ_ComputeTractProperties(fg_classified, image, afq.params.numberOfNodes, afq.params.clip2rois, afq.sub_dirs{ii}, fWeight, afq);
                 % Add values to the afq structure
                 afq = AFQ_set(afq,'vals','subnum',ii,'fgnum',fgNumber, afq.files.images(jj).name, imagevals);
                 clear imagevals
