@@ -114,6 +114,10 @@ if exist('im','var') && ~isempty(im)
     % Transform the vertices of the mesh to acpc space. 
     tr.vertices = mrAnatXformCoords(im.qto_xyz,tr.vertices);
     
+    % Reduce the number of faces for computational efficiency
+     if isfield(params, 'reduce') && ~isempty(params.reduce)
+        tr = reducepatch(tr, params.reduce);
+     end
     % Add these vertices and faces to the mesh structure. These are the
     % original vertices and will be used in the future to referece
     % coordinates of overlay images
