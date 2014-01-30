@@ -304,7 +304,7 @@ if sum(strcmpi('individual',arg)) == 1
     % the second set of data will be individual subjects
     subData = data{2};
     % define the colors to be used for each individual
-    c = hsv(length(subData(1).FA(:,1))).*0.6;
+    c = hsv(length(subjects)).*0.6;
     % Loop over all the tracts
     for jj = tracts
         figure(fignums(jj));
@@ -325,7 +325,7 @@ if sum(strcmpi('individual',arg)) == 1
         % For each tract loop over the number of subjects and plot each
         % on the same plot with the norms
         for ii = subjects
-            h(ii) = plot(subVals(ii,:)','--','Color',c(ii,:),'linewidth',2);
+            h(ii) = plot(subVals(ii,:)','-','Color',c(ii,:),'linewidth',2);
         end
         % add a legend to the plot if desired
         if ~isempty(L)
