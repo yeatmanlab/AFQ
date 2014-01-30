@@ -314,7 +314,7 @@ for ii = runsubs
             end
         end
     else
-        fprintf('\nTract Profiles already computed for subject %s',sub_dirs{ii});
+        fprintf('\nTract Profiles already computed for subject %s',afq.sub_dirs{ii});
     end
     
     % Save each iteration of afq run if an output directory was defined
