@@ -136,9 +136,11 @@ switch(param)
             % get the name (because we formated the parameter)
             name = afq.fgnames{n};
             % check if a cleaned version of the fiber group exists
-            if isfield(afq.files.fibers,[name 'clean'])
+            if isfield(afq.files.fibers,[name 'clean']) && ...
+                    length(afq.files.fibers.([name 'clean'])) >= varargin{1}
                 val = afq.files.fibers.([name 'clean']){varargin{1}};
-            elseif isfield(afq.files.fibers,[name '_clean'])
+            elseif isfield(afq.files.fibers,[name '_clean'])&& ...
+                length(afq.files.fibers.([name '_clean'])) >= varargin{1}
                 val = afq.files.fibers.([name '_clean']){varargin{1}};
             else
                 val = afq.files.fibers.(name){varargin{1}};
