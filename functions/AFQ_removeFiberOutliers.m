@@ -123,6 +123,8 @@ while cont ==1 && iter<=maxIter
         % render fibers to keep in blue and to remove in red
         AFQ_RenderFibers(fg_keep,'color',[0 0 1],'camera',camera,'tubes',0);
         AFQ_RenderFibers(fg_remove,'color',[1 0 0],'camera',camera,'newfig',0,'tubes',0);
+        % And render the fiber tract core in green
+        AFQ_RenderFibers(SuperFiber,'color',[0 1 0],'radius',3,'camera',camera,'newfig',0);
         % ask for users input on whether to keep cleaning
         remove = input('Would you like to remove the fiber outliers shown in red? y/n  ','s');
         % If the user does not like the results of this round of cleaning
