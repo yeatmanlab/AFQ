@@ -51,6 +51,12 @@ end
 % Loop over all the input directories
 for ii = 1:length(inList)
     try
+        %% Check that this can be run
+        status = nims_checkData(inList{ii});
+        if status ~= 111
+            error('This dataset does not have the required data for this pipeline');
+        end
+        
         %% Run mrQ
         if run_mrQ == 1
             
