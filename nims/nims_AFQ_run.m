@@ -2,11 +2,13 @@ function nims_AFQ_run(dataDirs, outdirs, run_mrQ, run_AFQ)
 % Run dtiInit, AFQ and mrQ on raw data and save output images
 %
 % This function is intended to be launched when data is uploaded into the
-% nims database (http://cni.stanford.edu/nims). Given a directory of nifti
-% images created by nims, this function will run mrQ if the apropriate data
-% is available, then it will run dtiInit.m if diffusion data is present and
-% finally it will run AFQ on all the data that was input. Figures will be
-% automatically saved out to be built into a webpage.
+% nims database (http://scarlet.stanford.edu/nims). 
+% 
+% Given a directory of nifti images created by nims, this function will run
+% mrQ if the apropriate data is available, then it will run dtiInit.m if
+% diffusion data is present and finally it will run AFQ on all the data
+% that was input. Figures will be automatically saved out to be built into
+% a webpage.
 %
 % Inputs:
 %
@@ -47,6 +49,7 @@ else
     outList{1}  = outdirs;
 end
 
+zipfiles = {};
 
 % Loop over all the input directories
 for ii = 1:length(inList)
@@ -88,6 +91,7 @@ for ii = 1:length(inList)
             t1File = fullfile(mrQ.spgr_initDir,'T1wfs_4.nii.gz');
             
         end
+        
         
         if run_AFQ == 1
             %% Run dtiInit for each dwi data set
@@ -160,17 +164,13 @@ for ii = 1:length(inList)
                 end
                 
                 t1 = mrQ.maps.T1path;
-                b0 = mrvFindFile('b0.nii.gz',outList{ii});
-                %mapsdir = fulfile(params.dt6BaseName,'bin');
-                mapsdir = mrvDirup(b0);
+                mapsdir = fullfile(params.dt6BaseName,'bin');
                 
                 % Perform the alignment of the maps to the dti data (b0)
                 alignedMaps = mrQ_registerMap2DTI(b0,t1,otherMapsPath,mapsdir);
                 
                 % Get and set the fieldnames for those maps we want to analyze
-                % with AFQ.
-                % *** These need to be the _DTI aligned maps.
-                % mapsNames = fieldnames(mrQ.maps);
+                % with AFQ. *** These need to be the _DTI aligned maps.
                 for jj = 1:numel(alignedMaps)
                     % afq = AFQ_set(afq, 'images', mrQ.maps.(mapsNames{jj}));
                     % This needs to be a cell array, or AFQ_set complains
@@ -180,13 +180,13 @@ for ii = 1:length(inList)
                 
             end
             
-            % Run AFQ
+            % RUN AFQ
             afq = AFQ_run(sub_dirs, sub_group, afq);
             
             % Setup the valnames.
             valnames = fieldnames(afq.vals);
             
-            % %%%%% remove those values we're not interested in:
+            % Remove those values we're not interested in currently
             remlist = {'cl','curvature','torsion','volume','WF_map_2DTI','cT1SIR_map_2DTI'};
             for r = 1:numel(remlist)
                 ind = cellfind(valnames,remlist{r});
@@ -199,7 +199,6 @@ for ii = 1:length(inList)
             % afq_controls = load('/biac4/wandell/data/WH/analysis/AFQ_WestonHavens_Full.mat');
             afq_controls = load('/biac4/wandell/biac2/wandell2/data/WH/analysis/WH_database_current.mat');
             
-            % Save out images for the webpage
             
             % Create an output directory of figures
             figsDir = fullfile(outList{ii},'figures');
@@ -208,9 +207,31 @@ for ii = 1:length(inList)
             end
             
             
+            % Save out images for the webpage       
             AFQ_PlotPatientMeans(afq, afq_controls.afq, valnames, 21:80, figsDir);
             
-        end
+            
+            %% Create zip archives
+            disp('Creating zip archives');
+            
+            % The diffusion root directory
+            zipfiles{end+1} = params.dt6BaseName;
+            
+            % The afq structure
+            zipfiles{end+1} = mrvFindFile('afq_*.mat',outList{ii});
+            
+            % This is the directory where the maps are output
+            if run_mrQ == 1; zipfiles{end+1} = mrQ.OutPutNiiDir;end
+            
+            % Zip the data
+            zip(fullfile(outList{ii},'data.zip'),zipfiles);
+            
+            % Zip the figures
+            zip(fullfile(outList{ii},'figures.zip'),figsDir);
+          
+            
+        end            
+        
         
     catch theCatch
         
