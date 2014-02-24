@@ -168,7 +168,7 @@ for ii = 1:length(inList)
 
                 t1 = mrQ.maps.T1path;
                 mapsdir = fullfile(params.dt6BaseName,'bin');
-
+                b0 = mrvFindFile('b0.nii.gz',outList{ii});
                 % Perform the alignment of the maps to the dti data (b0)
                 alignedMaps = mrQ_registerMap2DTI(b0,t1,otherMapsPath,mapsdir);
 
