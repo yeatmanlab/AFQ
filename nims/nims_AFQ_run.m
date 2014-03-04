@@ -126,7 +126,7 @@ for ii = 1:length(inList)
                 params.fitMethod = 'ls';
 
                 % This is where we'll save all the outputs
-                params.dt6BaseName = fullfile(outList{ii},['dt' num2str(dwiData.directions)]);
+                params.dt6BaseName = fullfile(outList{ii},'DTI',['dt' num2str(dwiData.directions)]);
 
                 % Get a path to the dwi file.
                 dwiFile          = dwiData.nifti;
@@ -166,16 +166,17 @@ for ii = 1:length(inList)
                     otherMapsPath{i} = mrQ.maps.(maps{i});
                 end
 
-                t1 = mrQ.maps.T1path;
                 mapsdir = fullfile(params.dt6BaseName,'bin');
-                b0 = mrvFindFile('b0.nii.gz',outList{ii});
+                b0      = fullfile(mapsdir,'b0.nii.gz');
+                t1      = mrQ.maps.T1path;
+                
                 % Perform the alignment of the maps to the dti data (b0)
+                disp('Aligning maps to diffusion data...');
                 alignedMaps = mrQ_registerMap2DTI(b0,t1,otherMapsPath,mapsdir);
 
                 % Get and set the fieldnames for those maps we want to analyze
                 % with AFQ. *** These need to be the _DTI aligned maps.
                 for jj = 1:numel(alignedMaps)
-                    % afq = AFQ_set(afq, 'images', mrQ.maps.(mapsNames{jj}));
                     % This needs to be a cell array, or AFQ_set complains
                     image{1} = alignedMaps{jj};
                     afq = AFQ_set(afq, 'images', image);
@@ -184,6 +185,7 @@ for ii = 1:length(inList)
             end
 
             % RUN AFQ
+            disp('Running AFQ...');
             afq = AFQ_run(sub_dirs, sub_group, afq);
 
             % Setup the valnames.
@@ -211,12 +213,14 @@ for ii = 1:length(inList)
 
 
             % Save out images for the webpage
+            disp('Running AFQ Plot: Generating figures...');
             AFQ_PlotPatientMeans(afq, afq_controls.afq, valnames, 21:80, figsDir);
 
 
             %% Create zip archives
-            disp('Creating zip archives');
-
+            disp('Creating zip archives...');
+            zipfiles = {};
+            
             % The diffusion root directory
             zipfiles{end+1} = params.dt6BaseName;
 
@@ -231,7 +235,10 @@ for ii = 1:length(inList)
 
             % Zip the figures
             zip(fullfile(outList{ii},'figures.zip'),figsDir);
-
+            
+            if ii == numel(inList)
+                fprintf('[%s]- Finished. \n',mfilename);
+            end
 
         end
 
@@ -249,7 +256,7 @@ for ii = 1:length(inList)
             % Write it out to the file
             fid = fopen(fullfile(inList{ii},'.error'),'a');
             fprintf(fid,'\n===== Error Message ====\n');
-            fprintf(fid,'%s\n',theCatch.message);
+            fprintf(fid,'%s\n%s\n',theCatch.identifier, theCatch.message);
             fclose(fid);
         else
             fprintf('No Error file found!\n===== Error Message ====\n');
