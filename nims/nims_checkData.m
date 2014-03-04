@@ -16,7 +16,7 @@ function [thecode, files] = nims_checkData(path,doexit)
 %% Input check
 if notDefined('path') || ~exist(path,'dir')
     path = uigetdir(pwd,'Choose path');
-    if path == 0; DWI = 0; mrQ = 0; clear path; return; end
+    if path == 0; DWI = 0; MRQ = 0; clear path; return; end
 end
 
 if notDefined('exit')
@@ -50,48 +50,53 @@ mrQ.name = tempname;
 mrQ.RawDir = path;
 mrq = mrQ_initInputData(mrQ);
 
+MRQ = 0;
 
 % Check for the existence of mrqdata
-if isfield(mrq.inputdata_seir','name')
+if isfield(mrq, 'inputdata_seir') && isfield(mrq.inputdata_seir,'name')
     [~, numfiles] = size(mrq.inputdata_seir.name);
     if numfiles == 4
-        mrQ = 1;
+        MRQ = MRQ+1;
     end
-else
-    mrQ = 0;
 end
 
-
 % % Check for the existence of spgr mrqdata
-if isfield(mrq.inputdata_spgr','name')
+if isfield(mrq, 'inputdata_spgr') && isfield(mrq.inputdata_spgr,'name')
     [~, numfiles] = size(mrq.inputdata_spgr.name);
     if numfiles >= 2
-        mrq.domrq = 1;
+        MRQ = MRQ+1;
     end
-else
-    mrQ = 0;
 end
 
 
 %% Return the files
 
 files = {};
-files.dw = dw;
-files.spgr = mrq.inputdata_spgr.name;
-files.seir = mrq.inputdata_seir.name;
 
+if DWI == 1
+    files.dw = dw;
+end
+
+if MRQ >= 1
+    files.spgr = mrq.inputdata_spgr.name;
+    files.seir = mrq.inputdata_seir.name;
+end
 
 %% Set the exit code and exit
 
-decision = mrQ+DWI;
+decision = MRQ+DWI;
 
 switch decision
-    case 2
+    case 3
         thecode = 111; %  1 = go forward
-    case 1
+        fprintf('[%s] - Required data found!\n',mfilename);
+        mrq.domrq = 1;
+    case {2,1} 
         thecode = 222; %  2 = not yet, try later
+        fprintf('[%s] - Only partial data was found!\n',mfilename);
     case 0
         thecode = 000; %  0 = no go
+        fprintf('[%s] - Required data not found!\n',mfilename);
 end
 
 % If the user wanted to exit, then go for it - close matlab and return the
