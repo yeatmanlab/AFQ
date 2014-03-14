@@ -1,14 +1,21 @@
-function rgb = AFQ_colormap(cmap)
+function rgb = AFQ_colormap(cmap,ncolors)
 
+if exist('ncolors','var') && ~isempty(ncolors)
+    nsamples = ncolors./4;
+else
+    nsamples = 64;
+    ncolors = 256;
+end
+if round(nsamples) ~= nsamples
+   error('ncolors must be a multiple of 4...sorry') 
+end
 switch(cmap)
     case{'rgb' 'redblue' 'redgreenblue'}
-        nsamples=64;
         rgb = lineargradient([.7 0 0; 1 1 0],nsamples);
         rgb = vertcat(rgb,lineargradient([1 1 0; 0 .7 0],nsamples));
         rgb = vertcat(rgb,lineargradient([0 .7 0; 0 1 1],nsamples));
         rgb = vertcat(rgb,lineargradient([0 1 1; 0 0 .7],nsamples));
     case{'bgr' 'bluered' 'bluegreenred'}
-        nsamples=64;
         rgb = lineargradient([0 0 .7; 0 1 1],nsamples);
         rgb = vertcat(rgb,lineargradient([0 1 1; 0 .7 0],nsamples));
         rgb = vertcat(rgb,lineargradient([0 .7 0; 1 1 0],nsamples));
@@ -18,4 +25,4 @@ end
 
 figure; colorbar;
 colormap(rgb)
-caxis([-3 3])
+caxis([1 ncolors])
