@@ -12,11 +12,6 @@ function AFQ_PlotPatientMeans(afq_patient,afq_controls,valname,nodes,outdir,vara
 % AFQ_PlotPatientMeans(afq_patient,afq_controls,'fa',[],'age', [53 73])
 % AFQ_PlotPatientMeans(afq_patient,afq_controls,'md',[],'age', [53 73])
 
-% Where to save the images
-if notDefined('outdir')
-    outdir = pwd;
-end
-fprintf('\nImages will be save to %s\n',outdir{:});
 
 % Which nodes to analyze
 if notDefined('nodes')
@@ -26,6 +21,9 @@ end
 % Define output directory
 if notDefined('outdir')
     outdir = {pwd};
+end
+if ~iscell(outdir)
+    out_dir{1} = outdir; outdir = out_dir;
 end
 
 % Define whether plots should be in one window or separate
@@ -75,6 +73,7 @@ for s = 1:length(outdir)
     if ~exist(outdir{s},'dir')
         mkdir(outdir{s});
     end
+    fprintf('\nImages will be saved to %s\n',outdir{s});
     
     % Loop over the different values
     for v = 1:length(valname)
