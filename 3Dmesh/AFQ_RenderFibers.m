@@ -127,7 +127,7 @@ function [lightH, fiberMesh] = AFQ_RenderFibers(fg,varargin)
 
 % Check to make sure the fiber group isn't empty
 if isempty(fg.fibers) || length(fg.fibers) == 0
-    fprintf('Fiber group is empty\n');
+    fprintf('Fiber group is empty: %s\n',fg.name);
     return
 end
 % Check if a dt6 file was input
