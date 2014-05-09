@@ -1,8 +1,12 @@
-function afq = AFQ_run_sge(afq, numsubs)
+function afq = AFQ_run_sge(afq, numsubs, v)
 % Run AFQ using a sun grid engine to parallelize the computations
 %
 % afq = AFQ_run_sge(afq, numsubs)
 
+% which sge command to use
+if notDefined('v')
+    v = 2;
+end
 % set a new outdir
 afq.params.outdir = fullfile(afq.params.outdir,'sge');
 if ~exist(afq.params.outdir)
@@ -24,7 +28,11 @@ for ii = numsubs
    % Name the job
    jobname{ii} = sprintf('AFQ%d_%d',ii,round(rand*1000));
    % Process this subject on the grid
-   sgerun2('AFQ_run([],[],afq);',jobname{ii},1);
+   if v == 2
+       sgerun2('AFQ_run([],[],afq);',jobname{ii},1);
+   elseif v == 1
+       sgerun('AFQ_run([],[],afq);',jobname{ii},1);
+   end
 end
 
 % Wait for them to be done

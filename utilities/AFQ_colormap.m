@@ -23,6 +23,6 @@ switch(cmap)
 end
 
 
-figure; colorbar;
-colormap(rgb)
-caxis([1 ncolors])
+% figure; colorbar;
+% colormap(rgb)
+% caxis([1 ncolors])

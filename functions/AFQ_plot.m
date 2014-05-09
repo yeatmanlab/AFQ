@@ -324,8 +324,10 @@ if sum(strcmpi('individual',arg)) == 1
         end
         % For each tract loop over the number of subjects and plot each
         % on the same plot with the norms
+        cnum = 0;
         for ii = subjects
-            h(ii) = plot(subVals(ii,:)','-','Color',c(ii,:),'linewidth',2);
+            cnum = cnum+1;
+            h(ii) = plot(subVals(ii,:)','-','Color',c(cnum,:),'linewidth',2);
         end
         % add a legend to the plot if desired
         if ~isempty(L)
