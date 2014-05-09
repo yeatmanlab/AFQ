@@ -1,4 +1,4 @@
-function h = AFQ_AddImageTo3dPlot(nifti, slice, cmap, rescale, alpha, varargin)
+function h = AFQ_AddImageTo3dPlot(nifti, slice, cmap, rescale, alpha, imgClipRange, varargin)
 % Add a slice from a nifti image to a 3D plot
 %
 % h = AFQ_AddImageTo3dPlot(nifti, slice, [cmap], [rescale], alpha, varargin)
@@ -29,6 +29,10 @@ function h = AFQ_AddImageTo3dPlot(nifti, slice, cmap, rescale, alpha, varargin)
 % 
 % alpha   = Alpha of the image. Value from 0 to 1 that sets how 
 %           transparent the image is.
+%
+% imgClipRange = The image will be scaled to be between these two values.
+%                If this is left blank then we will try to guess a good
+%                range of values to make it look nice.
 %
 % Aditional options:
 % 
@@ -67,6 +71,9 @@ end
 if ~exist('alpha','var') || isempty(alpha)
     alpha = 1;
 end
+if ~exist('imgClipRange','var') || isempty(imgClipRange)
+    imgClipRange = [];
+end
 % Make sure only one plane was designated for plotting
 plane = ~isnan(slice);
 if sum(plane) > 1
@@ -83,7 +90,7 @@ if size(slice,2) ~= 3
 end
 %% Create a color image from the slice in the 3d volume
 [colorimg min_x max_x min_y max_y min_z max_z] = ...
-    MakeImageFromVolume(nifti,slice,plane,cmap);
+    MakeImageFromVolume(nifti,slice,plane,cmap,imgClipRange);
 
 %% Create overlay image
 % Check if an overlay image was passed in
