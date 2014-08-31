@@ -120,7 +120,11 @@ switch(method)
             % Compute the size of each cluster
             clusSiz = diff(clusEnd);
             % Find the maximum cluster size for permutation ii
-            clusMax(ii) = max(clusSiz);
+            if isempty(clusSiz)
+                clusMax(ii) = size(pThresh(ii,:),2);
+            else
+                clusMax(ii) = max(clusSiz);
+            end
         end
         % Sort the clusters in descending order of significance
         stats.clusMax = sort(clusMax,'descend');
