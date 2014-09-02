@@ -116,7 +116,7 @@ switch(method)
         % Compute cluster size for each permutation
         for ii = 1:nperm
             % Find indices where significant clusters end.
-            % The method based requires significant p-values to be included
+            % The method used requires significant p-values to be included
             % between non-significant p-values. 0 are therefore added at 
             % both ends of the thresholded p-value vector 
             %(for cases when significant p-values are located at its ends)
