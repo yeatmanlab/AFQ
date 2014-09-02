@@ -115,21 +115,22 @@ switch(method)
         pThresh = p < alpha;
         % Compute cluster size for each permutation
         for ii = 1:nperm
-            % Find indices where significant clusters end
-            clusEnd = find(pThresh(ii,:) == 0);
+            % Find indices where significant clusters end.
+            % The method based requires significant p-values to be included
+            % between non-significant p-values. 0 are therefore added at 
+            % both ends of the thresholded p-value vector 
+            %(for cases when significant p-values are located at its ends)
+            pThresh_ii=[0 pThresh(ii,:) 0];
+            clusEnd = find(pThresh_ii == 0);
             % Compute the size of each cluster
             clusSiz = diff(clusEnd);
             % Find the maximum cluster size for permutation ii
-            if isempty(clusSiz)
-                clusMax(ii) = size(pThresh(ii,:),2);
-            else
-                clusMax(ii) = max(clusSiz);
-            end
+            clusMax(ii) = max(clusSiz);
         end
         % Sort the clusters in descending order of significance
         stats.clusMax = sort(clusMax,'descend');
         % Find the corrected cluster size corresponding to alpha
-        clusterFWE = stats.clusMax(round(alpha.*nperm))
+        clusterFWE = stats.clusMax(round(alpha.*nperm));
         
     case 'chevrud'
         %% PCA method (Chevrud et al.)
