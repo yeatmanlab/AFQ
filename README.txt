@@ -1,4 +1,4 @@
-AFQ version 0.1
+AFQ version 1.1
 
 ==============================
 Automated Fiber Quantification
@@ -6,14 +6,18 @@ Automated Fiber Quantification
 
 AFQ was designed to generate Tract Profiles of tissue properties for major fiber tracts in healthy and diseased brains. Online documentation can be found at: 
 http://white.stanford.edu/newlm/index.php/AFQ.  
-The current stable release (v0.1) can be downloaded from: 
-https://github.com/jyeatman/AFQ/archive/v0.1.zip
+The current stable release (v1.1) can be downloaded from: 
+https://github.com/jyeatman/AFQ/archive/v1.1.zip
 For help and updates join the AFQ mailing list in google groups:
 https://groups.google.com/forum/?fromgroups#!forum/automated-fiber-quantification-afq
 
 AFQ has been tested for MATLAB r2009b through MATLAB r2012b. It requires functions from the MATLAB stats toolbox, vistasoft and spm.
 
-If you use this software please cite; Yeatman J.D., Dougherty R.F., Myall N.J., Wandell B.A., Feldman H.M.  (2012). Tract Profiles of White Matter Properties: Automating Fiber-Tract Quantification. PLoS One.
+If you use this software please cite the relevant manuscripts describing the work:
+
+(v0.1)  —  Yeatman J.D., Dougherty R.F., Myall N.J., Wandell B.A., Feldman H.M. (2012). Tract Profiles of White Matter Properties: Automating Fiber-Tract Quantification. PLoS One.
+
+(v1.1)  —  Yeatman J.D., Wandell B.A., Mezer A. (2014). Lifespan Maturation and Degeneration of Human Brain White Matter. Nature Communications.
 
 
     Copyright (C) 2012   Jason D. Yeatman   jyeatman@stanford.edu
