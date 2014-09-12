@@ -1,7 +1,7 @@
 function h = AFQ_AddImageTo3dPlot(nifti, slice, cmap, rescale, alpha, imgClipRange, varargin)
 % Add a slice from a nifti image to a 3D plot
 %
-% h = AFQ_AddImageTo3dPlot(nifti, slice, [cmap], [rescale], alpha, varargin)
+% h = AFQ_AddImageTo3dPlot(nifti, slice, [cmap], [rescale], alpha, imgClipRange, varargin)
 %
 % Inputs:
 %
