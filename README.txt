@@ -8,6 +8,7 @@ AFQ was designed to generate Tract Profiles of tissue properties for major fiber
 http://white.stanford.edu/newlm/index.php/AFQ.  
 The current stable release (v1.1) can be downloaded from: 
 https://github.com/jyeatman/AFQ/archive/v1.1.zip
+But I suggest following the repository using git. The software is updated regularly.
 For help and updates join the AFQ mailing list in google groups:
 https://groups.google.com/forum/?fromgroups#!forum/automated-fiber-quantification-afq
 
