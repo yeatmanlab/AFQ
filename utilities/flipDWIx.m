@@ -1,4 +1,4 @@
-function flipDWIx(imPath,bvecsPath)
+function [imPath,bvecsPath] =flipDWIx(imPath,bvecsPath)
 % Flip the image and gradients over the x-axis and reset header
 %
 % This funciton is a hack to deal with Phillips data. For whatever reason
@@ -19,7 +19,8 @@ im.qto_ijk = im.qto_ijk*a;
 im.sto_ijk = im.sto_ijk*a;
 im.sto_xyz = a*im.sto_xyz;
 %im.qoffset_x = im.qoffset_x.*-1;
-im.fname = [prefix(prefix(imPath)) '_xflip.nii.gz'];
+imPath = [prefix(prefix(imPath)) '_xflip.nii.gz'];
+im.fname = imPath;
 bvecsPath = [prefix(prefix(bvecsPath)) '_xflip.nii.gz'];
 
 writeFileNifti(im)
