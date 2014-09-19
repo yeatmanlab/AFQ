@@ -1,5 +1,11 @@
 function AFQ_MakeFiberGroupMontage(afq, fgNames, fgColors, subNums, plotDims, numfibers)
 % Make a montage of fiber group renderings across subjects
+%
+%
+% example:
+%
+% fgNames = AFQ_get(afq,'fgnames');
+% AFQ_MakeFiberGroupMontage(afq,fgNames([3 5 9 10 11 13 15 17 19]))
 
 %% Argument checking
 % By default render for all subjects
