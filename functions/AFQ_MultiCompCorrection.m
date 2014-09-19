@@ -1,7 +1,7 @@
-function [alphaFWE, statFWE, clusterFWE, stats] = AFQ_MultiCompCorrection(data,y,alpha, method)
+function [alphaFWE, statFWE, clusterFWE, stats] = AFQ_MultiCompCorrection(data,y,alpha,method,cThresh)
 % Compute a multiple comparison correction for Tract Profile data
 %
-%   [alphaFWE, statFWE, clusterFWE, stats] = AFQ_MultiCompCorrection(data,y,alpha, method)
+%   [alphaFWE, statFWE, clusterFWE, stats] = AFQ_MultiCompCorrection(data,y,alpha, method,cThresh)
 %
 % There are 2 multiple comparison corrections implemented. Both account for
 % the correlation structure in the data but in different ways.
@@ -40,6 +40,10 @@ function [alphaFWE, statFWE, clusterFWE, stats] = AFQ_MultiCompCorrection(data,y
 %            is a binary vector then T-tests will be computed.
 % alpha    = The desired alpha (pvalue) to adjust
 % method   = 'permutation' or 'chevrud'. We strongly recomend 'permutation'
+% cThresh  = For clusterwise corrections the threshold for computing a
+%            cluster can be different than the desired alpha. For example
+%            you can set a cluster threshold of 0.01 and then find clusters
+%            that a large enough to pass FWE at a threshold of 0.05.
 %
 % Outputs:
 % alphaFWE   = This is the alpha (p value) that corresponds after adjustment 
@@ -66,7 +70,10 @@ end
 if ~exist('alpha','var') || isempty(alpha)
     alpha = 0.05;
 end
-
+% By default the cluster threshold is the same as alpha
+if ~exist('cThresh') || isempty(cThresh)
+    cThresh = alpha;
+end
 % If y is continues perform a correlation if binary perform a ttest
 if ~exist('y','var') || isempty(y)
     y = randn(size(data,1),1);
@@ -112,7 +119,7 @@ switch(method)
         % cluster size at the specified alpha value
         
         % Threshold the pvalue
-        pThresh = p < alpha;
+        pThresh = p < cThresh;
         % Compute cluster size for each permutation
         for ii = 1:nperm
             % Find indices where significant clusters end.
