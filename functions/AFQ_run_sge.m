@@ -79,11 +79,10 @@ end
 %% Use parallel toolbox to take advantage of local cores
 if v == 3
     % If an existing pool is open, then close it
-    if matlabpool('size') > 0
-        matlabpool('close');
-    end
+    pool = gcp('nocreate') ;
+    delete(pool);
     % Open a new pool
-    matlabpool
+    pool=parpool;
     parfor ii = numsubs
         % Set which subject to send to the grid
         afq_i = AFQ_set(afq,'runsubs',ii);
@@ -93,8 +92,11 @@ if v == 3
         AFQ_run([],[],afq_i);
     end
     % close the pool
-    matlabpool close;
+    delete(pool);
 end
+% This is a hack to deal with differences between sge and matlab parllel
+afq  = AFQ_set(afq,'runsubs',numsubs(end))
+afq = AFQ_set(afq, 'outname', ['afq_' num2str(numsubs(end))]);
 
 %% Reconstruct AFQ structure
 % Load up the afq structure for the last subject that was run
