@@ -1,7 +1,7 @@
-function [lightH, fiberMesh] = AFQ_RenderFibers(fg,varargin)
+function [lightH, fiberMesh, fvc] = AFQ_RenderFibers(fg,varargin)
 % Render a fiber group and tract profile in 3-D
 %
-%   [lightH. fiberMesh] = AFQ_RenderFibers(fg,'PropertyName',PropertyValue, ...)
+%   [lightH. fiberMesh, fvc] = AFQ_RenderFibers(fg,'PropertyName',PropertyValue, ...)
 %
 % Given an mrDiffusion fiber group structure, AFQ_RenderFibers(fg), will
 % make a 3-D rendering of that fiber group.  The 3-d rendering can be
@@ -112,6 +112,14 @@ function [lightH, fiberMesh] = AFQ_RenderFibers(fg,varargin)
 %
 % AFQ_RenderFibers(fg,'alpha',alpha) - Set the transparency of the fibers.
 % Alpha should be a value between 0 (transparent) and 1 (opaque).
+%
+% Outputs
+% lightH    - Handle to the lighting object. This allows you to change the
+%             lighting (e.g. camlight(lightH,'left');)
+% fiberMesh - The fibers represented as a surface (see surf.m)
+% fvc       - Face, vertex, color representation of fibers. This is
+%             compatible with matlab's patch function and is a typical mesh
+%             format used by other software.
 %
 % Example:
 %
@@ -349,13 +357,13 @@ if tubes == 1
             % each fiber than color fg.fibers{ii} the color defined by
             % color(ii,:)
             fColor = color(ii,:);
-            [X Y Z C] = AFQ_TubeFromCoords(coords, rFib, fColor, subdivs);
+            [X, Y, Z, C,] = AFQ_TubeFromCoords(coords, rFib, fColor, subdivs);
         elseif iscell(color) && length(color) == length(fg.fibers)
             % If color is a cell array where each cell contains a color for
             % each point on the fiber than color each node fg.fibers{ii}
             % the colors defined in color{ii}
             fColor = color{ii};
-            [X Y Z C] = AFQ_TubeFromCoords(coords, rFib, fColor, subdivs);
+            [X, Y, Z, C] = AFQ_TubeFromCoords(coords, rFib, fColor, subdivs);
         end
         
         % Add some random jitter to the shading so some fibers are slightly
@@ -381,8 +389,8 @@ if tubes == 1
         C(C > 1) = 1;
         C(C < 0) = 0;
         
-        % Render fiber tubes
-        surf(X,Y,Z,C,'facealpha',alpha);
+        % Render fiber tubes and get the handle of this plot object
+        h(ii) = surf(X,Y,Z,C,'facealpha',alpha);
         
         % Collect fiber coordinates to be returned
         if nargout > 1
@@ -476,4 +484,11 @@ if newfig ==1
     cameratoolbar('Show');
     cameratoolbar('SetMode','orbit');
     fprintf('\nmesh can be rotated with arrow keys\n')
+end
+
+%% Return the mesh of the fibrs as a patch object
+if nargout > 2
+    for ii = 1:length(h)
+        fvc(ii) = surf2patch(h(ii));
+    end
 end
