@@ -1,4 +1,4 @@
-AFQ version 1.1
+AFQ version 1.2
 
 ==============================
 Automated Fiber Quantification
@@ -6,8 +6,8 @@ Automated Fiber Quantification
 
 AFQ was designed to generate Tract Profiles of tissue properties for major fiber tracts in healthy and diseased brains. Online documentation can be found at: 
 http://white.stanford.edu/newlm/index.php/AFQ.  
-The current stable release (v1.1) can be downloaded from: 
-https://github.com/jyeatman/AFQ/archive/v1.1.zip
+The current stable release (v1.2) can be downloaded from: 
+https://github.com/jyeatman/AFQ/archive/v1.2.zip
 But I suggest following the repository using git. The software is updated regularly.
 For help and updates join the AFQ mailing list in google groups:
 https://groups.google.com/forum/?fromgroups#!forum/automated-fiber-quantification-afq
@@ -19,6 +19,8 @@ If you use this software please cite the relevant manuscripts describing the wor
 (v0.1)  —  Yeatman J.D., Dougherty R.F., Myall N.J., Wandell B.A., Feldman H.M. (2012). Tract Profiles of White Matter Properties: Automating Fiber-Tract Quantification. PLoS One.
 
 (v1.1)  —  Yeatman J.D., Wandell B.A., Mezer A. (2014). Lifespan Maturation and Degeneration of Human Brain White Matter. Nature Communications.
+
+(v1.2)  —  Yeatman J.D., Weiner K.S., Pestilli F., Rokem A., Mezer A., Wandell B.A. (2014). The Vertical Occipital Fasciculus: A Century of Controversy Resolved By In Vivo Measurements. PNAS.
 
 
     Copyright (C) 2012   Jason D. Yeatman   jyeatman@stanford.edu
