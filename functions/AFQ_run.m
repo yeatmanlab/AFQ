@@ -277,6 +277,10 @@ for ii = runsubs
             for jj = 1:numimages
                 % Read the image file
                 image = readFileNifti(afq.files.images(jj).path{ii});
+                % Resample image to match dwi resolution if desired
+                if AFQ_get(afq,'imresample')
+                    image = mrAnatResampleToNifti(image, fullfile(afq.sub_dirs{ii},'bin','b0.nii.gz'),[],[7 7 7 0 0 0]);
+                end
                 % Compute a Tract Profile for that image
                 imagevals = AFQ_ComputeTractProperties(fg_classified, image, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii}, fWeight, afq);
                 % Add values to the afq structure

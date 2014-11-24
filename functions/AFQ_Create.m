@@ -144,7 +144,9 @@ afq.params.computeCSD = 0;
 afq.params.computenorms = 1;
 % Which software package to use for normalization
 afq.params.normalization = 'spm';
-
+% For aditional images that are passed into afq you can set a resolution to
+% resample those images to before computing tract profiles (e.g., [2 2 2])
+afq.params.imresample = false;
 %% AFQ Fiber Tracking parameters
 % Do fiber tracking with mrdiffusion by default. The other option is
 % 'mrtrix' if it is installed and the data is HARDI
