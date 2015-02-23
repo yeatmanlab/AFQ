@@ -350,7 +350,9 @@ elseif AFQ_get(afq,'showfigs');
         for ii = 1:length(sub_nums)
             L{ii} = num2str(sub_nums(ii));
         end
-        AFQ_plot(norms, patient_data,'individual','ci',ci,'subjects',sub_nums,'tracts',jj,'legend',L)
+        if ~isempty(sub_nums)
+            AFQ_plot(norms, patient_data,'individual','ci',ci,'subjects',sub_nums,'tracts',jj,'legend',L);
+        end
         % AFQ_PlotResults(patient_data, norms, abn, afq.params.cutoff,property, afq.params.numberOfNodes, afq.params.outdir, afq.params.savefigs);
     end
 end
