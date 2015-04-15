@@ -74,11 +74,14 @@ afq.TractProfiles = AFQ_CreateTractProfile;
 %% Attatch a field for spatial normalization
 afq.xform.sn = [];
 afq.xform.invDef = [];
+afq.xform.ants = [];
+afq.xform.antsinv = [];
 
 %% Check which software packages are installed
 afq.software.mrvista = check_mrvista;
 afq.software.mrtrix = check_mrTrix;
 afq.software.spm = check_spm;
+afq.software.ants = check_ants;
 
 %% Set the afq.params structure with default parameters
 %  cutoff: The percentile cutoff to be used to determine what is "abnormal"
@@ -139,6 +142,11 @@ afq.params.savefigs = false;
 afq.params.computeCSD = 0;
 % Whether or not to comput control group norms
 afq.params.computenorms = 1;
+% Which software package to use for normalization
+afq.params.normalization = 'spm';
+% For aditional images that are passed into afq you can set a resolution to
+% resample those images to before computing tract profiles (e.g., [2 2 2])
+afq.params.imresample = false;
 %% AFQ Fiber Tracking parameters
 % Do fiber tracking with mrdiffusion by default. The other option is
 % 'mrtrix' if it is installed and the data is HARDI
@@ -202,8 +210,11 @@ afq.files.fibers.clean      = cell(AFQ_get(afq,'num subs'),1);
 %% Add files from previous AFQ runs to afq structure
 
 % The name of the segmented fiber group depends on whether we are clipping
-% it to the ROIs or not
-if AFQ_get(afq,'clip2rois') == 0
+% it to the ROIs or not. Or it can be passed in by the user
+s = strcmp('segname',varargin) + strcmp('segName',varargin);
+if sum(s)>0
+    segName = varargin{find(s)+1};
+elseif AFQ_get(afq,'clip2rois') == 0
     segName = 'MoriGroups_Cortex.mat';
 else
     segName = 'MoriGroups.mat';
@@ -229,7 +240,7 @@ afq.files.fibers.segName = segName;
 afq.overwrite.fibers.wholebrain = zeros(AFQ_get(afq,'num subs'),1);
 afq.overwrite.fibers.segmented = zeros(AFQ_get(afq,'num subs'),1);
 afq.overwrite.fibers.clean = zeros(AFQ_get(afq,'num subs'),1);
-afq.overwrite.vals = zeros(AFQ_get(afq,'num subs',1));
+afq.overwrite.vals = zeros(AFQ_get(afq,'num subs'),1);
 
 %% If desired compute constrained spherical deconvolution with mr trix
 
@@ -249,5 +260,8 @@ end
 
 %% Set the current subject field to subject 1
 afq.currentsub = 1;
+
+%% Add a field for meta data (eg. age, sex etc.)
+afq.metadata = [];
 
 return

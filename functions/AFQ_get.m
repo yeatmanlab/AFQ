@@ -57,6 +57,11 @@ function val = AFQ_get(afq, param, varargin)
 % 'segfilename'           - 
 % 'spatial normalization' - [subject number]
 % 'inverse deformation'   - [subject number]
+% 'use ANTS'
+% 'ants inverse warp'     - [subject number]
+% 'meta data'             - 'field name'
+% 'imresample2dwi'
+%
 % To get any of the parameters save in the afq structure (see AFQ_Create),
 % enter the name of the parameter. Some have not been implimented yet, but
 % will be soon.
@@ -132,9 +137,14 @@ switch(param)
         else
             % get the name (because we formated the parameter)
             name = afq.fgnames{n};
-            try
+            % check if a cleaned version of the fiber group exists
+            if isfield(afq.files.fibers,[name 'clean']) && ...
+                    length(afq.files.fibers.([name 'clean'])) >= varargin{1}
                 val = afq.files.fibers.([name 'clean']){varargin{1}};
-            catch
+            elseif isfield(afq.files.fibers,[name '_clean'])&& ...
+                length(afq.files.fibers.([name '_clean'])) >= varargin{1}
+                val = afq.files.fibers.([name '_clean']){varargin{1}};
+            else
                 val = afq.files.fibers.(name){varargin{1}};
             end
         end
@@ -170,7 +180,7 @@ switch(param)
         val = logical(afq.overwrite.fibers.clean(varargin{1})) || ...
             isempty(afq.files.fibers.clean{varargin{1}}) || ...
             ~ischar(afq.files.fibers.clean{varargin{1}});
-    case{'cleanfibers' 'cleanedfibers' 'cleanfg'}
+    case{'cleanfibers' 'cleanedfibers' 'cleanfg' 'fgclean'}
         val = dtiReadFibers(afq.files.fibers.clean{varargin{1}});
     case{'segname' 'segmentedfibersname' 'segfgname'}
         [~, val] = fileparts(afq.files.fibers.segmented{varargin{1}});
@@ -350,12 +360,36 @@ switch(param)
         catch
             val = [];
         end
-    case {'sinversedeformation' 'invdef'}
+    case {'inversedeformation' 'invdef'}
         try
             val = afq.xform.invDef(varargin{1});
         catch
             val = [];
         end
+    case {'useants'}
+        if isfield(afq.params,'normalization') && ...
+                isfield(afq.software,'ants') && ...
+                strcmp(afq.params.normalization,'ants') && ...
+                afq.software.ants == 1;
+            val = true;
+        else
+            val = false;
+        end
+    case {'antsinvwarp' 'antsinv' 'antsinversewarp'}
+        try 
+            val = afq.xform.antsinv{varargin{1}}
+        catch
+            val = [];
+        end
+    case {'metadata'}
+        val = afq.metadata.(varargin{1});
+    case{'imageresample' 'imresample2dwi' 'imresample2dti' 'imresample'}
+        if isfield(afq.params,'imresample')
+            val = afq.params.imresample;
+        else
+            val = false;
+        end
+        
     otherwise
         error('Uknown afq parameter');
 end

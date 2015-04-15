@@ -107,6 +107,13 @@ end
 runsubs = AFQ_get(afq,'run subjects');
 % Define the name of the segmented fiber group
 segName = AFQ_get(afq,'segfilename');
+
+% If ANTS is installed on the system then precompute spatial normalization
+% with ANTS and save to the afq structure
+if AFQ_get(afq, 'use ANTS')
+    afq = AFQ_ComputeSpatialNormalization(afq);
+end
+
 %%  Loop over every subject
 for ii = runsubs
     % Define the current subject to process
@@ -121,6 +128,9 @@ for ii = runsubs
     dtFile = fullfile(sub_dirs{ii},'dt6.mat');
     dt     = dtiLoadDt6(dtFile);
     
+    % If ANTS was used to compute a spatial normalization then load it for
+    % this subject
+    antsInvWarp = AFQ_get(afq,'ants inverse warp',ii);
     %% Perform Whole Brain Streamlines Tractography
     
     %Check if there is a fibers directory, otherwise make one.
@@ -154,8 +164,8 @@ for ii = runsubs
         if loadWholebrain == 1
             fg = AFQ_get(afq,'wholebrain fiber group',ii);
         end
-        % Segment fiber file
-        fg_classified = AFQ_SegmentFiberGroups(dtFile, fg);
+        % Segment fiber group
+        fg_classified = AFQ_SegmentFiberGroups(dtFile, fg, [], [],[], antsInvWarp);
         % Save segmented fiber group
         dtiWriteFiberGroup(fg_classified, fullfile(fibDir,segName));
         % If the full trajectory of each fiber group will be analyzed (eg.
@@ -189,11 +199,12 @@ for ii = runsubs
         if loadSegmentation == 1
             fg_classified = dtiLoadFiberGroup(fullfile(fibDir, segName));
         end
+        % Convert fiber groups into an array if they are not already 
+        fg_clean = fg2Array(fg_classified); 
+        
         % Remove all fibers that are too long and too far from the core of
         % the group.  This algorithm will constrain the fiber group to
         % something that can be reasonable represented as a 3d gaussian
-        fg_clean = fg2Array(fg_classified); % fiber groups into an array   
-        % remove fiber outliers
         for jj = 1:20
             % only clean if there are enough fibers for it to be worthwhile
             if  length(fg_clean(jj).fibers) > 20
@@ -266,6 +277,10 @@ for ii = runsubs
             for jj = 1:numimages
                 % Read the image file
                 image = readFileNifti(afq.files.images(jj).path{ii});
+                % Resample image to match dwi resolution if desired
+                if AFQ_get(afq,'imresample')
+                    image = mrAnatResampleToNifti(image, fullfile(afq.sub_dirs{ii},'bin','b0.nii.gz'),[],[7 7 7 0 0 0]);
+                end
                 % Compute a Tract Profile for that image
                 imagevals = AFQ_ComputeTractProperties(fg_classified, image, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii}, fWeight, afq);
                 % Add values to the afq structure
@@ -335,7 +350,9 @@ elseif AFQ_get(afq,'showfigs');
         for ii = 1:length(sub_nums)
             L{ii} = num2str(sub_nums(ii));
         end
-        AFQ_plot(norms, patient_data,'individual','ci',ci,'subjects',sub_nums,'tracts',jj,'legend',L)
+        if ~isempty(sub_nums)
+            AFQ_plot(norms, patient_data,'individual','ci',ci,'subjects',sub_nums,'tracts',jj,'legend',L);
+        end
         % AFQ_PlotResults(patient_data, norms, abn, afq.params.cutoff,property, afq.params.numberOfNodes, afq.params.outdir, afq.params.savefigs);
     end
 end

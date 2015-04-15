@@ -41,7 +41,7 @@ if notDefined('colors');
 end
 for ii = 1:myelinLayers
     if ii == 1
-        [lh, tubes] = AFQ_RenderFibers(fg,'radius',.3+ii*.03,'color',colors(ii,:),'jittercolor',0,'jittershading',0,'subdivs',20,'camera',[-85 6]);
+        [lh, tubes] = AFQ_RenderFibers(fg,'radius',.2+ii*.03,'color',colors(ii,:),'jittercolor',0,'jittershading',0,'subdivs',20,'camera',[-85 6]);
     else
         % Shorten slightly
         for k = 1:length(fg.fibers)
@@ -51,6 +51,11 @@ for ii = 1:myelinLayers
         AFQ_RenderFibers(fg,'radius',.3+ii*.03,'color',colors(ii,:),'jittercolor',0,'jittershading',0,'subdivs',30,'camera',[-85 6],'newfig',0);
     end
 end
+% get all the fiber coordinates
+fibcoords = vertcat(fg.fibers{:});
+% find the bounding box of the fibers
+bb(1,:) = min(fibcoords);
+bb(2,:) = max(fibcoords);
 set(gca,'color',[0 0 0]);axis('off');set(gcf,'color',[0 0 0]);
 AFQ_RenderEllipsoid(Q.*25, [3, -.5, 4], 20,[0 .5 1],0)
 axis('image');
@@ -68,7 +73,7 @@ C = bsxfun(@plus,randn(nw,3),mean(fc));
 C = repmat(C,[1 1 td]);
 % get figure handle
 fh = gcf;
-for ii = 1:120
+for ii = 1:130
     % Save last iterations positions
     if size(C,3)>1
         for k = size(C,3):-1:2
@@ -78,8 +83,13 @@ for ii = 1:120
     % Move the water
     Cnew = computeGaussianDisplacement(Q,squeeze(C(:,:,1)));
     C(:,:,1) = Cnew;
-    
+%     % find anything that has left the frame and move it back in
+%     del = all(C(:,:,1)<repmat(bb(1,:),size(C,1),1) | C(:,:,1)>repmat(bb(2,:),size(C,1),1)==0,2);
+%     C = reshape(C(repmat(del,3,size(C,3))),[sum(del),3,size(C,3)]);
+%     np = nearpoints(C(mv==0,:,1)',fibcoords');
+%     C(mv==0,:,1) = fibcoords(np,:)+randn(length(np),3).*.05;
     % Loop over each water molecule and render it
+    nw = size(C,1);
     for jj = 1:nw
         
         % Render the water at the new position
@@ -88,7 +98,7 @@ for ii = 1:120
         % Plot the new trace
         if size(C,3)>1
             for kk = 2:size(C,3)
-                wh(jj,kk) = patchline([C(jj,1,kk);C(jj,1,kk-1)], [C(jj,2,kk);C(jj,2,kk-1)], [C(jj,3,kk);C(jj,3,kk-1)],'edgecolor',[.6 .8 1],'edgealpha',1/(kk-1));
+                wh(jj,kk) = patchline([C(jj,1,kk);C(jj,1,kk-1)], [C(jj,2,kk);C(jj,2,kk-1)], [C(jj,3,kk);C(jj,3,kk-1)],'edgecolor',[.6 .8 1],'edgealpha',1/(kk-1),'linewidth',3);
             end
         end
 
@@ -104,7 +114,7 @@ for ii = 1:120
     if ii > 10 && ii < 50
         camorbit(2,2);
         camlight(lh,30,-30);
-    elseif ii > 70 && ii < 110
+    elseif ii > 80 && ii < 120
         camorbit(-2,-2);
         camlight(lh,30,-30);
     end
