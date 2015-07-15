@@ -487,8 +487,8 @@ if newfig ==1
 end
 
 %% Return the mesh of the fibrs as a patch object
-if tubes == 1
-    for ii = 1:length(h)
-        fvc(ii) = surf2patch(h(ii));
-    end
-end
+% if tubes == 1
+%     for ii = 1:length(h)
+%         fvc(ii) = surf2patch(h(ii));
+%     end
+% end
