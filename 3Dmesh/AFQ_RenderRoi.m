@@ -77,7 +77,7 @@ switch(method)
         % ni = niftiCreate(uint8(roiImg),imgXform);%Old code
         
         % Set up a parameters structure
-        params.color = color; params.newfig = newfig;
+        params.color = color; params.newfig = newfig; params.boxfilter = 3;
         
         % Close the figure window that was opened because we will open a
         % new one with a number of properties set how we like
