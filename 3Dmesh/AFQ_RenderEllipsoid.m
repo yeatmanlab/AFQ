@@ -97,7 +97,7 @@ if render == 1
     c(:,:,2) = repmat(color(2),size(z));
     c(:,:,3) = repmat(color(3),size(z));
     % Render the surface
-    h = surf(x,y,z,c,'EdgeAlpha',0.1);
+    h = surf(x,y,z,c,'EdgeAlpha',0);
     % Build outputs output
     xyzData.x = x;
     xyzData.y = y;
