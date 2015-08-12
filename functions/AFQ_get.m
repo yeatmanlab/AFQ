@@ -61,6 +61,8 @@ function val = AFQ_get(afq, param, varargin)
 % 'use ANTS'
 % 'ants inverse warp'     - [subject number]
 % 'meta data'             - 'field name'
+% 'imresample2dwi'
+%
 % To get any of the parameters save in the afq structure (see AFQ_Create),
 % enter the name of the parameter. Some have not been implimented yet, but
 % will be soon.
@@ -389,6 +391,12 @@ switch(param)
         end
     case {'metadata'}
         val = afq.metadata.(varargin{1});
+    case{'imageresample' 'imresample2dwi' 'imresample2dti' 'imresample'}
+        if isfield(afq.params,'imresample')
+            val = afq.params.imresample;
+        else
+            val = false;
+        end
         
     otherwise
         error('Uknown afq parameter');

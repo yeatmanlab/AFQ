@@ -278,6 +278,10 @@ for ii = runsubs
             for jj = 1:numimages
                 % Read the image file
                 image = readFileNifti(afq.files.images(jj).path{ii});
+                % Resample image to match dwi resolution if desired
+                if AFQ_get(afq,'imresample')
+                    image = mrAnatResampleToNifti(image, fullfile(afq.sub_dirs{ii},'bin','b0.nii.gz'),[],[7 7 7 0 0 0]);
+                end
                 % Compute a Tract Profile for that image
                 imagevals = AFQ_ComputeTractProperties(fg_classified, image, afq.params.numberOfNodes, afq.params.clip2rois, sub_dirs{ii}, fWeight, afq);
                 % Add values to the afq structure
@@ -347,7 +351,9 @@ elseif AFQ_get(afq,'showfigs');
         for ii = 1:length(sub_nums)
             L{ii} = num2str(sub_nums(ii));
         end
-        AFQ_plot(norms, patient_data,'individual','ci',ci,'subjects',sub_nums,'tracts',jj,'legend',L)
+        if ~isempty(sub_nums)
+            AFQ_plot(norms, patient_data,'individual','ci',ci,'subjects',sub_nums,'tracts',jj,'legend',L);
+        end
         % AFQ_PlotResults(patient_data, norms, abn, afq.params.cutoff,property, afq.params.numberOfNodes, afq.params.outdir, afq.params.savefigs);
     end
 end
