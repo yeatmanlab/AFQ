@@ -45,6 +45,7 @@ function val = AFQ_get(afq, param, varargin)
 % 'TractProfile vals'      - 'Left Arcuate', 'fa'
 %
 % 'use mrtrix'
+% 'lmax'
 % 'dt6path'               - [subject number]
 % 'tracking parameters'
 % 'mrtrixpaths'           - [subject number]
@@ -285,10 +286,17 @@ switch(param)
     case{'usemrtrix'}
         if afq.software.mrtrix == 1 && ...
                 strcmp('mrtrix',afq.params.track.algorithm)...
-                && afq.params.computeCSD == 1;
+                && afq.params.computeCSD > 0;
             val = true;
         else
             val = false;
+        end
+    case{'lmax'}
+        val = afq.params.computeCSD;
+        % lmax=4 is the default. computeCSD=1 means that the user wanted to
+        % use csd but did not set an lmax.
+        if val == 1
+            val = 4;
         end
     case{'dt6path'}
         % If a subject number was input then get the dt6path for that

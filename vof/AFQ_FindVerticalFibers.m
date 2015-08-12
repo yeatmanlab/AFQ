@@ -102,8 +102,8 @@ R_roi_all.coords = unique(floor(R_roi_all.coords),'rows');
 %% Find all vertical fibers projecting to VOT
 
 % Intersect fibers with ROI
-L_fg = dtiIntersectFibersWithRoi([],{'and' 'endpoints'},2,L_roi_all,fg);
-R_fg = dtiIntersectFibersWithRoi([],{'and' 'endpoints'},2,R_roi_all,fg);
+L_fg = dtiIntersectFibersWithRoi([],{'and' 'endpoints'},4,L_roi_all,fg);
+R_fg = dtiIntersectFibersWithRoi([],{'and' 'endpoints'},4,R_roi_all,fg);
 
 % Flip each fiber so that the first point is the most inferior one
 for ii = 1:length(L_fg.fibers)

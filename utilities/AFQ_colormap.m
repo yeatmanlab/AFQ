@@ -20,6 +20,8 @@ switch(cmap)
         rgb = vertcat(rgb,lineargradient([0 1 1; 0 .7 0],nsamples));
         rgb = vertcat(rgb,lineargradient([0 .7 0; 1 1 0],nsamples));
         rgb = vertcat(rgb,lineargradient([1 1 0; .7 0 0],nsamples));
+    case{'blueyellow'}
+        rgb = lineargradient([0 0 1;1 1 0],256);
 end
 
 

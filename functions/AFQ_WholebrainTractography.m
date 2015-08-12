@@ -77,7 +77,7 @@ end
 %% Track with mrtrix if the right files are there
 if exist('mrtrix','var') && mrtrix == 1
     mrtrixpaths = AFQ_get(params,'mrtrix paths',params.currentsub);
-    [status, results, fg, pathstr] = mrtrix_track(mrtrixpaths.csd, mrtrixpaths.wm, mrtrixpaths.wm, 'stream', 500000,[],[],1);
+    [status, results, fg, pathstr] = mrtrix_track(mrtrixpaths, mrtrixpaths.wm, mrtrixpaths.wm, 'prob', opts.nfibers,[],[],1);
 else
     %% Otherwise track with mrdiffusion
     % Compute FA at every voxel
