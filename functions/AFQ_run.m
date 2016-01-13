@@ -131,6 +131,7 @@ for ii = runsubs
     % If ANTS was used to compute a spatial normalization then load it for
     % this subject
     antsInvWarp = AFQ_get(afq,'ants inverse warp',ii);
+    
     %% Perform Whole Brain Streamlines Tractography
     
     %Check if there is a fibers directory, otherwise make one.

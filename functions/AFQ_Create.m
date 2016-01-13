@@ -79,9 +79,17 @@ afq.xform.antsinv = [];
 
 %% Check which software packages are installed
 afq.software.mrvista = check_mrvista;
-afq.software.mrtrix = check_mrTrix;
 afq.software.spm = check_spm;
+afq.software.mrtrix = check_mrTrix;
+if check_mrTrix == 1
+   fprintf('\nmrTrix is installed. To perform tracking based on CSD with mrTrix:')
+   fprintf('\nAFQ_Create(...,''computeCSD'',1)\n');
+end
 afq.software.ants = check_ants;
+if check_ants == 1
+   fprintf('\nANTs is installed. To perform alignment with ANTs:')
+   fprintf('\nAFQ_Create(...,''normalization'',''ants'')\n');
+end
 
 %% Set the afq.params structure with default parameters
 %  cutoff: The percentile cutoff to be used to determine what is "abnormal"
@@ -138,7 +146,9 @@ afq.params.showfigs = true;
 % Save figures? yes or no
 afq.params.savefigs = false;
 % Whether or not to compute constrained spherical deconvolution using
-% mrtrix
+% mrtrix. ) means don't use mrtrix. 1 means use mrtrix with the default
+% lmax (4). Otherwise you can set the lmax by following 'computeCSD' with a
+% scaler.
 afq.params.computeCSD = 0;
 % Whether or not to comput control group norms
 afq.params.computenorms = 1;
@@ -178,6 +188,8 @@ afq.params.track.offsetJitter = 0;
 afq.params.track.seedVoxelOffsets = [0.25 0.75];
 % Mask from which to initialize tracking
 afq.params.track.faMaskThresh = 0.30;
+% Number of fibers to track. This parameter is only relevant for mrTrix
+afq.params.track.nfibers = 500000;
 
 % TODO:
 %  Write a parameter translation routine based on mrvParamFormat()
@@ -246,13 +258,17 @@ afq.overwrite.vals = zeros(AFQ_get(afq,'num subs'),1);
 
 % If mr trix is installed and CSD is computed then perform tracking on
 % constrained spherical deconvolution
-if afq.software.mrtrix == 1 && afq.params.computeCSD == 1
+if afq.software.mrtrix == 1 && afq.params.computeCSD > 0
     afq.params.track.algorithm = 'mrtrix';
 end
 
 if AFQ_get(afq,'use mrtrix')
     for ii = 1:AFQ_get(afq,'num subs')
-        files = AFQ_mrtrixInit(AFQ_get(afq, 'dt6 path',ii));
+        mrtrixdir = fullfile(afq.sub_dirs{ii},'mrtrix');
+        if ~exist(mrtrixdir,'dir'),mkdir(mrtrixdir);end
+        % Get the lmax from the afq structure
+        lmax = AFQ_get(afq,'lmax');
+        files = mrtrix_init(AFQ_get(afq, 'dt6 path',ii),lmax,mrtrixdir);
         afq.files.mrtrix.csd{ii} = files.csd;
         afq.files.mrtrix.wm{ii} = files.wm;
     end

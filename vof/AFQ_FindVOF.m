@@ -1,4 +1,4 @@
-function [L_VOF, R_VOF, L_pArc, R_pArc, L_pArc_vot, R_pArc_vot] = AFQ_FindVOF(wholebrainfgPath,L_arcuate,R_arcuate,fsROIdir,outdir,thresh,v_crit, dt)
+function [L_VOF, R_VOF, L_pArc, R_pArc, L_pArc_vot, R_pArc_vot] = AFQ_FindVOF(wholebrainfgPath,L_arcuate,R_arcuate,fsROIdir,outdir,thresh,v_crit, dt, savefiles)
 % Segment the VOF from a wholebrain connectome
 %
 % [L_VOF, R_VOF, L_pArc, R_pArc, L_pArc_vot, R_pArc_vot] = AFQ_FindVOF(wholebrainfgPath,L_arcuate,R_arcuate,fsROIdir,outdir,thresh,v_crit, dt)
@@ -10,14 +10,14 @@ function [L_VOF, R_VOF, L_pArc, R_pArc, L_pArc_vot, R_pArc_vot] = AFQ_FindVOF(wh
 % Inputs:
 %
 % wholebrainfgPath - A path (or fg structure) for a wholebrain fiber group.
-% L_arcuate        - Segmented arcuate fasciculus (left hemisphere). See 
+% L_arcuate        - Segmented arcuate fasciculus (left hemisphere). See
 %                    AFQ_SegmentFiberGroups
 % R_arcuate        - Segmented arcuate fasciculus (left hemisphere).
 % fsROIdir         - Path to a directory containing .mat ROIs of each
 %                    cortical region that is segmnted by freesurfer. This
 %                    means that you must first run freesurfers recon-all on
 %                    a t1 weighted image to get a cortical segmentation.
-%                    Next use the function: 
+%                    Next use the function:
 %                    fs_roisFromAllLabels(fsIn,outDir,type,refT1)
 %                    to convert the freesurfer segmentation into ,mat ROIs
 % outdir           - This is where all the outputs will be saved
@@ -30,14 +30,16 @@ function [L_VOF, R_VOF, L_pArc, R_pArc, L_pArc_vot, R_pArc_vot] = AFQ_FindVOF(wh
 %                    compare to other directions (e.g., longitudinal) to be
 %                    a candidate for the VOF. The default is 1.3
 % dt               - dt6.mat structure or path to the dt6.mat file.
+% savefiles        - Logical indicating whether VOF fiber groups should be
+%                    saved
 %
 % Outputs
 % L_VOF, R_VOF     - Left and right hemisphere VOF fiber groups
-% L_pArc, R_pArc   - Left and right Posterior arcuate fasciculus fiber 
-%                    groups. The posterior arcuate is another vertical 
+% L_pArc, R_pArc   - Left and right Posterior arcuate fasciculus fiber
+%                    groups. The posterior arcuate is another vertical
 %                    fiber bundle that marks the anterior extent of the VOF
 % L_pArc_vot,      - Some of the posterior arcuate fibers terminate in
-% R_pArc_vot         ventral occipitotemporal cortex. We return this subset 
+% R_pArc_vot         ventral occipitotemporal cortex. We return this subset
 %                    of the posterior arcuate as a separate fiber group here.
 %
 % Copyright Jason D. Yeatman, September 2014. Code released with:
@@ -62,7 +64,10 @@ end
 if notDefined('v_crit')
     v_crit = 1.3;
 end
-
+% Default is to save fibers
+if notDefined('savefiles')
+    savefiles = true;
+end
 %% Find vertical fibers
 % From the wholebrain fiber group find all the vertical fibers that
 % terminate in ventral occipitotemporal cortex (VOT).
@@ -120,7 +125,7 @@ if ~isempty(R_fg_vert.fibers)
     R_pArc_vot.fibers =  R_fg_vert.fibers(fgMvals>=20);
     
     % From the VOF fiber group, remove any fibers that are further anterior
-    % than the core of the posterior arcuate. 
+    % than the core of the posterior arcuate.
     ymaxR = mean(cellfun(@(x) mean(x(2,:)),R_pArc.fibers));
     R_VOF_keep = cellfun(@(x) all(x(2,:)<ymaxR),R_VOF.fibers);
     R_VOF.fibers = R_VOF.fibers(R_VOF_keep);
@@ -131,5 +136,12 @@ if ~isempty(R_fg_vert.fibers)
 else
     R_VOF=[];
     R_pArc_vot=[];
+end
+
+%% Save VOF fibers
+if savefiles == 1
+    sub_dir = fileparts(dt.dataFile);
+    dtiWriteFiberGroup(L_VOF,fullfile(sub_dir,'fibers','L_VOF'));
+    dtiWriteFiberGroup(R_VOF,fullfile(sub_dir,'fibers','R_VOF'))
 end
 
