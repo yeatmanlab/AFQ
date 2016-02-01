@@ -1,7 +1,7 @@
-function [lightH, fiberMesh, fvc] = AFQ_RenderFibers(fg,varargin)
+function [lightH, fiberMesh, h] = AFQ_RenderFibers(fg,varargin)
 % Render a fiber group and tract profile in 3-D
 %
-%   [lightH. fiberMesh, fvc] = AFQ_RenderFibers(fg,'PropertyName',PropertyValue, ...)
+%   [lightH. fiberMesh, h] = AFQ_RenderFibers(fg,'PropertyName',PropertyValue, ...)
 %
 % Given an mrDiffusion fiber group structure, AFQ_RenderFibers(fg), will
 % make a 3-D rendering of that fiber group.  The 3-d rendering can be
@@ -484,6 +484,8 @@ if newfig ==1
     cameratoolbar('Show');
     cameratoolbar('SetMode','orbit');
     fprintf('\nmesh can be rotated with arrow keys\n')
+else
+    lightH = [];
 end
 
 %% Return the mesh of the fibrs as a patch object
