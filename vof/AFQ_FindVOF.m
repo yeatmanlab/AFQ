@@ -1,7 +1,7 @@
-function [L_VOF, R_VOF, L_pArc, R_pArc, L_pArc_vot, R_pArc_vot] = AFQ_FindVOF(wholebrainfgPath,L_arcuate,R_arcuate,fsROIdir,outdir,thresh,v_crit, dt, savefiles)
+function [L_VOF, R_VOF, L_pArc, R_pArc, L_pArc_vot, R_pArc_vot] = AFQ_FindVOF(wholebrainfgPath,L_arcuate,R_arcuate,fsROIdir,outdir,thresh,v_crit, dt, savefiles, arcThresh, parcThresh)
 % Segment the VOF from a wholebrain connectome
 %
-% [L_VOF, R_VOF, L_pArc, R_pArc, L_pArc_vot, R_pArc_vot] = AFQ_FindVOF(wholebrainfgPath,L_arcuate,R_arcuate,fsROIdir,outdir,thresh,v_crit, dt)
+% [L_VOF, R_VOF, L_pArc, R_pArc, L_pArc_vot, R_pArc_vot] = AFQ_FindVOF(wholebrainfgPath,L_arcuate,R_arcuate,fsROIdir,outdir,thresh,v_crit, dt, savefiles, arcThresh, parcThresh)
 %
 % This function will take in a wholebrain connectome, a segmented arcuate
 % fasciculus and a freesurfer segmentation and return the vertical
@@ -68,6 +68,17 @@ end
 if notDefined('savefiles')
     savefiles = true;
 end
+% Default is to define VOF as fibers that have fewer than 20 nodes of
+% overlap with the arcuate
+if notDefined('arcThresh')
+    arcThresh = 20;
+end
+% Default is to consider fibers that are anterior to the posterior arcuate
+% as not part of the VOF
+if notDefined('parcThresh')
+    parcThresh = 1;
+end
+
 %% Find vertical fibers
 % From the wholebrain fiber group find all the vertical fibers that
 % terminate in ventral occipitotemporal cortex (VOT).
@@ -92,15 +103,19 @@ if ~isempty(L_fg_vert.fibers)
     % Compute the number of nodes that overlap with the arcuate
     fgVals = dtiGetValFromFibers(arcFdImg,L_fg_vert,inv(dt.xformToAcpc));
     fgMvals = cellfun(@(x) sum(x),fgVals);
-    % Remove fibers that overlap with the arcuate for more than 20 nodes
-    L_VOF.fibers = L_fg_vert.fibers(fgMvals<20);
-    L_pArc_vot.fibers =  L_fg_vert.fibers(fgMvals>=20);
+    % Remove fibers that overlap with the arcuate for more than arcThresh nodes
+    L_VOF.fibers = L_fg_vert.fibers(fgMvals<arcThresh);
+    L_pArc_vot.fibers =  L_fg_vert.fibers(fgMvals>=arcThresh);
     
     % From the VOF fiber group, remove any fibers that are further anterior
     % than the core of the posterior arcuate.
-    ymaxL = mean(cellfun(@(x) mean(x(2,:)),L_pArc.fibers));
-    L_VOF_keep = cellfun(@(x) all(x(2,:)<ymaxL),L_VOF.fibers);
-    L_VOF.fibers = L_VOF.fibers(L_VOF_keep);
+    if parcThresh == 1
+        ymaxL = mean(cellfun(@(x) mean(x(2,:)),L_pArc.fibers));
+        L_VOF_keep = cellfun(@(x) all(x(2,:)<ymaxL),L_VOF.fibers);
+        % Add fibers that are being removed to pArc_vot
+        L_pArc_vot.fibers = vertcat(L_pArc_vot.fibers,L_VOF.fibers(~L_VOF_keep));
+        L_VOF.fibers = L_VOF.fibers(L_VOF_keep);
+    end
     
     % Clean into a bundle
     L_VOF=AFQ_removeFiberOutliers(L_VOF,4,100,25);
@@ -121,14 +136,18 @@ if ~isempty(R_fg_vert.fibers)
     fgVals = dtiGetValFromFibers(arcFdImg,R_fg_vert,inv(dt.xformToAcpc));
     fgMvals = cellfun(@(x) sum(x),fgVals);
     % Remove fibers that overlap with the arcuate for more than 20 nodes
-    R_VOF.fibers = R_fg_vert.fibers(fgMvals<20);
-    R_pArc_vot.fibers =  R_fg_vert.fibers(fgMvals>=20);
+    R_VOF.fibers = R_fg_vert.fibers(fgMvals<arcThresh);
+    R_pArc_vot.fibers =  R_fg_vert.fibers(fgMvals>=arcThresh);
     
     % From the VOF fiber group, remove any fibers that are further anterior
     % than the core of the posterior arcuate.
-    ymaxR = mean(cellfun(@(x) mean(x(2,:)),R_pArc.fibers));
-    R_VOF_keep = cellfun(@(x) all(x(2,:)<ymaxR),R_VOF.fibers);
-    R_VOF.fibers = R_VOF.fibers(R_VOF_keep);
+    if parcThresh == 1
+        ymaxR = mean(cellfun(@(x) mean(x(2,:)),R_pArc.fibers));
+        R_VOF_keep = cellfun(@(x) all(x(2,:)<ymaxR),R_VOF.fibers);
+        % Add fibers that are being removed to pArc_vot
+        R_pArc_vot.fibers = vertcat(R_pArc_vot.fibers,R_VOF.fibers(~R_VOF_keep));
+        R_VOF.fibers = R_VOF.fibers(R_VOF_keep);
+    end
     
     % Clean into a bundle
     R_VOF=AFQ_removeFiberOutliers(R_VOF,4,100,25);
