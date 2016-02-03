@@ -5,14 +5,14 @@ Automated Fiber Quantification
 ==============================
 
 AFQ was designed to generate Tract Profiles of tissue properties for major fiber tracts in healthy and diseased brains. Online documentation can be found at: 
-http://white.stanford.edu/newlm/index.php/AFQ.  
+https://github.com/yeatmanlab/AFQ/wiki.  
 The current stable release (v1.2) can be downloaded from: 
-https://github.com/jyeatman/AFQ/archive/v1.2.zip
-But I suggest following the repository using git. The software is updated regularly.
+https://github.com/yeatmanlab/AFQ/archive/v1.2.zip
+But it is strongly recommended to following the repository on git. The software is updated regularly.
 For help and updates join the AFQ mailing list in google groups:
 https://groups.google.com/forum/?fromgroups#!forum/automated-fiber-quantification-afq
 
-AFQ has been tested for MATLAB r2009b through MATLAB r2012b. It requires functions from the MATLAB stats toolbox, vistasoft and spm.
+AFQ has been tested for MATLAB r2009b through MATLAB r2014b. It requires functions from the MATLAB stats toolbox, vistasoft and SPM.
 
 If you use this software please cite the relevant manuscripts describing the work:
 
