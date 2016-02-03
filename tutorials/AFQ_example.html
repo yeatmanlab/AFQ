@@ -99,11 +99,11 @@ b0 = readFileNifti(fullfile(sub_dir,<span class="string">'bin'</span>,<span clas
 AFQ_AddImageTo3dPlot(b0,[-2, 0, 0]);
 </pre><pre class="codeoutput">
 scale=[2.0,2.0,2.0]mm, track=1, interp=1, step=1.0mm, fa=0.20, angle=30.0deg, puncture=0.20, minLength=50.0mm, maxLength=250.0mm
-Tracking 124442 fibers (1556 fibers per tick):
+Tracking 33670 fibers (421 fibers per tick):
 ................................................................................
-32704 fibers passed length threshold of 50.0 (out of 124442 seeds).
-Elapsed time is 72.827790 seconds.
-32704 fibers, mean length 94mm (max 251mm; min 50mm).
+19833 fibers passed length threshold of 50.0 (out of 33670 seeds).
+Elapsed time is 26.902815 seconds.
+19833 fibers, mean length 97mm (max 251mm; min 50mm).
 
 mesh can be rotated with arrow keys
 </pre><img vspace="5" hspace="5" src="AFQ_example_01.png" alt=""> <h2>Step 2: Fiber tract segmentation<a name="3"></a></h2><pre class="codeinput"><span class="comment">% Segment the whole-brain fiber group into 20 fiber tracts</span>
@@ -135,8 +135,6 @@ AFQ_RenderFibers(fg_classified(19),<span class="string">'numfibers'</span>,400,<
 AFQ_AddImageTo3dPlot(b0,[-2, 0, 0]);
 </pre><pre class="codeoutput">You chose to recompute ROIs
 Fibers that get as close to the ROIs as 2mm will become candidates for the Mori Groups
-Direct calls to spm_defauts are deprecated.
-Please use spm('Defaults',modality) or spm_get_defaults instead.
 Smoothing by 0 &amp; 8mm..
 Coarse Affine Registration..
 Fine Affine Registration..
@@ -158,7 +156,7 @@ Fine Affine Registration..
  iteration 15:  FWHM =  9.696 Var = 1.57881
  iteration 16:  FWHM =  9.697 Var = 1.57881
 Computing inverse deformation...
-dtiCleanFibers: Keeping 32549 out of 32704 fibers.
+dtiCleanFibers: Keeping 19727 out of 19833 fibers.
 dtiSplitInterhemisphericFibers: Splitting every fiber below Z=-10 
 
 mesh can be rotated with arrow keys
@@ -214,51 +212,51 @@ title(<span class="string">'Uncinate after cleaning'</span>,<span class="string"
     fg_clean(ii) = AFQ_removeFiberOutliers(fg_classified(ii),maxDist,maxLen,numNodes,M,count,maxIter);
 <span class="keyword">end</span>
 </pre><pre class="codeoutput">
-Left Uncinate number of fibers: 227 
-Left Uncinate number of fibers: 213 
+Left Uncinate number of fibers: 110 
+Left Uncinate number of fibers: 106 
 mesh can be rotated with arrow keys
 
 mesh can be rotated with arrow keys
 
-Left Thalamic Radiation number of fibers: 347 
-Left Thalamic Radiation number of fibers: 313 
-Right Thalamic Radiation number of fibers: 408 
-Right Thalamic Radiation number of fibers: 370 
-Left Corticospinal number of fibers: 1038 
-Left Corticospinal number of fibers: 971 
-Right Corticospinal number of fibers: 1310 
-Right Corticospinal number of fibers: 1266 
-Left Cingulum Cingulate number of fibers: 119 
-Left Cingulum Cingulate number of fibers: 106 
-Right Cingulum Cingulate number of fibers: 49 
-Right Cingulum Cingulate number of fibers: 40 
-Left Cingulum Hippocampus number of fibers: 103 
-Left Cingulum Hippocampus number of fibers: 95 
-Right Cingulum Hippocampus number of fibers: 77 
-Callosum Forceps Major number of fibers: 301 
-Callosum Forceps Major number of fibers: 287 
-Callosum Forceps Minor number of fibers: 1198 
-Callosum Forceps Minor number of fibers: 1169 
-Left IFOF number of fibers: 429 
-Left IFOF number of fibers: 390 
-Right IFOF number of fibers: 298 
-Right IFOF number of fibers: 272 
-Left ILF number of fibers: 170 
-Left ILF number of fibers: 159 
-Right ILF number of fibers: 314 
-Right ILF number of fibers: 289 
-Left SLF number of fibers: 216 
-Left SLF number of fibers: 198 
-Right SLF number of fibers: 382 
-Right SLF number of fibers: 367 
-Left Uncinate number of fibers: 227 
-Left Uncinate number of fibers: 213 
-Right Uncinate number of fibers: 491 
-Right Uncinate number of fibers: 460 
-Left Arcuate number of fibers: 378 
-Left Arcuate number of fibers: 349 
-Right Arcuate number of fibers: 214 
-Right Arcuate number of fibers: 198 </pre><img vspace="5" hspace="5" src="AFQ_example_03.png" alt=""> <img vspace="5" hspace="5" src="AFQ_example_04.png" alt=""> <h2>Step 4: Compute tract profiles<a name="5"></a></h2><pre class="codeinput"><span class="comment">% AFQ_ComputeTractProperties will compute diffusion properties (FA, MD, RD,</span>
+Left Thalamic Radiation number of fibers: 260 
+Left Thalamic Radiation number of fibers: 234 
+Right Thalamic Radiation number of fibers: 220 
+Right Thalamic Radiation number of fibers: 202 
+Left Corticospinal number of fibers: 828 
+Left Corticospinal number of fibers: 777 
+Right Corticospinal number of fibers: 1031 
+Right Corticospinal number of fibers: 1009 
+Left Cingulum Cingulate number of fibers: 97 
+Left Cingulum Cingulate number of fibers: 86 
+Right Cingulum Cingulate number of fibers: 14 
+Left Cingulum Hippocampus number of fibers: 29 
+Left Cingulum Hippocampus number of fibers: 28 
+Right Cingulum Hippocampus number of fibers: 23 
+Right Cingulum Hippocampus number of fibers: 21 
+Callosum Forceps Major number of fibers: 262 
+Callosum Forceps Major number of fibers: 251 
+Callosum Forceps Minor number of fibers: 942 
+Callosum Forceps Minor number of fibers: 925 
+Left IFOF number of fibers: 300 
+Left IFOF number of fibers: 273 
+Right IFOF number of fibers: 165 
+Right IFOF number of fibers: 155 
+Left ILF number of fibers: 106 
+Left ILF number of fibers: 101 
+Right ILF number of fibers: 151 
+Right ILF number of fibers: 136 
+Left SLF number of fibers: 115 
+Left SLF number of fibers: 108 
+Right SLF number of fibers: 282 
+Right SLF number of fibers: 272 
+Left Uncinate number of fibers: 110 
+Left Uncinate number of fibers: 106 
+Right Uncinate number of fibers: 251 
+Right Uncinate number of fibers: 238 
+Left Arcuate number of fibers: 262 
+Left Arcuate number of fibers: 241 
+Right Arcuate number of fibers: 99 
+Right Arcuate number of fibers: 90 </pre><img vspace="5" hspace="5" src="AFQ_example_03.png" alt=""> <img vspace="5" hspace="5" src="AFQ_example_04.png" alt=""> <h2>Step 4: Compute tract profiles<a name="5"></a></h2><pre class="codeinput"><span class="comment">% AFQ_ComputeTractProperties will compute diffusion properties (FA, MD, RD,</span>
 <span class="comment">% AD, etc.) at numNodes locations along the trajectory of each fiber tract.</span>
 <span class="comment">% The default of the function is to do this computation for the portion of</span>
 <span class="comment">% the tract spanning between the two defining ROIs.</span>
