@@ -13,9 +13,10 @@ if ~exist('remotename', 'var') || isempty(remotename)
 end
 afqdir = AFQ_directories;
 tdir = fullfile(afqdir,'tutorials');
+cd(afqdir)
 
 % List of tutorials to publish
-tlist = {'AFQ_example.m'};
+tlist = {'AFQ_example.m', 'AFQ_example_GroupComparison.m'};
 
 % Publish tutorial list
 opts.format = 'html';
@@ -26,11 +27,11 @@ end
 
 % Checkout gh-pages branch add tutorials, push to github and change back to
 % master branch
-cd(afqdir)
+[~, curbr] = system('git symbolic-ref --short HEAD')
 system('git checkout gh-pages')
 system(sprintf('mv %s %s',fullfile(tdir,'htmltmp','*'),tdir))
 system(sprintf('rm -d %s %s',fullfile(tdir,'htmltmp')))
 system('git add tutorials')
 system('git commit -m ''changes to tutorials''')
 system(sprintf('git push %s gh-pages', remotename))
-system('git checkout master')
+system(sprintf('git checkout %s',curbr))
