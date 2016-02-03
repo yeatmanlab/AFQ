@@ -10,7 +10,7 @@ afqdir = AFQ_directories;
 tdir = fullfile(afqdir,'tutorials');
 
 % List of tutorials to publish
-tlist = {'AFQ_example.m')
+tlist = {'AFQ_example.m'};
 
 opts.format = 'html';
 opts.outputDir = tdir;
