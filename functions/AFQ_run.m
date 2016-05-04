@@ -278,6 +278,10 @@ for ii = runsubs
             for jj = 1:numimages
                 % Read the image file
                 image = niftiRead(afq.files.images(jj).path{ii});
+                % Check image header
+                if ~all(image.qto_xyz(:) == image.sto_xyz(:))
+                   image = niftiCheckQto(image);
+                end  
                 % Resample image to match dwi resolution if desired
                 if AFQ_get(afq,'imresample')
                     image = mrAnatResampleToNifti(image, fullfile(afq.sub_dirs{ii},'bin','b0.nii.gz'),[],[7 7 7 0 0 0]);
