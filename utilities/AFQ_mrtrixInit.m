@@ -1,4 +1,4 @@
-function files = AFQ_mrtrixInit(dt6, lmax, mrtrix_folder)
+function files = AFQ_mrtrixInit(dt6, lmax, mrtrix_folder, afq.software.mrtrixVersion)
 % function files = AFQ_mrtrixInit(dt6, lmax, mrtrix_folder)
 % 
 % Initialize an mrtrix CSD analysis
@@ -90,18 +90,18 @@ end
 
 % Get the FA from the diffusion tensor estimates: 
 if (~computed.('fa'))
-  mrtrix_tensor2FA(files.dt, files.fa, files.brainmask,0);
+  AFQ_mrtrix_tensor2FA(files.dt, files.fa, files.brainmask,0,afq.software.mrtrixVersion);
 end
 
 % Generate the eigenvectors, weighted by FA: 
 if  (~computed.('ev'))
-  mrtrix_tensor2vector(files.dt, files.ev, files.fa,0);
+  AFQ_mrtrix_tensor2vector(files.dt, files.ev, files.fa,0,afq.software.mrtrixVersion);
 end
 
 % Estimate the response function of single fibers: 
 if (~computed.('response'))
-  mrtrix_response(files.brainmask, files.fa, files.sf, files.dwi,...
-      files.response, files.b, true,[],8,0) % That last 'true' means a figure of the 
+  AFQ_mrtrix_response(files.brainmask, files.fa, files.sf, files.dwi,...
+      files.response, files.b, true,[],8,0,afq.software.mrtrixVersion) % That penultimate 'true' means a figure of the 
                                   % response function will be displayed
 end
 
@@ -114,7 +114,8 @@ end
 % Compute the CSD estimates: 
 if (~computed.('csd'))  
   disp('The following step takes a while (a few hours)');                                  
-  mrtrix_csdeconv(files.dwi, files.response, lmax, files.csd, files.b, files.brainmask,0)
+  AFQ_mrtrix_csdeconv(files.dwi, files.response, lmax, files.csd, ...
+                      files.b, files.brainmask,0,afq.software.mrtrixVersion)
 end
 
 

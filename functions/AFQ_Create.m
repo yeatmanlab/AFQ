@@ -80,8 +80,13 @@ afq.xform.antsinv = [];
 %% Check which software packages are installed
 afq.software.mrvista = check_mrvista;
 afq.software.spm = check_spm;
-afq.software.mrtrix = check_mrTrix;
-if check_mrTrix == 1
+afq.software.mrtrixVersion = check_mrTrix_Version;
+if check_mrTrix_Version ~= 0
+    afq.software.mrtrix = check_mrTrix(afq.software.mrtrixVersion);
+else
+    afq.software.mrtrix = 0;
+end
+if afq.software.mrtrix == 1
    fprintf('\nmrTrix is installed. To perform tracking based on CSD with mrTrix:')
    fprintf('\nAFQ_Create(...,''computeCSD'',1)\n');
 end
@@ -268,7 +273,7 @@ if AFQ_get(afq,'use mrtrix')
         if ~exist(mrtrixdir,'dir'),mkdir(mrtrixdir);end
         % Get the lmax from the afq structure
         lmax = AFQ_get(afq,'lmax');
-        files = mrtrix_init(AFQ_get(afq, 'dt6 path',ii),lmax,mrtrixdir);
+        files = AFQ_mrtrix_init(AFQ_get(afq, 'dt6 path',ii),lmax,mrtrixdir,afq.software.mrtrixVersion);
         afq.files.mrtrix.csd{ii} = files.csd;
         afq.files.mrtrix.wm{ii} = files.wm;
     end
