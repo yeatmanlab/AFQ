@@ -1,4 +1,4 @@
-function files = AFQ_mrtrixInit(dt6, lmax, mrtrix_folder, afq.software.mrtrixVersion)
+function files = AFQ_mrtrixInit(dt6, lmax, mrtrix_folder, mrtrixVersion)
 % function files = AFQ_mrtrixInit(dt6, lmax, mrtrix_folder)
 % 
 % Initialize an mrtrix CSD analysis
@@ -32,6 +32,8 @@ function files = AFQ_mrtrixInit(dt6, lmax, mrtrix_folder, afq.software.mrtrixVer
 % For details: 
 % http://www.brain.org.au/software/mrtrix/tractography/preprocess.html
 % 
+
+afq.software.mrtrixVersion = mrtrixVersion;
 
 if notDefined('mrtrix_folder'), mrtrix_folder = 'mrtrix'; end
 if notDefined('lmax'), lmax = 8; end
@@ -67,7 +69,11 @@ computed = mrtrix_check_processes(files);
 
 % Convert the raw dwi data to the mrtrix format: 
 if (~computed.('dwi'))
-  mrtrix_mrconvert(dwRawFile, files.dwi,0); 
+    AFQ_mrtrix_mrconvert(dwRawFile, ...
+                         files.dwi, ...
+                         0, ...
+                         0, ...
+                         afq.software.mrtrixVersion); 
 end
 
 % This file contains both bvecs and bvals, as per convention of mrtrix
@@ -80,7 +86,7 @@ end
 % Convert the brain mask from mrDiffusion into a .mif file: 
 if (~computed.('brainmask'))
   brainMaskFile = fullfile(session, dt_info.files.brainMask); 
-  mrtrix_mrconvert(brainMaskFile, files.brainmask, false); 
+  AFQ_mrtrix_mrconvert(brainMaskFile, files.brainmask, false); 
 end
 
 % Generate diffusion tensors:

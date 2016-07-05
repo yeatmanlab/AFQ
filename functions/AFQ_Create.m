@@ -273,7 +273,10 @@ if AFQ_get(afq,'use mrtrix')
         if ~exist(mrtrixdir,'dir'),mkdir(mrtrixdir);end
         % Get the lmax from the afq structure
         lmax = AFQ_get(afq,'lmax');
-        files = AFQ_mrtrix_init(AFQ_get(afq, 'dt6 path',ii),lmax,mrtrixdir,afq.software.mrtrixVersion);
+        files = AFQ_mrtrixInit(AFQ_get(afq, 'dt6path',ii),...
+                               lmax,...
+                                mrtrixdir,...
+                                afq.software.mrtrixVersion);
         afq.files.mrtrix.csd{ii} = files.csd;
         afq.files.mrtrix.wm{ii} = files.wm;
     end

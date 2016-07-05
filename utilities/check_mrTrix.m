@@ -21,6 +21,7 @@ if version == 2
     [stat(8), mrTrixpaths{8}] = system('which tensor2FA'); 
     [stat(9), mrTrixpaths{9}] = system('which mrmult'); 
     [stat(10), mrTrixpaths{10}] = system('which tensor2vector'); 
+    [stat(11), mrTrixpaths{11}] = system('which streamtrack'); 
 
 end
 if version == 3
@@ -30,11 +31,8 @@ if version == 3
     [stat(8), mrTrixpaths{8}] = system('which tensor2metric'); % Use -fa output option
     [stat(9), mrTrixpaths{9}] = system('which mrcalc'); % Ej. mrcalc A.mif B.mif -mult out.mif
     [stat(10), mrTrixpaths{10}] = system('which tensor2metric'); % Use -vector output option
+    [stat(11), mrTrixpaths{11}] = system('which tckgen');
 end
 
 % Check if all functions were installed
 status = sum(stat) == 0;
-
-
-streamtrack
-tckgen
