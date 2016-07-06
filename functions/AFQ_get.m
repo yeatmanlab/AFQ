@@ -397,7 +397,8 @@ switch(param)
         else
             val = false;
         end
-        
+    case {'mrtrixversion'}
+        val = afq.software.mrtrixVersion;    
     otherwise
         error('Uknown afq parameter');
 end

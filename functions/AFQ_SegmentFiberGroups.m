@@ -156,8 +156,17 @@ if ischar(fg), fg = dtiLoadFiberGroup(fg); end
 % Set the directory where templates can be found
 tdir = fullfile(fileparts(which('mrDiffusion.m')), 'templates');
 % Initialize spm defualts for normalization
-spm_defaults; global defaults; params = defaults.normalise.estimate;
-% spm_get_defaults - For SPM8
+spm_get_defaults; global defaults; 
+% In my case it is not reading the estimate, just the .write, copied this values
+% from https://github.com/casperkaae/MATLAB/blob/master/spm8/spm_defaults.m
+defaults.normalise.estimate.smosrc  = 8;
+defaults.normalise.estimate.smoref  = 0;
+defaults.normalise.estimate.regtype = 'mni';
+defaults.normalise.estimate.weight  = '';
+defaults.normalise.estimate.cutoff  = 25;
+defaults.normalise.estimate.nits    = 16;
+defaults.normalise.estimate.reg     = 1;
+params = defaults.normalise.estimate;
 
 %% Spatially normalize diffusion data with the MNI (ICBM) template
 template = fullfile(tdir,'MNI_JHU_T2.nii.gz');

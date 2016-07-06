@@ -1,7 +1,15 @@
-function [status,results] = AFQ_mrtrix_response(mask_file, fa_file, sf_file,...
-                                            dwi_file, response_file, b_file,...
-                                            threshold, show_figure, bkgrnd,  ...
-                                            lmax, verbose, mrtrixVersion)
+function [status,results] = AFQ_mrtrix_response(mask_file, ...
+                                                fa_file, ...
+                                                sf_file, ...
+                                                dwi_file, ...
+                                                response_file, ...
+                                                 b_file,...
+                                                 threshold, ...
+                                                 show_figure, ...
+                                                 bkgrnd,  ...
+                                                 lmax, ...
+                                                 verbose, ...
+                                                 mrtrixVersion)
 % Calculate the fiber response function utilized by MRtrix for the spherical
 % deconvolution analysis.
 %
@@ -40,37 +48,54 @@ if notDefined('bkgrnd'),   bkgrnd = false;end
 if notDefined('lmax'),       lmax = 6;end
 if notDefined('threshold'),  threshold = '-abs 0.8';end
 
-% This generates a mask of voxels with high FA. These are assumed to be
-% voxels that contain a single fiber:
-cmd_str = sprintf('erode %s - | erode - - | mrmult %s - - | threshold - %s %s',...
-    mask_file, fa_file, threshold, sf_file);
-[status, results] = mrtrix_cmd(cmd_str, bkgrnd, verbose);
-
-
 if mrtrixVersion == 2
     func1Name = 'estimate_response';
     func2Name = 'disp_profile';
+    func3Name = 'erode';
+    func3NameOpt = '';
+    func4Name = 'mrmult';
+    func4NameOpt = '';
+    func5Name = 'threshold';
 end
 if mrtrixVersion == 3
-    func1Name = 'dwi2response';
+    func1Name = 'dwi2response fa';
     func2Name = 'shview';
+    func3Name = 'maskfilter';
+    func3NameOpt = 'erode';
+    func4Name = 'mrcalc';
+    func4NameOpt = '-mult';
+    func5Name = 'mrthreshold';
 end
+
+
+% This generates a mask of voxels with high FA. These are assumed to be
+% voxels that contain a single fiber:
+cmd_str = sprintf('%s %s %s - | %s - %s - | %s %s - %s -| %s -force - %s %s',...
+                   func3Name, mask_file, func3NameOpt, ...
+                   func3Name, func3NameOpt, ...
+                   func4Name, fa_file, func4NameOpt, ...
+                   func5Name, threshold, sf_file);
+[status,results] = AFQ_mrtrix_cmd(cmd_str, bkgrnd, verbose,mrtrixVersion);
+
+
+
 
 
 if ~status
     % Once we know where there are single fibers, we estimate the fiber
     % response function from these voxels:
-    cmd_str = sprintf('%s %s %s %s -grad %s -lmax %i',...
-                     func1Name, dwi_file, sf_file, response_file, b_file, lmax);
-    [status, results] = mrtrix_cmd(cmd_str, bkgrnd, verbose);
-    
+    cmd_str = sprintf('%s %s %s -grad %s -lmax %i',...
+                     func1Name, dwi_file, response_file,...
+                                     b_file, ...
+                                               lmax);
+     [status,results] = AFQ_mrtrix_cmd(cmd_str, bkgrnd, verbose,mrtrixVersion);    
     if ~status
         % We can take a look at this. It should look like a disk (see the figure
         % example in
         % http://www.brain.org.au/software/mrtrix/tractography/preprocess.html):
         if show_figure
             cmd_str = sprintf('$s -response %s &',func2Name,response_file);
-            mrtrix_cmd(cmd_str, false, verbose);
+             AFQ_mrtrix_cmd(cmd_str, bkgrnd, verbose,mrtrixVersion);
         end
     end
 end

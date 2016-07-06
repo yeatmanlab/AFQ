@@ -26,11 +26,15 @@ function [status, results] = mrtrix_tensor2vector (in_file, out_file, ...
 
 if mrtrixVersion == 2
     func1Name = 'tensor2FA';
+    func1NameOpt = '';
     func2Name = 'mrmult';
+    func2NameOpt = '';
 end
 if mrtrixVersion == 3
-    func1Name = 'tensor2metric -vector';
-    func2Name = 'mrcalc -mult';
+    func1Name = 'tensor2metric';
+    func1NameOpt = '-vector';
+    func2Name = 'mrcalc';
+    func2NameOpt = '-mult';
 end
 
 
@@ -43,12 +47,14 @@ if notDefined('bkgrnd')
 end
 
 if notDefined('fa_file')
-    cmd_str = sprintf('%s %s %s', func1Name, in_file,  out_file);
+    cmd_str = sprintf('%s %s %s %s', func1Name,    in_file, ... 
+                                  func1NameOpt, out_file);
 else
-    cmd_str = sprintf('%s %s - | %s - %s %s', func1Name, in_file, fa_file, ...
-                     func2Name, out_file);
+    cmd_str = sprintf('%s %s %s - | %s - %s %s %s', ...
+                       func1Name, in_file, func1NameOpt, ...
+                       func2Name, fa_file, func2NameOpt, out_file);
 end
 
 % Send it to mrtrix:
-[status,results] = mrtrix_cmd(cmd_str, bkgrnd, verbose);
+[status,results] = AFQ_mrtrix_cmd(cmd_str, bkgrnd, verbose,mrtrixVersion);
 

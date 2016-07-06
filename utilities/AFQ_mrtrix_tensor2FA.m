@@ -39,11 +39,15 @@ end
 
 if mrtrixVersion == 2
     func1Name = 'tensor2FA';
+    func1NameOpt = '';
     func2Name = 'mrmult';
+    func2NameOpt = '';
 end
 if mrtrixVersion == 3
-    func1Name = 'tensor2metric -fa';
-    func2Name = 'mrcalc -mult';
+    func1Name = 'tensor2metric';
+    func1NameOpt = '-fa';
+    func2Name = 'mrcalc';
+    func2NameOpt = '-mult';
 end
 
 
@@ -51,12 +55,14 @@ end
 
 % If no mask file was provided, calculate this over the entire volume
 if notDefined('mask_file')
-    cmd_str = sprintf('%s %s %s', func1Name, in_file, out_file);
+    cmd_str = sprintf('%s %s %s %s', func1Name,    in_file, ... 
+                                  func1NameOpt, out_file);
 % Otherwise, use the mask file provided: 
 else
-    cmd_str = sprintf('%s %s - | %s - %s %s', func1Name, in_file, ...
-                  func2Name, mask_file, out_file);
+    cmd_str = sprintf('%s %s %s - | %s - %s %s %s', ...
+                       func1Name, in_file, func1NameOpt, ...
+                       func2Name, mask_file, func2NameOpt, out_file);
 end
 
 % Send it to mrtrix:
-[status,results] = mrtrix_cmd(cmd_str, bkgrnd, verbose);
+[status,results] = AFQ_mrtrix_cmd(cmd_str, bkgrnd, verbose,mrtrixVersion);

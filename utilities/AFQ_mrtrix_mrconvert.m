@@ -26,7 +26,10 @@ end
 
 cmd_str = sprintf('mrconvert %s %s', convert_file, mif_filename); 
 
-[status,results] = AFQ_mrtrix_cmd(cmd_str, bkgrnd, verbose,mrtrixVersion); 
+[status,results] = AFQ_mrtrix_cmd(cmd_str, ...
+                                  bkgrnd, ...
+                                  verbose, ...
+                                  mrtrixVersion); 
 
 % Rezip it: 
 if orig_data_file(end-1:end) == 'gz'
