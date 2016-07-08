@@ -18,8 +18,12 @@ function h = AFQ_RenderRoi(roi, color, method, render, varargin)
 % render = What to render. Either the roi surface: render = 'surface' or a
 %          wire frame: render = 'wire' 
 %
-% Example: fg = dtiReadFibers('L_Arcuate.mat');
-% roi = dtiReadRoi('roi1.mat'); AFQ_RenderFiber(fg); % Render the fibers
+% Example: 
+% fg = dtiReadFibers('L_Arcuate_Posterior.mat');
+% fg = dtiReadFibers('1031_ctx-lh-supramarginal.mat');
+% roi = dtiReadRoi('roi1.mat'); 
+% roi = dtiReadRoi('1031_ctx-lh-supramarginal.mat'); 
+% AFQ_RenderFibers(fg); % Render the fibers
 % AFQ_RenderRoi(roi, [1 .5 0]); % Render the roi in orange
 %
 % Copyright Jason D Yeatman June 2012

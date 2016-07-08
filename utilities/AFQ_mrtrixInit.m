@@ -38,8 +38,11 @@ function files = AFQ_mrtrixInit(dt6, lmax, mrtrix_folder, mrtrixVersion)
 % path it needs, right now it is not working. I will just comment the old
 % version if I need it afterwards. 
 % 2: 
-% TODO: 
-% 1.- Make it multishell within mrTrix. http://mrtrix.readthedocs.io/en/latest/workflows/multi_tissue_csd.html
+% TODO: Make it multishell within mrTrix. http://mrtrix.readthedocs.io/en/latest/workflows/multi_tissue_csd.html
+% 1.- Obtain the 5 tissue type-s segmentation (5tt)
+% 2.- 
+
+
 
 afq.software.mrtrixVersion = mrtrixVersion;
 
@@ -88,6 +91,25 @@ computed = mrtrix_check_processes(files);
 if (~computed.('dwi'))
     AFQ_mrtrix_mrconvert(dwRawFile, ...
                          files.dwi, ...
+                         0, ...
+                         0, ...
+                         afq.software.mrtrixVersion); 
+end
+
+% Convert the raw dwi data to the mrtrix format: 
+if (~computed.('T1'))
+    AFQ_mrtrix_mrconvert(dwRawFile, ...
+                         files.dwi, ...
+                         0, ...
+                         0, ...
+                         afq.software.mrtrixVersion); 
+end
+
+
+% Convert the raw dwi data to the mrtrix format: 
+if (~computed.('tt5'))
+    AFQ_mrtrix_mrconvert(dwRawFile, ...
+                         files.tt5, ...
                          0, ...
                          0, ...
                          afq.software.mrtrixVersion); 
@@ -148,7 +170,11 @@ end
 % Create a white-matter mask, tracktography will act only in here.
 if (~computed.('wm'))
   wmMaskFile = fullfile(session, dt_info.files.wmMask);
-  AFQ_mrtrix_mrconvert(wmMaskFile, files.wm,[],0,afq.software.mrtrixVersion)
+  AFQ_mrtrix_mrconvert(wmMaskFile, ...
+                       files.wm, ...
+                       [], ...
+                       0, ...
+                       afq.software.mrtrixVersion)
 end
 
 % Compute the CSD estimates: 
@@ -221,6 +247,13 @@ files.wm    = strcat(fname_trunk, '_wm.mif');
 
 % Compute the CSD estimates: 
 files.csd = strcat(fname_trunk, sprintf('_csd_lmax%i.mif',lmax)); 
+
+% Create a coregistered T1 data set from the same subject
+files.T1    = strcat(fname_trunk, '_T1.mif');
+
+% Create tissue type segmentation to be used in multishell: 
+files.tt5 = strcat(fname_trunk, sprintf('_5tt.mif',lmax)); 
+
 
 
 

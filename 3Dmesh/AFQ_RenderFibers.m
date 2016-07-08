@@ -123,7 +123,7 @@ function [lightH, fiberMesh, h] = AFQ_RenderFibers(fg,varargin)
 %
 % Example:
 %
-% fg = dtiReadFibers('MoriGroups_clean_D5_L4.mat');
+% fg = dtiReadFibers('MoriGroups.mat');
 % fg = dtiReadFibers('WholeBrainFG.mat');
 % dt = dtiLoadDt6('dt6.mat');
 % AFQ_RenderFibers(fg, 'dt', dt, 'radius', [.7 5], 'jittercolor', .1, 'tubes',0);

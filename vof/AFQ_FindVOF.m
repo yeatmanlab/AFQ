@@ -23,7 +23,7 @@ function [L_VOF, R_VOF, L_pArc, R_pArc, L_pArc_vot, R_pArc_vot] = ...
 % wholebrainfgPath - A path (or fg structure) for a wholebrain fiber group.
 % L_arcuate        - Segmented arcuate fasciculus (left hemisphere). See
 %                    AFQ_SegmentFiberGroups
-% R_arcuate        - Segmented arcuate fasciculus (left hemisphere).
+% R_arcuate        - Segmented arcuate fasciculus (right hemisphere).
 % fsROIdir         - Path to a directory containing .mat ROIs of each
 %                    cortical region that is segmnted by freesurfer. This
 %                    means that you must first run freesurfers recon-all on
