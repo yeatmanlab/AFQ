@@ -251,7 +251,7 @@ for ii = 1:AFQ_get(afq,'num subs')
         afq.files.fibers.clean{ii} = cleanFG;
     end
 end
-% Save the name name of the segmented fiber group
+% Save the name  of the segmented fiber group
 afq.files.fibers.segName = segName;
 %% Allow previous analyses to be overwritten
 afq.overwrite.fibers.wholebrain = zeros(AFQ_get(afq,'num subs'),1);
@@ -281,6 +281,11 @@ if AFQ_get(afq,'use mrtrix')
         afq.files.mrtrix.wm{ii} = files.wm;
     end
 end
+% files =
+% AFQ_mrtrixInit('/bcbl/home/public/Gari/MINI/ANALYSIS/DWI/S002/dmri/dti90trilin/dt6.mat', ...
+%                4,
+%                '/bcbl/home/public/Gari/MINI/ANALYSIS/DWI/S002/dmri/dti90trilin/mrtrix', 3)
+%                
 
 %% Set the current subject field to subject 1
 afq.currentsub = 1;
