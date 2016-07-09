@@ -36,9 +36,6 @@ files.wm    = strcat(fname_trunk, '_wm.mif');
 % Compute the CSD estimates: 
 files.csd = strcat(fname_trunk, sprintf('_csd_lmax%i.mif',lmax)); 
 
-% Create a coregistered T1 data set from the same subject
-files.T1    = strcat(fname_trunk, '_T1.mif');
-
 % Create tissue type segmentation to be used in multishell: 
 files.tt5 = strcat(fname_trunk, '_5tt.mif');
 

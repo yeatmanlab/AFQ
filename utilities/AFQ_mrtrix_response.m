@@ -101,3 +101,11 @@ if ~status
 end
 
 end
+
+
+
+% Esto es lo que he lanzado
+% dwi2response msmt_5tt data_aligned_trilin_noMEC_dwi.mif data_aligned_trilin_noMEC_5tt.mif data_aligned_trilin_noMEC_wm.txt data_aligned_trilin_noMEC_gm.txt data_aligned_trilin_noMEC_csf.txt -grad data_aligned_trilin_noMEC.b
+
+
+

@@ -89,7 +89,7 @@ if mrtrixVersion == 2
         % Generate the mrtrix-unix command.
         cmd_str = sprintf('%s %s %s -seed %s -grad %s -mask %s %s -num %d', ...
                  funcName,mode_str2, files.dwi, roi, files.b, mask, tck_file, nSeeds); 
-
+% tckgen iFOD2 
       otherwise
         error('Input "%s" is not a valid tracking mode', mode_str2);
     end

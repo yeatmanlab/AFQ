@@ -64,3 +64,12 @@ else
 end 
 
 [status,results] = AFQ_mrtrix_cmd(cmd_str, bkgrnd, verbose,mrtrixVersion);
+
+
+
+% Esto es lo que he lanzado en command line
+% dwi2fod msmt_csd -mask data_aligned_trilin_noMEC_brainmask.mif data_aligned_trilin_noMEC_dwi.mif data_aligned_trilin_noMEC_wm.txt data_aligned_trilin_noMEC_wm.mif data_aligned_trilin_noMEC_gm.txt data_aligned_trilin_noMEC_gm.mif data_aligned_trilin_noMEC_csf.txt data_aligned_trilin_noMEC_csf.mif -grad data_aligned_trilin_noMEC.b
+
+
+
+

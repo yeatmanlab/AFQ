@@ -134,16 +134,8 @@ if (~computed.('dwi'))
                          afq.software.mrtrixVersion); 
 end
 
-% Convert the acpc nii T1w data to the mrtrix format: 
-if (~computed.('T1'))
-    AFQ_mrtrix_mrconvert(fullfile(session, T1niiFile), ...
-                         files.T1, ...
-                         0, ...
-                         0, ...
-                         afq.software.mrtrixVersion); 
-end
 
-
+% TODO: failing in cluster, working in osx and cajal02
 % Create the 5tt file from the T1.mif: 
 if (~computed.('tt5')) && (afq.software.mrtrixVersion > 2)
     % do this: 5ttgen fsl/freesurfer T1.mif 5tt.mif
