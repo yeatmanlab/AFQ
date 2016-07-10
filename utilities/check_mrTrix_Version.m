@@ -3,10 +3,17 @@ function mrTrixVersion = check_mrTrix_Version
 %
 % mrTrixVersion = check_mrTrix_Version
 %
-% mrTrixVersion==0 if mr trix is not installed. 
+% mrTrixVersion==0 if mrTrix is not installed. 
 % mrTrixVersion==2 or 3 depending on the version
 % 
 % GLU 06.2016
+
+% Jason, I don't have the AFQ_mrtrix_set_ld_path problem (in linux/OSX), I get rid of it with
+% the matlab call itself. Furthermore, it would be circular, since that function
+% is using the version information as well. We could us a function call used in
+% both versions. Please edit this as it is working for you and I
+% will override it in my version if necessary. 
+
 
 mrTrixVersion = 0;
 [status, cmdout] = system('mrconvert -version');

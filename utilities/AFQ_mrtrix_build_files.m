@@ -1,4 +1,4 @@
-function files = mrtrix_build_files(fname_trunk,lmax)
+function files = mrtrix_build_files(fname_trunk,lmax,multishell)
 % Builds a structure with the names of the files that the MRtrix commands
 % will generate and need.
 %
@@ -31,12 +31,24 @@ files.sf = strcat(fname_trunk, '_sf.mif');
 files.response = strcat(fname_trunk, '_response.txt');
 
 % Create a white-matter mask, tracktography will act only in here.
-files.wm    = strcat(fname_trunk, '_wm.mif');
+files.wmMask    = strcat(fname_trunk, '_wmMask.mif');
 
 % Compute the CSD estimates: 
 files.csd = strcat(fname_trunk, sprintf('_csd_lmax%i.mif',lmax)); 
 
-% Create tissue type segmentation to be used in multishell: 
-files.tt5 = strcat(fname_trunk, '_5tt.mif');
 
+if multishell
+    % Create tissue type segmentation to be used in multishell: 
+    files.tt5 = strcat(fname_trunk, '_5tt.mif');
+    % Create per tissue type response file
+    files.wmResponse = strcat(fname_trunk, '_wmResponse.txt');
+    files.gmResponse = strcat(fname_trunk, '_gmResponse.txt');
+    files.csfResponse = strcat(fname_trunk, '_csfResponse.txt');
+    % Compute the CSD estimates: 
+    files.wmCsd  = strcat(fname_trunk, sprintf('_wmCsd_lmax%i.mif',lmax)); 
+    files.gmCsd  = strcat(fname_trunk, sprintf('_gmCsd_lmax%i.mif',lmax)); 
+    files.csfCsd = strcat(fname_trunk, sprintf('_csfCsd_lmax%i.mif',lmax)); 
+    % RGB tissue signal contribution maps
+    files.vf = strcat(fname_trunk, '_vf.mif');
+end
 end

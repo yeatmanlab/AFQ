@@ -193,8 +193,25 @@ afq.params.track.offsetJitter = 0;
 afq.params.track.seedVoxelOffsets = [0.25 0.75];
 % Mask from which to initialize tracking
 afq.params.track.faMaskThresh = 0.30;
+
+% Parameters relevant to mrTrix.
+% Beware, the code is being maintained for both mrTrix2 and mrTrix3. 
+% Consider that mrTrix2 is called obsolete by the developers, with no updates 
+% http://community.mrtrix.org/t/mrtrix-tutorial-error/141
+% Function names change, and there are many new options in mrTrix3.
 % Number of fibers to track. This parameter is only relevant for mrTrix
 afq.params.track.nfibers = 500000;
+% Choose algorithm for tracking with mrTrix
+% Options if you have version 2:
+%    'probabilistic tractography': 'SD_PROB'
+%    'deterministic tractogrpahy based on spherical deconvolution': 'SD_STREAM'
+%    'deterministic tractogrpahy based on a tensor model': 'DT_STREAM'
+% Options if you have version 3:
+%     FACT, iFOD1, iFOD2, Nulldist1, Nulldist2, SD_Stream, 
+%                         Seedtest, Tensor_Det, Tensor_Prob (default: iFOD2).
+afq.params.track.mrTrixAlgo = 'iFOD2';
+% Specify here if you want multishell true or false
+afq.params.track.multishell = true;
 
 % TODO:
 %  Write a parameter translation routine based on mrvParamFormat()
@@ -273,12 +290,19 @@ if AFQ_get(afq,'use mrtrix')
         if ~exist(mrtrixdir,'dir'),mkdir(mrtrixdir);end
         % Get the lmax from the afq structure
         lmax = AFQ_get(afq,'lmax');
-        files = AFQ_mrtrixInit(AFQ_get(afq, 'dt6path',ii),...
+        multishell = true;
+        files = AFQ_mrtrixInit(AFQ_get(afq, 'dt6path',ii), ...
                                lmax,...
-                                mrtrixdir,...
-                                afq.software.mrtrixVersion);
-        afq.files.mrtrix.csd{ii} = files.csd;
-        afq.files.mrtrix.wm{ii} = files.wm;
+                               mrtrixdir,...
+                               afq.software.mrtrixVersion, ...
+                               afq.params.track.multishell); % true/false
+        if ~multishell
+            afq.files.mrtrix.csd{ii} = files.csd;
+            afq.files.mrtrix.wm{ii} = files.wmMask;
+        else
+            afq.files.mrtrix.csd{ii} = files.wmCsd;
+            afq.files.mrtrix.wm{ii} = files.wmMask;
+        end
     end
 end
 % files =

@@ -1,4 +1,8 @@
-function files = AFQ_mrtrixInit(dt6, T1nii, lmax, mrtrix_folder, mrtrixVersion)
+function files = AFQ_mrtrixInit(dt6, ...
+                                lmax, ...
+                                mrtrix_folder, ...
+                                mrtrixVersion, ...
+                                multishell)
 % function files = AFQ_mrtrixInit(dt6, lmax, mrtrix_folder)
 % 
 % Initialize an mrtrix CSD analysis
@@ -53,17 +57,15 @@ function files = AFQ_mrtrixInit(dt6, T1nii, lmax, mrtrix_folder, mrtrixVersion)
 
 
 
-afq.software.mrtrixVersion = mrtrixVersion;
-
-% if notDefined('mrtrix_folder'), 
-%     mrtrix_folder = 'mrtrix'; 
-% end
+if notDefined('mrtrix_folder'), mrtrix_folder = 'mrtrix'; end
 if notDefined('lmax'), lmax = 8; end
 % Loading the dt file containing all the paths to the fiels we need.
 dt_info = load(dt6);
 
 % Check if this is correct, dt_info.files has some relative and absolute
 % paths, it doesn't make sense. 
+% I cannot recover the position of my original t1 from this information, so I
+% copied it to the 'session' folder, in SubName/dmri 
 %                 b0: 'dti90trilin/bin/b0.nii.gz'
 %          brainMask: 'dti90trilin/bin/brainMask.nii.gz'
 %             wmMask: 'dti90trilin/bin/wmMask.nii.gz'
@@ -82,11 +84,8 @@ dt_info = load(dt6);
 % Furthermore, the assumption that the 'raw' file is above the dt6 filename
 % breaks the code as it is duplicating the whole pathnames. 
 % Example: mrtrix_dir = /bcbl/home/public/Gari/MINI/ANALYSIS/DWI/S002//bcbl/home/public/Gari/MINI/ANALYSIS/DWI/S002/dmri/dti90trilin/mrtrixi/
-% I am trying to
-% fix this, the fix I did in mac would leave the mrtrix names withouth the
-% initial part of the filename. 
-% I am going to comment the code in order to be easier for you to revise
-% the code. I still don't know the use case. I understand that the mrtrix
+% I fixed this (anf the initial part of the name issue as well)
+% I still don't understand the use case. I understand that the mrtrix
 % folder should be at the same level as the dt6.mat file, which defines
 % every subject analysis, so using the bde_ code, it should be below the
 % dti90trilin folder. I understand that the piece of filename that wants to
@@ -95,7 +94,6 @@ dt_info = load(dt6);
 
 % Strip the file names out of the dt6 strings. 
 dwRawFile = dt_info.files.alignedDwRaw;
-T1niiFile = dt_info.files.t1;
 
 
 % This line removes the extension of the file (.nii.gz) and mainaints de path
@@ -120,7 +118,7 @@ if ~exist(mrtrix_dir, 'dir')
 end
 
 % Build the mrtrix file names.
-files = AFQ_mrtrix_build_files(fname_trunk,lmax);
+files = AFQ_mrtrix_build_files(fname_trunk,lmax, multishell);
 
 % Check wich processes were already computed and which ons need to be doen.
 computed = mrtrix_check_processes(files);
@@ -131,21 +129,9 @@ if (~computed.('dwi'))
                          files.dwi, ...
                          0, ...
                          0, ...
-                         afq.software.mrtrixVersion); 
+                         mrtrixVersion); 
 end
 
-
-% TODO: failing in cluster, working in osx and cajal02
-% Create the 5tt file from the T1.mif: 
-if (~computed.('tt5')) && (afq.software.mrtrixVersion > 2)
-    % do this: 5ttgen fsl/freesurfer T1.mif 5tt.mif
-       AFQ_mrtrix_5ttgen(fullfile(session, T1niiFile), ...
-                         files.tt5, ...
-                         0, ...
-                         0, ...
-                         afq.software.mrtrixVersion,...
-                         'freesurfer'); 
-end
 
 % This file contains both bvecs and bvals, as per convention of mrtrix
 if (~computed.('b'))
@@ -161,7 +147,7 @@ if (~computed.('brainmask'))
                        files.brainmask, ...
                        false, ...
                        false, ...
-                       afq.software.mrtrixVersion); 
+                       mrtrixVersion); 
 end
 
 % Generate diffusion tensors:
@@ -170,17 +156,21 @@ if (~computed.('dt'))
                         files.dt, ...
                         files.b,...
                         0, ...
-                        afq.software.mrtrixVersion);
+                        mrtrixVersion);
 end
 
 % Get the FA from the diffusion tensor estimates: 
 if (~computed.('fa'))
-  AFQ_mrtrix_tensor2FA(files.dt, files.fa, files.brainmask,0,afq.software.mrtrixVersion);
+  AFQ_mrtrix_tensor2FA(files.dt, ...
+                       files.fa, ...
+                       files.brainmask, ...
+                       0, ...
+                       mrtrixVersion);
 end
 
 % Generate the eigenvectors, weighted by FA: 
 if  (~computed.('ev'))
-  AFQ_mrtrix_tensor2vector(files.dt, files.ev, files.fa,0,afq.software.mrtrixVersion);
+  AFQ_mrtrix_tensor2vector(files.dt, files.ev, files.fa,0,mrtrixVersion);
 end
 
 % Estimate the response function of single fibers: 
@@ -196,32 +186,92 @@ if (~computed.('response'))
                       [], ... %bckground
                       8, ... %lmax
                       false, ... %verbose
-                      afq.software.mrtrixVersion) 
+                      mrtrixVersion) 
 end
 
 % Create a white-matter mask, tracktography will act only in here.
-if (~computed.('wm'))
+if (~computed.('wmMask'))
   wmMaskFile = fullfile(session, dt_info.files.wmMask);
   AFQ_mrtrix_mrconvert(wmMaskFile, ...
-                       files.wm, ...
+                       files.wmMask, ...
                        [], ...
                        0, ...
-                       afq.software.mrtrixVersion)
+                       mrtrixVersion)
 end
 
-% Compute the CSD estimates: 
-if (~computed.('csd'))  
-  disp('The following step takes a while (a few hours)');                                  
-  AFQ_mrtrix_csdeconv(files.dwi, ...
-                      files.response, ...
-                      lmax, ...
-                      files.csd, ... %out
-                      files.b, ... %grad
-                      files.brainmask,... %mask
-                      false,... % Verbose
-                      afq.software.mrtrixVersion)
-end
 
+
+if ~multishell
+    % Compute the CSD estimates: 
+    if (~computed.('csd'))  
+      disp('The following step takes a while (a few hours)');                                  
+      AFQ_mrtrix_csdeconv(files.dwi, ...
+                          files.response, ...
+                          lmax, ...
+                          files.csd, ... %out
+                          files.b, ... %grad
+                          files.brainmask,... %mask
+                          false,... % Verbose
+                          mrtrixVersion)
+    end
+
+else
+    % Create the 5tt file from the same ac-pc-ed T1 nii we used in the other steps: 
+    if (~computed.('tt5')) && (mrtrixVersion > 2)
+        % do this: 5ttgen fsl/freesurfer T1.mif 5tt.mif
+        T1niiFile = dt_info.files.t1;
+
+        AFQ_mrtrix_5ttgen(fullfile(session, T1niiFile), ...
+                          files.tt5, ...
+                          0, ...
+                          0, ...
+                          mrtrixVersion,...
+                          'fsl', ...
+                          0); % -nthreads = 0 
+        % One of the steps is multithreaded, but at least in our cluster is not working
+        % because the /tmp folder is specific of each node. 
+        % In a normal machine it works fine. 
+    end
+    
+    % Create per tissue response function estimation
+    % Not using the other response function, we already have the masks
+    if (~computed.('wmResponse')) && (mrtrixVersion > 2)
+        cmd_str = ['dwi2response msmt_5tt ' ...
+                    files.dwi ' ' files.tt5 ' ' ...
+                    files.wmResponse ' ' files.gmResponse ' ' files.csfResponse ' ' ...
+                    '-grad ' files.b];
+                    
+        AFQ_mrtrix_cmd(cmd_str, 0, 0,mrtrixVersion);
+    end
+    
+    
+    % Compute the CSD estimates: 
+    if (~computed.('csd'))   && (mrtrixVersion > 2)
+      disp('The following step takes a while (a few hours)');                                  
+      AFQ_mrtrix_csdeconv_msmt(files.dwi, ...
+                              files.wmResponse, ...
+                              files.gmResponse, ...
+                              files.csfResponse, ...
+                              lmax, ...
+                              files.wmCsd, ...
+                              files.gmCsd, ...
+                              files.csfCsd, ...
+                              files.b, ...
+                              files.brainmask, ...
+                              0, ...
+                              0, ...
+                              mrtrixVersion)
+    end
+    
+    % RGB tissue signal contribution maps
+    if (~computed.('vf'))  && (mrtrixVersion > 2)
+         % mrconvert -coord 3 0 wm.mif - | mrcat csf.mif gm.mif - vf.mif
+        cmd_str = ['mrconvert -coord 3 0 ' files.wmCsd ' - | ' ...
+                   'mrcat ' files.gmCsd ' ' files.csfCsd ' - ' files.vf];           
+        AFQ_mrtrix_cmd(cmd_str, 0, 0,mrtrixVersion);
+    end
+    
+end
 
 
 

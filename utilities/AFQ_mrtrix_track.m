@@ -1,14 +1,15 @@
 function [status, results, fg, pathstr] = AFQ_mrtrix_track(files, ...
                                                            roi, ...
                                                            mask, ...
-                                                           mode, ...
+                                                           algo, ...
                                                            nSeeds, ...
                                                            bkgrnd, ...
                                                            verbose, ...
                                                            clobber, ...
-                                                           mrtrixVersion)
+                                                           mrtrixVersion, ...
+                                                           multishell)
 %
-% function [status, results, fg, pathstr] = mrtrix_track(files, roi, mask, mode, nSeeds, bkgrnd, verbose)
+% function [status, results, fg, pathstr] = mrtrix_track(files, roi, mask, algo, nSeeds, bkgrnd, verbose)
 %
 % Provided a csd estimate, generate estimates of the fibers starting in roi 
 % and terminating when they reach the boundary of mask
@@ -21,8 +22,7 @@ function [status, results, fg, pathstr] = AFQ_mrtrix_track(files, ...
 %      tractography.
 % mask: string, filename for a .mif format of a mask. Use the *_wm.mif file for Whole-Brain
 %      tractography.
-% mode: Tracking mode: {'prob' | 'stream'} for probabilistic or
-%       deterministic tracking. 
+% algo: Tracking algorithm: it was 'mode' before. Specify it directly in afq.param.track.mrTrixAlgo 
 % nSeeds: The number of fibers to generate.
 % bkgrnd: on unix, whether to perform the operation in another process
 % verbose: whether to display standard output to the command window. 
@@ -31,11 +31,19 @@ function [status, results, fg, pathstr] = AFQ_mrtrix_track(files, ...
 % 
 % Franco, Bob & Ariel (c) Vistalab Stanford University 2013 
 % Edit GLU 06.2016 added mrTrix versioning
+% Mode now has been modified with algo, and it is set in the afq structure
+% directly in AFQ_Create. Be careful, the options for mrTrix2 and mrTrix3 are
+% very different. See AFQ_Create for all the available options.
 
 status = 0; results = [];
 if notDefined('verbose'),  verbose = false;end
 if notDefined('bkgrnd'),    bkgrnd = false;end
 if notDefined('clobber'),  clobber = false;end
+
+
+% REMOVE THIS IN THE REVIEW
+% See AFQ_Create, as indicated by Jason I included the algo in the creation
+% process as part of the afq structure. 
 
 % Choose the tracking mode (probabilistic or stream)
 % mrTrix3 new options
@@ -43,40 +51,41 @@ if notDefined('clobber'),  clobber = false;end
 %      specify the tractography algorithm to use. Valid choices are: FACT, iFOD1,
 %      iFOD2, Nulldist1, Nulldist2, SD_Stream, Seedtest, Tensor_Det, Tensor_Prob
 %      (default: iFOD2).
-switch mode
-  case {'prob','probabilistic tractography'}
-    mode_str2 = 'SD_PROB';
-    mode_str3 = 'Tensor_Prob';
-  case {'stream','deterministic tractogrpahy based on spherical deconvolution'}
-    mode_str2 = 'SD_STREAM';
-    mode_str3 = 'SD_Stream';
-  case {'tensor','deterministic tractogrpahy based on a tensor model'}
-    mode_str2 = 'DT_STREAM';
-    mode_str3 = 'Tensor_Det';
-  otherwise
-    error('Input "%s" is not a valid tracking mode', mode); 
-end
+% switch mode
+%   case {'prob','probabilistic tractography'}
+%     mode_str2 = 'SD_PROB';
+%     mode_str3 = 'Tensor_Prob';
+%   case {'stream','deterministic tractogrpahy based on spherical deconvolution'}
+%     mode_str2 = 'SD_STREAM';
+%     mode_str3 = 'SD_Stream';
+%   case {'tensor','deterministic tractogrpahy based on a tensor model'}
+%     mode_str2 = 'DT_STREAM';
+%     mode_str3 = 'Tensor_Det';
+%   otherwise
+%     error('Input "%s" is not a valid tracking mode', mode); 
+% end
 
 
 
-% In this case there are several changes between mrtrix2 and mrtrix3, I prefer
-% to maintain the whole thing for version 2 and create a new one for 3.
+% In this case there are several changes between mrtrix2 and mrtrix3
+% Maintaining the whole thing for version 2 and create a new one for 3 so that
+% it will be easier in the future to delete the whole mrTrix2 thing
 
 if mrtrixVersion == 2
     funcName = 'streamtrack';
     % Generate a UNIX command string.                          
-    switch mode_str2
+    switch algo
       case {'SD_PROB', 'SD_STREAM'}
         % Build a file name for the tracks that will be generated.
         % THe file name will contain information regarding the files being used to
         % track, mask, csd file etc.
         [~, pathstr] = strip_ext(files.csd);
         tck_file = fullfile(pathstr,strcat(strip_ext(files.csd), '_' , strip_ext(roi), '_',...
-          strip_ext(mask) , '_', mode, '-',num2str(nSeeds),'.tck'));
+          strip_ext(mask) , '_', algo, '-',num2str(nSeeds),'.tck'));
 
         % Generate the mrtrix-unix command
         cmd_str = sprintf('%s %s %s -seed %s -mask %s %s -num %d', ...
-                         funcName,mode_str2, files.csd, roi, mask, tck_file, nSeeds); 
+                         funcName,algo, files.csd, roi, mask, tck_file, nSeeds); 
 
       case {'DT_STREAM'}
               % Build a file name for the tracks that will be generated.
@@ -84,60 +93,41 @@ if mrtrixVersion == 2
         % track, mask, csd file etc.
         [~, pathstr] = strip_ext(files.dwi);
         tck_file = fullfile(pathstr,strcat(strip_ext(files.dwi), '_' , strip_ext(roi), '_',...
-          strip_ext(mask) , '_', mode, '-',num2str(nSeeds),'.tck'));
+          strip_ext(mask) , '_', algo, '-',num2str(nSeeds),'.tck'));
 
         % Generate the mrtrix-unix command.
         cmd_str = sprintf('%s %s %s -seed %s -grad %s -mask %s %s -num %d', ...
-                 funcName,mode_str2, files.dwi, roi, files.b, mask, tck_file, nSeeds); 
-% tckgen iFOD2 
+                 funcName,algo, files.dwi, roi, files.b, mask, tck_file, nSeeds); 
       otherwise
-        error('Input "%s" is not a valid tracking mode', mode_str2);
+        error('Input "%s" is not a valid tracking algorithm in mrTrix2', algo);
     end
 end
 
 if mrtrixVersion == 3
-    funcName = 'tckgen';
     % Generate a UNIX command string.                          
-    switch mode_str3
-      case {'Tensor_Prob', 'SD_Stream'}
+    switch algo
+      case {'iFOD2'}
         % Build a file name for the tracks that will be generated.
         % THe file name will contain information regarding the files being used to
         % track, mask, csd file etc.
         [~, pathstr] = strip_ext(files.csd);
         tck_file = fullfile(pathstr,strcat(strip_ext(files.csd), '_' , strip_ext(roi), '_',...
-          strip_ext(mask) , '_', mode, '-',num2str(nSeeds),'.tck'));
+          strip_ext(mask) , '_', algo, '-',num2str(nSeeds),'.tck'));
 
         % Generate the mrtrix-unix command
-        % Example:
-        % tckgen _csd_lmax4.mif        -algo SD_Stream -seed_image _wm.mif               -mask _wm.mif           -num 500000     _csd_lmax4__wm__wm_stream-500000.tck -force
-        cmd_str = sprintf('%s %s -algo %s -seed_image %s -mask %s -num %d %s -force', ...
-                         funcName, files.csd, ...
-                         mode_str3,...
-                         roi, ...
-                         mask, ...
-                         nSeeds, ...
-                         tck_file); 
-
-      case {'Tensor_Det'}
-        % Build a file name for the tracks that will be generated.
-        % THe file name will contain information regarding the files being used to
-        % track, mask, csd file etc.
-        [~, pathstr] = strip_ext(files.dwi);
-        tck_file = fullfile(pathstr,strcat(strip_ext(files.dwi), '_' , strip_ext(roi), '_',...
-          strip_ext(mask) , '_', mode, '-',num2str(nSeeds),'.tck'));
-
-        % Generate the mrtrix-unix command.
-        cmd_str = sprintf('%s %s -algo %s -seed_image %s -grad %s -mask %s -num %d %s -force', ...
-                           funcName, files.dwi, ...
-                           mode_str3, ...
-                           roi, ...
-                           files.b, ...
-                           mask, ...
-                           nSeeds, ...
-                           tck_file); 
-
+        % See examples at the end of this file
+        
+        cmd_str = ['tckgen ' files.csd ' ' ...
+                   '-algo ' algo ' ' ...
+                   '-seed_image ' roi ' ' ...
+                   '-mask ' mask ' ' ...
+                   '-num ' num2str(nSeeds) ' ' ...
+                   tck_file ' ' ...
+                   '-force'];
+      case {'FACT', 'iFOD1', 'Nulldist1', 'Nulldist2', 'SD_Stream','Seedtest', 'Tensor_Det', 'Tensor_Prob'}
+        error('Wrapper for algo "%s" not implemented yet. Add the case here and remove it from this list. Use the examples below to build your algorithm.', algo);
       otherwise
-        error('Input "%s" is not a valid tracking mode', mode_str3);
+        error('Input "%s" is not a valid tracking algo in mrTrix3', algo);
     end 
 end
 
@@ -156,13 +146,19 @@ fg = mrtrix_tck2pdb(tck_file, pdb_file);
 
 end 
 
-%%%%%%%%%%%%%
-% strip_ext %
-%%%%%%%%%%%%%
-function [no_ext pathstr] = strip_ext(file_name)
-%
-% Removes the extension of the files, plus returns the path to the files.
-%
-[pathstr, no_ext, ext] = fileparts(file_name); 
 
-end
+% tcken options taken from https://github.com/MRtrix3/mrtrix3/blob/master/testing/tests/tckgen
+% tckgen dwi.mif   -algo seedtest    -seed_sphere           0,0,4,4  -number 50000 tmp.tck -force && tckmap tmp.tck -template SIFT_phantom/dwi.mif - | testing_diff_data - tckgen/seed_sphere.mif 1000
+% tckgen dwi.mif   -algo seedtest    -seed_image            mask.mif -number 3888 tmp.tck -force && tckmap tmp.tck -template SIFT_phantom/dwi.mif - | testing_diff_data - tckgen/SIFT_phantom_seeds.mif 26
+% tckgen dwi.mif   -algo seedtest    -seed_random_per_voxel mask.mif 27 tmp.tck -force && tckmap tmp.tck -template SIFT_phantom/dwi.mif - | testing_diff_data - tckgen/SIFT_phantom_seeds.mif 0.5
+% tckgen dwi.mif   -algo seedtest    -seed_grid_per_voxel   mask.mif 3 tmp.tck -force && tckmap tmp.tck -template SIFT_phantom/dwi.mif - | testing_diff_data - tckgen/SIFT_phantom_seeds.mif 0.5
+% tckgen peaks.mif -algo fact        -seed_rejection        rejection_seed.mif -number 5000 -minlength 4 -mask SIFT_phantom/mask.mif tmp.tck -force && tckmap tmp.tck -template SIFT_phantom/dwi.mif tmp.mif -force && mrstats tmp.mif -mask SIFT_phantom/upper.mif -output mean > tmp1.txt && mrstats tmp.mif -mask SIFT_phantom/lower.mif -output mean > tmp2.txt && testing_diff_matrix tmp1.txt tmp2.txt 30
+% tckgen fods.mif  -algo ifod1       -seed_image            mask.mif -act SIFT_phantom/5tt.mif -number 5000 tmp.tck -force && tckmap tmp.tck -template tckgen/act_terminations.mif -ends_only - | mrthreshold - - -abs 0.5 | testing_diff_data - tckgen/act_terminations.mif 0.5
+% tckgen dwi.mif   -algo seedtest    -seed_gmwmi            out.mif -act SIFT_phantom/5tt.mif -number 100000 tmp.tck -force && tckmap tmp.tck -template tckgen/gmwmi_seeds.mif - | mrthreshold - - -abs 0.5 | testing_diff_data - tckgen/gmwmi_seeds.mif 0.5
+% tckgen peaks.mif -algo fact        -seed_dynamic          fods.mif -mask SIFT_phantom/mask.mif -number 10000 -minlength 4 -initdir 1,0,0 tmp.tck -nthreads 0 -force && tckmap tmp.tck -template SIFT_phantom/dwi.mif tmp.mif -force && mrstats tmp.mif -mask SIFT_phantom/upper.mif -output mean > tmp1.txt && mrstats tmp.mif -mask SIFT_phantom/lower.mif -output mean > tmp2.txt && testing_diff_matrix tmp1.txt tmp2.txt 50
+% tckgen fods.mif  -algo ifod2       -seed_image            mask.mif -mask SIFT_phantom/mask.mif -minlength 4 -number 100 tmp.tck -force
+% tckgen fods.mif  -algo sd_stream   -seed_image            mask.mif -mask SIFT_phantom/mask.mif -minlength 4 -number 100 -initdir 1,0,0 tmp.tck -force
+% tckgen dwi.mif   -algo tensor_prob -seed_image            mask.mif -mask SIFT_phantom/mask.mif -minlength 4 -number 100 tmp.tck -force
+% tckgen fods.mif  -algo ifod1       -seed_image            mask.mif -act SIFT_phantom/5tt.mif -backtrack -number 100 tmp.tck -force
+% tckgen dwi.mif   -algo tensor_det  -seed_grid_per_voxel   mask.mif 3 -nthread 0 tmp.tck -force && testing_diff_tck tmp.tck tckgen/tensor_det.tck 1e-2
+% tckgen dwi.mif   -algo tensor_det  -seed_grid_per_voxel   mask.mif 3 tmp.tck -force && testing_diff_tck tmp.tck tckgen/tensor_det.tck 1e-2

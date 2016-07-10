@@ -10,6 +10,14 @@ function [status, mrTrixpaths] = check_mrTrix(version)
 % list of all functions changed.  See mrTrix3 Manual for the complete table of
 % changes: MRtrix 0.2 equivalent commands
 
+
+% Beware, the code is being maintained for both mrTrix2 and mrTrix3. 
+% Consider that mrTrix2 is called obsolete by the developers, with no updates 
+% http://community.mrtrix.org/t/mrtrix-tutorial-error/141
+% Function names change, and there are many new options in mrTrix3.
+if notDefined('version'), version = 3; end
+
+
 [stat(1), mrTrixpaths{1}] = system('which mrview');
 [stat(2), mrTrixpaths{2}] = system('which mrconvert');
 [stat(3), mrTrixpaths{3}] = system('which mrconvert');
