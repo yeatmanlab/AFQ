@@ -211,7 +211,7 @@ afq.params.track.nfibers = 500000;
 %                         Seedtest, Tensor_Det, Tensor_Prob (default: iFOD2).
 afq.params.track.mrTrixAlgo = 'iFOD2';
 % Specify here if you want multishell true or false
-afq.params.track.multishell = true;
+afq.params.track.multishell = false;
 
 % TODO:
 %  Write a parameter translation routine based on mrvParamFormat()
@@ -290,26 +290,35 @@ if AFQ_get(afq,'use mrtrix')
         if ~exist(mrtrixdir,'dir'),mkdir(mrtrixdir);end
         % Get the lmax from the afq structure
         lmax = AFQ_get(afq,'lmax');
-        multishell = true;
+        
         files = AFQ_mrtrixInit(AFQ_get(afq, 'dt6path',ii), ...
                                lmax,...
                                mrtrixdir,...
                                afq.software.mrtrixVersion, ...
                                afq.params.track.multishell); % true/false
-        if ~multishell
+        % In order to not modify much the previous code, I created new
+        % files types. 
+        % In mrTrix2 and mrTrix3 not-multishell, files.wm was the wm mask,
+        % so I changed the name to files.wmMask.
+        % In multishell, in files.tt5 you have the wm, gm, csf masks in one
+        % file. We create it only if it is multishell, but wmMask is always
+        % created because we will need downstream in tractography. 
+        % NOTE:  I will change it for multishell, and I will pass files.tt5
+        % instead of files.wmMask, and I will change tractography
+        % accordingly (remove -mask and add -act)
+        % files.csd is created  only in  ~multishell and passed here to
+        % tractography, but in the case of msmt 3 different ones are
+        % created, and we only pass the csd of the wm = wmMask.
+        if ~afq.params.track.multishell
             afq.files.mrtrix.csd{ii} = files.csd;
             afq.files.mrtrix.wm{ii} = files.wmMask;
         else
             afq.files.mrtrix.csd{ii} = files.wmCsd;
-            afq.files.mrtrix.wm{ii} = files.wmMask;
+            afq.files.mrtrix.wm{ii} = files.wmMask; % Will be files.tt5
         end
     end
 end
-% files =
-% AFQ_mrtrixInit('/bcbl/home/public/Gari/MINI/ANALYSIS/DWI/S002/dmri/dti90trilin/dt6.mat', ...
-%                4,
-%                '/bcbl/home/public/Gari/MINI/ANALYSIS/DWI/S002/dmri/dti90trilin/mrtrix', 3)
-%                
+         
 
 %% Set the current subject field to subject 1
 afq.currentsub = 1;
