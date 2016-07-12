@@ -218,19 +218,29 @@ if ~multishell
 else
     % Create the 5tt file from the same ac-pc-ed T1 nii we used in the other steps: 
     if (~computed.('tt5')) && (mrtrixVersion > 2)
-        % do this: 5ttgen fsl/freesurfer T1.mif 5tt.mif
-        T1niiFile = dt_info.files.t1;
 
-        AFQ_mrtrix_5ttgen(fullfile(session, T1niiFile), ...
+        tool = 'freesurfer'; % Options are 'fsl' or 'freesurfer'
+        
+        if strcmp(tool, 'fsl')
+            inputFile = fullfile(session, dt_info.files.t1);
+            if ~(exist(inputFile, 'file') == 2)
+                error(['Cannot find T1, please copy it to ' session]);
+            end              
+        else
+            inputFile = fullfile(session,'aparc+aseg.mgz');
+            if ~(exist(inputFile, 'file') == 2)
+                error(['Cannot find aparc+aseg.mgz, please copy it to ' session]);
+            end     
+        end        
+
+        % TODO: update directory structure to point to FS files.
+
+        AFQ_mrtrix_5ttgen(inputFile, ...
                           files.tt5, ...
                           0, ...
                           0, ...
                           mrtrixVersion,...
-                          'fsl', ...
-                          0); % -nthreads = 0 
-        % One of the steps is multithreaded, but at least in our cluster is not working
-        % because the /tmp folder is specific of each node. 
-        % In a normal machine it works fine. 
+                          tool);
     end
     
     % Create per tissue response function estimation
