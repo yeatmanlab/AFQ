@@ -37,24 +37,6 @@ function files = AFQ_mrtrixInit(dt6, ...
 % For details: 
 % http://www.brain.org.au/software/mrtrix/tractography/preprocess.html
 % 
-% Edit GLU July 2016. 
-% 1: I think that due to the 2 dir structure for the multishell
-% DWI, the directory structure is broken. I am going to give every function the
-% path it needs, right now it is not working. I will just comment the old
-% version if I need it afterwards. 
-% 2: 
-% TODO: Make it multishell within mrTrix. http://mrtrix.readthedocs.io/en/latest/workflows/multi_tissue_csd.html
-% 1.- Obtain the 5 tissue type-s segmentation (5tt)
-% 2.- 
-%
-%
-% Example data: 
-% dt6 = '/bcbl/home/public/Gari/MINI/ANALYSIS/DWI/S002/dmri/dti90trilin/dt6.mat'
-% lmax = 4;
-% mrtrix_folder = '/bcbl/home/public/Gari/MINI/ANALYSIS/DWI/S002/dmri/dti90trilin/mrtrix'
-% mrtrixVersion = 3;
-
-
 
 
 if notDefined('mrtrix_folder'), mrtrix_folder = 'mrtrix'; end

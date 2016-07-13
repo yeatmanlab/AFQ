@@ -302,19 +302,20 @@ if AFQ_get(afq,'use mrtrix')
         % so I changed the name to files.wmMask.
         % In multishell, in files.tt5 you have the wm, gm, csf masks in one
         % file. We create it only if it is multishell, but wmMask is always
-        % created because we will need downstream in tractography. 
-        % NOTE:  I will change it for multishell, and I will pass files.tt5
-        % instead of files.wmMask, and I will change tractography
-        % accordingly (remove -mask and add -act)
+        % created because we will need it downstream in tractography.
         % files.csd is created  only in  ~multishell and passed here to
-        % tractography, but in the case of msmt 3 different ones are
-        % created, and we only pass the csd of the wm = wmMask.
+        % tractography, but in the case of msmt 3 different files are
+        % created, one for each tissue type. We only pass the csd of the 
+        % wm = wmMask for tractography, wmMask as seed_image
+        % and tt5 for -act (instead of -mask)
+
         if ~afq.params.track.multishell
             afq.files.mrtrix.csd{ii} = files.csd;
             afq.files.mrtrix.wm{ii} = files.wmMask;
         else
             afq.files.mrtrix.csd{ii} = files.wmCsd;
-            afq.files.mrtrix.wm{ii} = files.wmMask; % Will be files.tt5
+            afq.files.mrtrix.wm{ii} = files.wmMask;
+            afq.files.mrtrix.tt5{ii} = files.tt5;
         end
     end
 end
