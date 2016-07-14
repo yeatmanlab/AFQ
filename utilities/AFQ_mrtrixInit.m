@@ -2,7 +2,8 @@ function files = AFQ_mrtrixInit(dt6, ...
                                 lmax, ...
                                 mrtrix_folder, ...
                                 mrtrixVersion, ...
-                                multishell)
+                                multishell, ...
+                                tool)
 % function files = AFQ_mrtrixInit(dt6, lmax, mrtrix_folder)
 % 
 % Initialize an mrtrix CSD analysis
@@ -200,18 +201,27 @@ if ~multishell
 else
     % Create the 5tt file from the same ac-pc-ed T1 nii we used in the other steps: 
     if (~computed.('tt5')) && (mrtrixVersion > 2)
-
-        tool = 'freesurfer'; % Options are 'fsl' or 'freesurfer'
-        
+        inputFile = [];
         if strcmp(tool, 'fsl')
             inputFile = fullfile(session, dt_info.files.t1);
             if ~(exist(inputFile, 'file') == 2)
                 error(['Cannot find T1, please copy it to ' session]);
-            end              
+            end    
+        % Find and aseg file and better if it is an aparc+aseg one. 
+        % Select the first aparc if there are several *aseg* files.
+        % It can take mgz or nii or mif
         else
-            inputFile = fullfile(session,'aparc+aseg.mgz');
+           asegFiles = dir(fullfile(session,'*aseg*'));
+           for ii = 1:length(asegFiles)
+               if length(strfind(asegFiles(ii).name, 'aseg')) > 0
+                   inputFile = asegFiles(ii).name;
+               end
+               if length(strfind(asegFiles(ii).name, 'aparc')) > 0
+                   inputFile = asegFiles(ii).name;
+               end
+           end
             if ~(exist(inputFile, 'file') == 2)
-                error(['Cannot find aparc+aseg.mgz, please copy it to ' session]);
+                error(['Cannot find aseg file, please copy it to ' session]);
             end     
         end        
 
