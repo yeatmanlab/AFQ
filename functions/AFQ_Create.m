@@ -211,7 +211,13 @@ afq.params.track.nfibers = 500000;
 %                         Seedtest, Tensor_Det, Tensor_Prob (default: iFOD2).
 afq.params.track.mrTrixAlgo = 'iFOD2';
 % Specify here if you want multishell true or false
+
 afq.params.track.multishell = true;
+% In case you are using multishell, specify the tool to be used for 5ttgen
+% script. If you use 'fsl', it will segment the T1 you provided in the
+% beginning. If you use 'freesurfer', you should provide any 'aseg' file
+% provided by the freesurfer pipeline, tested with aparc+aseg.mgz
+afq.params.track.tool = 'freesurfer';
 
 % TODO:
 %  Write a parameter translation routine based on mrvParamFormat()
@@ -295,7 +301,8 @@ if AFQ_get(afq,'use mrtrix')
                                lmax,...
                                mrtrixdir,...
                                afq.software.mrtrixVersion, ...
-                               afq.params.track.multishell); % true/false
+                               afq.params.track.multishell, ... % true/false
+                               afq.params.track.tool); % 'fsl', 'freesurfer'
         % In order to not modify much the previous code, I created new
         % files types. 
         % In mrTrix2 and mrTrix3 not-multishell, files.wm was the wm mask,

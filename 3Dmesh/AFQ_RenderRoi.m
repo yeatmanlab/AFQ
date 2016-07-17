@@ -19,12 +19,13 @@ function h = AFQ_RenderRoi(roi, color, method, render, varargin)
 %          wire frame: render = 'wire' 
 %
 % Example: 
-% fg = dtiReadFibers('L_Arcuate_Posterior.mat');
-% fg = dtiReadFibers('WholeBrainFG.mat');
-% roi = dtiReadRoi('roi1.mat'); 
-% roi = dtiReadRoi('1031_ctx-lh-supramarginal.mat'); 
-% AFQ_RenderFibers(fg, 'tubes', 0); % Render the fibers
-% AFQ_RenderRoi(roi, [1 .5 0]); % Render the roi in orange
+
+% fg1 = dtiReadFibers('/Users/gari/Documents/BCBL_PROJECTS/MINI/ANALYSIS/DWI/S011/dmri60/dti60trilin/fibers/L_Arcuate_Posterior.mat');
+% fg2 = dtiReadFibers('/Users/gari/Documents/BCBL_PROJECTS/MINI/ANALYSIS/DWI/S011/dmri/dti90trilin/fibers/MoriGroups.mat');
+% fg3 = dtiReadFibers('/Users/gari/Documents/BCBL_PROJECTS/MINI/ANALYSIS/DWI/S011/dmri/dti90trilin/fibers/WholeBrainFG.mat');
+% roi = dtiReadRoi('/Users/gari/Documents/BCBL_PROJECTS/MINI/ANALYSIS/ret/S011/anat/aparcRoi/1031_ctx-lh-supramarginal.mat'); 
+% AFQ_RenderFibers(fg2(1), 'tubes',[0]); % Render the fibers
+% AFQ_RenderRoi(roi, [1 .5 0], 'mesh'); % Render the roi in orange
 %
 % Copyright Jason D Yeatman June 2012
 
