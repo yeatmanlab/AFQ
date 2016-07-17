@@ -20,10 +20,10 @@ function h = AFQ_RenderRoi(roi, color, method, render, varargin)
 %
 % Example: 
 % fg = dtiReadFibers('L_Arcuate_Posterior.mat');
-% fg = dtiReadFibers('1031_ctx-lh-supramarginal.mat');
+% fg = dtiReadFibers('WholeBrainFG.mat');
 % roi = dtiReadRoi('roi1.mat'); 
 % roi = dtiReadRoi('1031_ctx-lh-supramarginal.mat'); 
-% AFQ_RenderFibers(fg); % Render the fibers
+% AFQ_RenderFibers(fg, 'tubes', 0); % Render the fibers
 % AFQ_RenderRoi(roi, [1 .5 0]); % Render the roi in orange
 %
 % Copyright Jason D Yeatman June 2012

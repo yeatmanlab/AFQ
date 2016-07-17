@@ -211,7 +211,7 @@ afq.params.track.nfibers = 500000;
 %                         Seedtest, Tensor_Det, Tensor_Prob (default: iFOD2).
 afq.params.track.mrTrixAlgo = 'iFOD2';
 % Specify here if you want multishell true or false
-afq.params.track.multishell = false;
+afq.params.track.multishell = true;
 
 % TODO:
 %  Write a parameter translation routine based on mrvParamFormat()
