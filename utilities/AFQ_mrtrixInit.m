@@ -214,13 +214,14 @@ else
            asegFiles = dir(fullfile(session,'*aseg*'));
            for ii = 1:length(asegFiles)
                if length(strfind(asegFiles(ii).name, 'aseg')) > 0
-                   inputFile = asegFiles(ii).name;
+                   inputFile = fullfile(session, asegFiles(ii).name);
                end
                if length(strfind(asegFiles(ii).name, 'aparc')) > 0
-                   inputFile = asegFiles(ii).name;
+                   inputFile = fullfile(session, asegFiles(ii).name);
                end
            end
             if ~(exist(inputFile, 'file') == 2)
+                disp(['inputFile = ' inputFile]); 
                 error(['Cannot find aseg file, please copy it to ' session]);
             end     
         end        
