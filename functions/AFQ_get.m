@@ -402,8 +402,8 @@ switch(param)
         if isfield(afq.params, 'template')
             val = afq.params.template;
         else
-            tdir = fullfile(AFQ_directories,'templates','mni_icbm152_nlin_asym_09a_nifti');
-            val = fullfile(tdir,'mni_icbm152_t2_tal_nlin_asym_09a.nii');
+            tdir = fullfile(fileparts(which('mrDiffusion.m')), 'templates');
+            val = fullfile(tdir, 'MNI_JHU_T2.nii.gz');
         end
 
     otherwise

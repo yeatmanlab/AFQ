@@ -127,8 +127,7 @@ end
 %% Make individual ROIs from a template ROI if a template was passed in
 if xformRois == 1
     % Path to the templates directory
-    tdir = fullfile(fileparts(which('mrDiffusion.m')), 'templates');
-    template = fullfile(tdir,'MNI_EPI.nii.gz');
+    template = AFQ_get(afq, 'template');
     for ii = runsubs
         % Get the subject's dt6 file
         dtpath = AFQ_get(afq,'dt6path',ii); dt = dtiLoadDt6(dtpath);

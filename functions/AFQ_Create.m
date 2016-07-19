@@ -158,8 +158,11 @@ afq.params.normalization = 'spm';
 % resample those images to before computing tract profiles (e.g., [2 2 2])
 afq.params.imresample = false;
 % Template to be used for spatial normalization
-tdir = fullfile(AFQ_directories,'templates','mni_icbm152_nlin_asym_09a_nifti');
-afq.params.template = fullfile(tdir,'mni_icbm152_t2_tal_nlin_asym_09a.nii');
+tdir = fullfile(fileparts(which('mrDiffusion.m')), 'templates');
+afq.params.template = fullfile(tdir, 'MNI_T2.nii.gz');
+% This one would be better to use but requires testing
+% tdir = fullfile(AFQ_directories,'templates','mni_icbm152_nlin_asym_09a_nifti');
+% afq.params.template = fullfile(tdir,'mni_icbm152_t2_tal_nlin_asym_09a.nii');
 
 %% AFQ Fiber Tracking parameters
 % Do fiber tracking with mrdiffusion by default. The other option is
