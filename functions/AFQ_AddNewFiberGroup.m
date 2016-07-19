@@ -142,7 +142,9 @@ if xformRois == 1
             sn = AFQ_get(afq,'spatial normalization',ii);
             invDef = AFQ_get(afq,'inverse deformation',ii);
             if isempty(sn) || isempty(invDef)
-                [sn, Vtemplate, invDef] = mrAnatComputeSpmSpatialNorm(dt.b0, dt.xformToAcpc, template);
+                % Rescale image valueds to get better gary/white/CSF contrast
+                alignIm = mrAnatHistogramClip(double(dt.b0),0.3,0.99);
+                [sn, Vtemplate, invDef] = mrAnatComputeSpmSpatialNorm(alignIm, dt.xformToAcpc, template);
             end
             % Load up template ROIs in MNI space and transform them to the subjects
             % native space.
