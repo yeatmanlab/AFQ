@@ -1,12 +1,12 @@
 function [fg_classified,fg_unclassified,classification,fg] = ...
     AFQ_SegmentFiberGroups(dt6File, fg, Atlas, ...
-    useRoiBasedApproach, useInterhemisphericSplit, antsInvWarp)
+    useRoiBasedApproach, useInterhemisphericSplit, antsInvWarp, template)
 % Categorizes each fiber in a group into one of the 20 tracts defined in
 % the Mori white matter atlas. 
 %
 %  [fg_classified, fg_unclassified, classification, fg] = ...
 %      AFQ_SegmentFiberGroups(dt6File, fg, [Atlas='MNI_JHU_tracts_prob.nii.gz'], ...
-%      [useRoiBasedApproach=true], [useInterhemisphericSplit=true], [antsInvWarp]);
+%      [useRoiBasedApproach=true], [useInterhemisphericSplit=true], [antsInvWarp] , [template]);
 %
 %  Fibers are segmented in two steps. Fibers become candidates for a fiber
 %  group if the pass through the 2 waypoint ROIs that define the
@@ -71,6 +71,7 @@ function [fg_classified,fg_unclassified,classification,fg] = ...
 %                           a path to a precomputed ANTS warp is passed in
 %                           then it will be used to transform the MNI ROIs
 %                           to native space
+% template                  - Path to an MNI template
 %
 % Output parameters:
 % fg_ classified  - fibers structure containing all fibers assigned to
@@ -137,6 +138,10 @@ if(~exist('Atlas','var') || isempty(Atlas))
     Atlas='MNI_JHU_tracts_prob.nii.gz';
 end
 
+if ~exist('template', 'var') || isempty(template)
+    tdir = fullfile(AFQ_directories,'templates','mni_icbm152_nlin_asym_09a_nifti');
+    template = fullfile(tdir,'mni_icbm152_t2_tal_nlin_asym_09a.nii');
+end
 %% Read the data
 % Load the dt6 file
 if ischar(dt6File)
@@ -153,14 +158,11 @@ if ~exist('fg','var') || isempty(fg)
 end
 % Load fiber group - Can be filename or the data
 if ischar(fg), fg = dtiLoadFiberGroup(fg); end
-% Set the directory where templates can be found
-tdir = fullfile(fileparts(which('mrDiffusion.m')), 'templates');
 % Initialize spm defualts for normalization
 spm_defaults; global defaults; params = defaults.normalise.estimate;
 % spm_get_defaults - For SPM8
 
 %% Spatially normalize diffusion data with the MNI (ICBM) template
-template = fullfile(tdir,'MNI_JHU_T2.nii.gz');
 % Rescale image valueds to get better gary/white/CSF contrast
 alignIm = mrAnatHistogramClip(double(dt.b0),0.3,0.99);
 % Compute normalization
@@ -179,6 +181,7 @@ imwrite(makeMontage(im),fullfile(baseDir, 'SpatialNormalization.png'));
 
 %% Compute fiber group probabilities using the atlas proceedure of Hua.2008
 % Load the Mori atlas maps these are saved in nifti images
+tdir = fullfile(fileparts(which('mrDiffusion.m')), 'templates');
 moriTracts = readFileNifti(fullfile(tdir, Atlas));
 % 15 is a subregion of 19 and 16 a subregion of 20. To better separate them,
 % we subtract 19 from 15 and 20 from 16.

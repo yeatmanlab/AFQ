@@ -62,6 +62,7 @@ function val = AFQ_get(afq, param, varargin)
 % 'ants inverse warp'     - [subject number]
 % 'meta data'             - 'field name'
 % 'imresample2dwi'
+% 'template
 %
 % To get any of the parameters save in the afq structure (see AFQ_Create),
 % enter the name of the parameter. Some have not been implimented yet, but
@@ -397,7 +398,14 @@ switch(param)
         else
             val = false;
         end
-        
+    case{'template'}
+        if isfield(afq.params, 'template')
+            val = afq.params.template;
+        else
+            tdir = fullfile(AFQ_directories,'templates','mni_icbm152_nlin_asym_09a_nifti');
+            val = fullfile(tdir,'mni_icbm152_t2_tal_nlin_asym_09a.nii');
+        end
+
     otherwise
         error('Uknown afq parameter');
 end
