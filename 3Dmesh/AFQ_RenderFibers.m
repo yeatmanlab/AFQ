@@ -123,10 +123,9 @@ function [lightH, fiberMesh, h] = AFQ_RenderFibers(fg,varargin)
 %
 % Example:
 %
-% fg = dtiReadFibers('MoriGroups.mat');
-% fg = dtiReadFibers('WholeBrainFG.mat');
+% fg = dtiReadFibers('Left_CST.mat');
 % dt = dtiLoadDt6('dt6.mat');
-% AFQ_RenderFibers(fg, 'dt', dt, 'radius', [.7 5], 'jittercolor', .1, 'tubes',0);
+% AFQ_RenderFibers(fg, 'dt', dt, 'radius', [.7 5], 'jittercolor', .1);
 %
 % Written by Jason D Yeatman, April 2012.
 %
@@ -135,10 +134,10 @@ function [lightH, fiberMesh, h] = AFQ_RenderFibers(fg,varargin)
 %% Argument checking
 
 % Check to make sure the fiber group isn't empty
-% if (isempty(fg.fibers) || length(fg.fibers) == 0)
-%     fprintf('Fiber group is empty: %s\n',fg.name);
-%     return
-% end
+if isempty(fg.fibers) || length(fg.fibers) == 0
+    fprintf('Fiber group is empty: %s\n',fg.name);
+    return
+end
 % Check if a dt6 file was input
 if sum(strcmpi('dt',varargin)) > 0
     dt = varargin{find(strcmpi('dt',varargin))+1};
