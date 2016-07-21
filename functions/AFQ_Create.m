@@ -194,30 +194,35 @@ afq.params.track.seedVoxelOffsets = [0.25 0.75];
 % Mask from which to initialize tracking
 afq.params.track.faMaskThresh = 0.30;
 
-% Parameters relevant to mrTrix.
-% Beware, the code is being maintained for both mrTrix2 and mrTrix3. 
-% Consider that mrTrix2 is called obsolete by the developers, with no updates 
-% http://community.mrtrix.org/t/mrtrix-tutorial-error/141
-% Function names change, and there are many new options in mrTrix3.
-% Number of fibers to track. This parameter is only relevant for mrTrix
-afq.params.track.nfibers = 500000;
-% Choose algorithm for tracking with mrTrix
-% Options if you have version 2:
-%    'probabilistic tractography': 'SD_PROB'
-%    'deterministic tractogrpahy based on spherical deconvolution': 'SD_STREAM'
-%    'deterministic tractogrpahy based on a tensor model': 'DT_STREAM'
-% Options if you have version 3:
-%     FACT, iFOD1, iFOD2, Nulldist1, Nulldist2, SD_Stream, 
-%                         Seedtest, Tensor_Det, Tensor_Prob (default: iFOD2).
-afq.params.track.mrTrixAlgo = 'iFOD2';
-% Specify here if you want multishell true or false
-
-afq.params.track.multishell = true;
-% In case you are using multishell, specify the tool to be used for 5ttgen
-% script. If you use 'fsl', it will segment the T1 you provided in the
-% beginning. If you use 'freesurfer', you should provide any 'aseg' file
-% provided by the freesurfer pipeline, tested with aparc+aseg.mgz
-afq.params.track.tool = 'freesurfer';
+%% Set some mrtrix specific parameters (only computeCSD==1)
+% If mr trix is installed and CSD is to be computed then perform tracking 
+% on constrained spherical deconvolution
+if afq.software.mrtrix == 1 && afq.params.computeCSD > 0
+    afq.params.track.algorithm = 'mrtrix';
+    % Parameters relevant to mrTrix.
+    % Beware, the code is being maintained for both mrTrix2 and mrTrix3.
+    % Consider that mrTrix2 is called obsolete by the developers, with no updates
+    % http://community.mrtrix.org/t/mrtrix-tutorial-error/141
+    % Function names change, and there are many new options in mrTrix3.
+    % Number of fibers to track. This parameter is only relevant for mrTrix
+    afq.params.track.nfibers = 500000;
+    % Choose algorithm for tracking with mrTrix
+    % Options if you have version 2:
+    %    'probabilistic tractography': 'SD_PROB'
+    %    'deterministic tractogrpahy based on spherical deconvolution': 'SD_STREAM'
+    %    'deterministic tractogrpahy based on a tensor model': 'DT_STREAM'
+    % Options if you have version 3:
+    %     FACT, iFOD1, iFOD2, Nulldist1, Nulldist2, SD_Stream,
+    %                         Seedtest, Tensor_Det, Tensor_Prob (default: iFOD2).
+    afq.params.track.mrTrixAlgo = 'iFOD2';
+    % Specify here if you want multishell true or false.
+    afq.params.track.multishell = true;
+    % In case you are using multishell, specify the tool to be used for 5ttgen
+    % script. If you use 'fsl', it will segment the T1 you provided in the
+    % beginning. If you use 'freesurfer', you should provide any 'aseg' file
+    % provided by the freesurfer pipeline, tested with aparc+aseg.mgz
+    afq.params.track.tool = 'freesurfer';  
+end
 
 % TODO:
 %  Write a parameter translation routine based on mrvParamFormat()
@@ -276,20 +281,16 @@ for ii = 1:AFQ_get(afq,'num subs')
 end
 % Save the name  of the segmented fiber group
 afq.files.fibers.segName = segName;
+
 %% Allow previous analyses to be overwritten
 afq.overwrite.fibers.wholebrain = zeros(AFQ_get(afq,'num subs'),1);
 afq.overwrite.fibers.segmented = zeros(AFQ_get(afq,'num subs'),1);
 afq.overwrite.fibers.clean = zeros(AFQ_get(afq,'num subs'),1);
 afq.overwrite.vals = zeros(AFQ_get(afq,'num subs'),1);
 
-%% If desired compute constrained spherical deconvolution with mr trix
-
-% If mr trix is installed and CSD is computed then perform tracking on
-% constrained spherical deconvolution
-if afq.software.mrtrix == 1 && afq.params.computeCSD > 0
-    afq.params.track.algorithm = 'mrtrix';
-end
-
+%% If desired compute constrained spherical deconvolution with mrtrix
+% If we want to use mrtrix for tractography that we will compute CSD right
+% here
 if AFQ_get(afq,'use mrtrix')
     for ii = 1:AFQ_get(afq,'num subs')
         mrtrixdir = fullfile(afq.sub_dirs{ii},'mrtrix');

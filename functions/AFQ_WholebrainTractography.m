@@ -1,6 +1,4 @@
-function fg = AFQ_WholebrainTractography(dt,...
-                                         run_mode, ...
-                                         params)
+function fg = AFQ_WholebrainTractography(dt, run_mode, params)
 % Perform whole brain deterministic tractography within a white matter mask
 %
 %      fg = AFQ_WholebrainTractography(dt, [run_mode], params)
@@ -25,6 +23,8 @@ function fg = AFQ_WholebrainTractography(dt,...
 
 %% Initialize parameters
 
+% We set some reasonable defaults if a parameters structure was not passed
+% into the fuction
 if ~exist('params','var') || isempty(params)
     % This defines which voxels will be seeded for tractography.
     if ~exist('run_mode','var') || isempty(run_mode)
@@ -118,7 +118,5 @@ else
     fg = dtiFiberTrack(dt.dt6, roiAll.coords, dt.mmPerVoxel, dt.xformToAcpc, 'wholeBrain', opts);
     
 end
+
 return
-
-%% Comments and debugging
-
