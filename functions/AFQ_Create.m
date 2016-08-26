@@ -80,8 +80,13 @@ afq.xform.antsinv = [];
 %% Check which software packages are installed
 afq.software.mrvista = check_mrvista;
 afq.software.spm = check_spm;
-afq.software.mrtrix = check_mrTrix;
-if check_mrTrix == 1
+afq.software.mrtrixVersion = check_mrTrix_Version;
+if check_mrTrix_Version ~= 0
+    afq.software.mrtrix = check_mrTrix(afq.software.mrtrixVersion);
+else
+    afq.software.mrtrix = 0;
+end
+if afq.software.mrtrix == 1
    fprintf('\nmrTrix is installed. To perform tracking based on CSD with mrTrix:')
    fprintf('\nAFQ_Create(...,''computeCSD'',1)\n');
 end
@@ -188,8 +193,31 @@ afq.params.track.offsetJitter = 0;
 afq.params.track.seedVoxelOffsets = [0.25 0.75];
 % Mask from which to initialize tracking
 afq.params.track.faMaskThresh = 0.30;
+
+% Parameters relevant to mrTrix.
+% Beware, the code is being maintained for both mrTrix2 and mrTrix3. 
+% Consider that mrTrix2 is called obsolete by the developers, with no updates 
+% http://community.mrtrix.org/t/mrtrix-tutorial-error/141
+% Function names change, and there are many new options in mrTrix3.
 % Number of fibers to track. This parameter is only relevant for mrTrix
 afq.params.track.nfibers = 500000;
+% Choose algorithm for tracking with mrTrix
+% Options if you have version 2:
+%    'probabilistic tractography': 'SD_PROB'
+%    'deterministic tractogrpahy based on spherical deconvolution': 'SD_STREAM'
+%    'deterministic tractogrpahy based on a tensor model': 'DT_STREAM'
+% Options if you have version 3:
+%     FACT, iFOD1, iFOD2, Nulldist1, Nulldist2, SD_Stream, 
+%                         Seedtest, Tensor_Det, Tensor_Prob (default: iFOD2).
+afq.params.track.mrTrixAlgo = 'iFOD2';
+% Specify here if you want multishell true or false
+
+afq.params.track.multishell = true;
+% In case you are using multishell, specify the tool to be used for 5ttgen
+% script. If you use 'fsl', it will segment the T1 you provided in the
+% beginning. If you use 'freesurfer', you should provide any 'aseg' file
+% provided by the freesurfer pipeline, tested with aparc+aseg.mgz
+afq.params.track.tool = 'freesurfer';
 
 % TODO:
 %  Write a parameter translation routine based on mrvParamFormat()
@@ -246,7 +274,7 @@ for ii = 1:AFQ_get(afq,'num subs')
         afq.files.fibers.clean{ii} = cleanFG;
     end
 end
-% Save the name name of the segmented fiber group
+% Save the name  of the segmented fiber group
 afq.files.fibers.segName = segName;
 %% Allow previous analyses to be overwritten
 afq.overwrite.fibers.wholebrain = zeros(AFQ_get(afq,'num subs'),1);
@@ -268,11 +296,37 @@ if AFQ_get(afq,'use mrtrix')
         if ~exist(mrtrixdir,'dir'),mkdir(mrtrixdir);end
         % Get the lmax from the afq structure
         lmax = AFQ_get(afq,'lmax');
-        files = mrtrix_init(AFQ_get(afq, 'dt6 path',ii),lmax,mrtrixdir);
-        afq.files.mrtrix.csd{ii} = files.csd;
-        afq.files.mrtrix.wm{ii} = files.wm;
+        
+        files = AFQ_mrtrixInit(AFQ_get(afq, 'dt6path',ii), ...
+                               lmax,...
+                               mrtrixdir,...
+                               afq.software.mrtrixVersion, ...
+                               afq.params.track.multishell, ... % true/false
+                               afq.params.track.tool); % 'fsl', 'freesurfer'
+        % In order to not modify much the previous code, I created new
+        % files types. 
+        % In mrTrix2 and mrTrix3 not-multishell, files.wm was the wm mask,
+        % so I changed the name to files.wmMask.
+        % In multishell, in files.tt5 you have the wm, gm, csf masks in one
+        % file. We create it only if it is multishell, but wmMask is always
+        % created because we will need it downstream in tractography.
+        % files.csd is created  only in  ~multishell and passed here to
+        % tractography, but in the case of msmt 3 different files are
+        % created, one for each tissue type. We only pass the csd of the 
+        % wm = wmMask for tractography, wmMask as seed_image
+        % and tt5 for -act (instead of -mask)
+
+        if ~afq.params.track.multishell
+            afq.files.mrtrix.csd{ii} = files.csd;
+            afq.files.mrtrix.wm{ii} = files.wmMask;
+        else
+            afq.files.mrtrix.csd{ii} = files.wmCsd;
+            afq.files.mrtrix.wm{ii} = files.wmMask;
+            afq.files.mrtrix.tt5{ii} = files.tt5;
+        end
     end
 end
+         
 
 %% Set the current subject field to subject 1
 afq.currentsub = 1;

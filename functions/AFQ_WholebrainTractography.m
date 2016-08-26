@@ -1,4 +1,6 @@
-function fg = AFQ_WholebrainTractography(dt,run_mode,params)
+function fg = AFQ_WholebrainTractography(dt,...
+                                         run_mode, ...
+                                         params)
 % Perform whole brain deterministic tractography within a white matter mask
 %
 %      fg = AFQ_WholebrainTractography(dt, [run_mode], params)
@@ -60,11 +62,16 @@ if ~exist('params','var') || isempty(params)
     elseif strcmp(run_mode,'test')
         opts.seedVoxelOffsets = [0.5];
     end
+    % for mrTrix
+    % Tracking nfibers and algo to use with mrTrix (the default is for mrTrix3)
+    opts.nfibers = 500000;
+    opts.mrTrixAlgo = 'iFOD2';
 elseif isafq(params)
     % If an afq structure is passed in get the tracking parameters and also
     % check if tracking should be done based on CSD with mrtrix
     opts = AFQ_get(params,'tracking parameters');
     mrtrix = AFQ_get(params,'use mrtrix');
+    mrtrixVersion = AFQ_get(params,'mrtrixVersion');
 else
     % Check to make sure the user defined all the propper parameters
     check = isfield(params,'seedVoxelOffsets')&&isfield(params,'whichInterp')&&...
@@ -77,7 +84,16 @@ end
 %% Track with mrtrix if the right files are there
 if exist('mrtrix','var') && mrtrix == 1
     mrtrixpaths = AFQ_get(params,'mrtrix paths',params.currentsub);
-    [status, results, fg, pathstr] = mrtrix_track(mrtrixpaths, mrtrixpaths.wm, mrtrixpaths.wm, 'prob', opts.nfibers,[],[],1);
+    [status, results, fg, pathstr] = AFQ_mrtrix_track(mrtrixpaths, ... 
+                                                      mrtrixpaths.wm, ... % (wm = wmMask)
+                                                      mrtrixpaths.wm,...  % (wm = wmMask)
+                                                      opts.mrTrixAlgo, ...
+                                                      opts.nfibers,...
+                                                      [],...
+                                                      [],...
+                                                       1, ...
+                                                       mrtrixVersion, ...
+                                                       opts.multishell);
 else
     %% Otherwise track with mrdiffusion
     % Compute FA at every voxel
