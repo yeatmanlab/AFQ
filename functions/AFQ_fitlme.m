@@ -15,8 +15,9 @@ function lme = AFQ_fitlme(afq, response, predictors, fgname, c, outliers)
 %              afq.metadata.outiers
 %
 % fgnames = AFQ_get(afq, 'fgnames')
+% [outliers ,afq] = AFQ_outliers(afq, {'dki_MK', 'dki_MD'}, 4, 40)
 % for ii = 1:length(fgnames)
-%    lme(ii) = AFQ_fitlme(afq, 'dki_FA', 'session', fgnames{ii}, 1, 1)
+%    lme{ii} = AFQ_fitlme(afq, 'dki_MD', 'session', fgnames{ii}, 1, 1)
 % end
 
 if ~exist('response', 'var') || isempty(response)
@@ -35,8 +36,19 @@ if ~exist('outliers', 'var') || isempty(outliers) || outliers == 0
 else
     exclude = AFQ_get(afq, 'metadata', 'outliers');
 end
+
 % Get the response values
 y = AFQ_get(afq, fgname, response);
+% For now we just will mean it. 
+% TODO This should be expanded for tract profiles
+y = nanmean(y,2);
+
+% Check for nans
+na = isnan(y);
+if sum(na) > 0
+    fprintf('Removing subject %s due to nans\n',afq.sub_names{na});
+    exclude = exclude | na;
+end
 
 % Get the predictors
 for ii = 1:length(predictors)
@@ -48,13 +60,22 @@ y = y(~exclude, :);
 x = x(~exclude, :);
 
 % Create a table with the data
+cnames = predictors; cnames = horzcat({'subject'},{response},predictors)
 if c ==1
-    d = table(afq.sub_names(~exclude,:), nanmean(y,2), categorical(x), 'VariableNames', {'subject', response, predictors{:}});
+    d = table(afq.sub_names(~exclude,:), y, categorical(x),...
+        'VariableNames', cnames);
 else
-    d = table(afq.sub_names(~exclude,:), nanmean(y,2), categorical(x), 'VariableNames', {'subject', response, predictors{:}});
+    d = table(afq.sub_names(~exclude,:), y, x,...
+        'VariableNames', cnames);
+end
+
+% Concatenate a string with all predictor names
+p = [];
+for ii = 1:length(predictors)
+   p = strcat(p, sprintf('%s + ',predictors{ii}));
 end
 % Fit the model
-model = sprintf('%s ~ %s + (%s | subject)', response, predictors{:}, predictors{:})
+model = sprintf('%s ~ %s (%s | subject)', response, p, p(1:end-1))
 %model = sprintf('%s ~ %s + (1 | subject)', response, predictors{:})
 
-lme = fitlme(d, model)
+lme = fitlme(d, model);
