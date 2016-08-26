@@ -1,4 +1,4 @@
-function results = AFQ_fitlme(afq, response, predictors, fgname, m, c, outliers)
+function lme = AFQ_fitlme(afq, response, predictors, fgname, m, c, outliers)
 % Fit mixed linear model to data in afq structure
 %
 % lme = AFQ_fitlme(afq, response, predictors, fgname, c, outliers)
@@ -86,7 +86,6 @@ for n = 1:size(y,2)
     model = sprintf('%s ~ %s (%s | subject)', response, p, p(1:end-1))
     %model = sprintf('%s ~ %s + (1 | subject)', response, predictors{:})
     
-    lme = fitlme(d, model);
-    results{n} = lme.Coefficients;
+    lme{n} = fitlme(d, model);
     
 end
