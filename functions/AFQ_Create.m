@@ -48,8 +48,8 @@ vals.ad = {};
 vals.cl = {};
 afq.vals = vals;
 
-%% Attach a cell array of subject names to the afq structure
-afq.sub_names = {};
+%% Attach a cell array of subject ids to the afq structure
+afq.sub_ids = {};
 
 %% Attach a vector of subject groups to afq structure
 afq.sub_group = [];
