@@ -114,6 +114,8 @@ end
 
 % reset the outdir
 afqfull.params.outdir = fileparts(afqfull.params.outdir);
+% Reset run subs to be the full sample
+afqfull = AFQ_set(afqfull,'runsubs',1:AFQ_get(afq,'nsubs'));
 % reasign to output
 afq = afqfull;
 % save
