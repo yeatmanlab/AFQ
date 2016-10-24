@@ -76,7 +76,8 @@ dt_info = load(dt6);
 
 
 % Strip the file names out of the dt6 strings. 
-dwRawFile = dt_info.files.alignedDwRaw;
+% dwRawFile = dt_info.files.alignedDwRaw;
+dwRawFile = fullfile(dt_info.params.rawDataDir, strcat(dt_info.params.rawDataFile,'.gz'));
 
 
 % This line removes the extension of the file (.nii.gz) and mainaints de path
@@ -89,19 +90,18 @@ fname_trunk = dwRawFile(1:strfind(dwRawFile,'.')-1);
 mrtrix_dir = mrtrix_folder;
 
 % Assuming in 'session' we want the subject_name/dmri64 or whatever
-session = pathDwRawFile; 
+% session = pathDwRawFile;
+session = dt_info.params.rawDataDir;
 % And in fname_trunk we want the whole path and the beginning of the
 % filename
 fname_trunk = [mrtrix_folder filesep fnameDwRawFile]; 
-
-
 
 if ~exist(mrtrix_dir, 'dir')
     mkdir(mrtrix_dir)
 end
 
 % Build the mrtrix file names.
-files = AFQ_mrtrix_build_files(fname_trunk,lmax, multishell);
+files = AFQ_mrtrix_build_files(fname_trunk, lmax, multishell);
 
 % Check wich processes were already computed and which ons need to be doen.
 computed = mrtrix_check_processes(files);
@@ -117,11 +117,13 @@ end
 
 
 % This file contains both bvecs and bvals, as per convention of mrtrix
-if (~computed.('b'))
-  bvecs = dt_info.files.alignedDwBvecs;
-  bvals = dt_info.files.alignedDwBvals;
-  mrtrix_bfileFromBvecs(bvecs, bvals, files.b);
-end
+% if (~computed.('b'))
+    bvecs = fullfile(dt_info.params.rawDataDir, strcat(fnameDwRawFile, '.bvecs'));
+    bvals = fullfile(dt_info.params.rawDataDir, strcat(fnameDwRawFile, '.bvals'));
+%   bvecs = dt_info.files.alignedDwBvecs;
+%   bvals = dt_info.files.alignedDwBvals;
+    mrtrix_bfileFromBvecs(bvecs, bvals, files.b);
+% end
 
 % Convert the brain mask from mrDiffusion into a .mif file: 
 if (~computed.('brainmask'))
