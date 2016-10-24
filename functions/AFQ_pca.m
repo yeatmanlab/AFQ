@@ -1,4 +1,4 @@
-function [coeff, score, subMeans, latent] = AFQ_pca(afq, valname, group, demean)
+function [coeff, score, subMeans, latent, tsquared, R2] = AFQ_pca(afq, valname, group, demean)
 % Perform principal components analysis on AFQ Tract Profiles
 %
 % [coeff, score, latent] = AFQ_pca(afq, valname, group)
@@ -70,7 +70,7 @@ if sum(isnan(data(:))) > 0
     fprintf('\nremoving %.0f columns  because they contain nans\n',sum(nancol));
     dataNoNan = data(:,~nancol);
     % PCA on all columns with no nans
-    [coeff, score, latent] = princomp(dataNoNan);
+    [coeff, score, latent, tsquared, R2] = pca(dataNoNan);
 else
-    [coeff, score, latent] = princomp(data);
+    [coeff, score, latent, tsquared, R2] = pca(data);
 end
