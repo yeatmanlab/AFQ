@@ -1,17 +1,17 @@
 function [status, results, fg, pathstr] = AFQ_mrtrix_track(files, ...
-                                                           roi, ...
-                                                           mask, ...
-                                                           algo, ...
-                                                           nSeeds, ...
-                                                           bkgrnd, ...
-                                                           verbose, ...
-                                                           clobber, ...
-                                                           mrtrixVersion, ...
-                                                           multishell)
+    roi, ...
+    mask, ...
+    algo, ...
+    nSeeds, ...
+    bkgrnd, ...
+    verbose, ...
+    clobber, ...
+    mrtrixVersion, ...
+    multishell)
 %
 % function [status, results, fg, pathstr] = mrtrix_track(files, roi, mask, algo, nSeeds, bkgrnd, verbose)
 %
-% Provided a csd estimate, generate estimates of the fibers starting in roi 
+% Provided a csd estimate, generate estimates of the fibers starting in roi
 % and terminating when they reach the boundary of mask
 %
 % Parameters
@@ -22,14 +22,14 @@ function [status, results, fg, pathstr] = AFQ_mrtrix_track(files, ...
 %      tractography.
 % mask: string, filename for a .mif format of a mask. Use the *_wm.mif file for Whole-Brain
 %      tractography.
-% algo: Tracking algorithm: it was 'mode' before. Specify it directly in afq.param.track.mrTrixAlgo 
+% algo: Tracking algorithm: it was 'mode' before. Specify it directly in afq.param.track.mrTrixAlgo
 % nSeeds: The number of fibers to generate.
 % bkgrnd: on unix, whether to perform the operation in another process
-% verbose: whether to display standard output to the command window. 
+% verbose: whether to display standard output to the command window.
 % clobber: Whether or not to overwrite the fiber group if it was already
 %          computed
-% 
-% Franco, Bob & Ariel (c) Vistalab Stanford University 2013 
+%
+% Franco, Bob & Ariel (c) Vistalab Stanford University 2013
 % Edit GLU 06.2016 added mrTrix versioning
 % Mode now has been modified with algo, and it is set in the afq structure
 % directly in AFQ_Create. Be careful, the options for mrTrix2 and mrTrix3 are
@@ -44,7 +44,7 @@ if notDefined('multishell'),  multishell = false;end
 
 % REMOVE THIS IN THE REVIEW
 % See AFQ_Create, as indicated by Jason I included the algo in the creation
-% process as part of the afq structure. 
+% process as part of the afq structure.
 
 % Choose the tracking mode (probabilistic or stream)
 % mrTrix3 new options
@@ -63,9 +63,8 @@ if notDefined('multishell'),  multishell = false;end
 %     mode_str2 = 'DT_STREAM';
 %     mode_str3 = 'Tensor_Det';
 %   otherwise
-%     error('Input "%s" is not a valid tracking mode', mode); 
+%     error('Input "%s" is not a valid tracking mode', mode);
 % end
-
 
 
 % In this case there are several changes between mrtrix2 and mrtrix3
@@ -74,71 +73,128 @@ if notDefined('multishell'),  multishell = false;end
 
 if mrtrixVersion == 2
     funcName = 'streamtrack';
-    % Generate a UNIX command string.                          
+    % Generate a UNIX command string.
     switch algo
-      case {'SD_PROB', 'SD_STREAM'}
-        % Build a file name for the tracks that will be generated.
-        % THe file name will contain information regarding the files being used to
-        % track, mask, csd file etc.
-        [~, pathstr] = strip_ext(files.csd);
-        tck_file = fullfile(pathstr,strcat(strip_ext(files.csd), '_' , strip_ext(roi), '_',...
-          strip_ext(mask) , '_', algo, '-',num2str(nSeeds),'.tck'));
-
-        % Generate the mrtrix-unix command
-        cmd_str = sprintf('%s %s %s -seed %s -mask %s %s -num %d', ...
-                         funcName,algo, files.csd, roi, mask, tck_file, nSeeds); 
-
-      case {'DT_STREAM'}
-              % Build a file name for the tracks that will be generated.
-        % THe file name will contain information regarding the files being used to
-        % track, mask, csd file etc.
-        [~, pathstr] = strip_ext(files.dwi);
-        tck_file = fullfile(pathstr,strcat(strip_ext(files.dwi), '_' , strip_ext(roi), '_',...
-          strip_ext(mask) , '_', algo, '-',num2str(nSeeds),'.tck'));
-
-        % Generate the mrtrix-unix command.
-        cmd_str = sprintf('%s %s %s -seed %s -grad %s -mask %s %s -num %d', ...
-                 funcName,algo, files.dwi, roi, files.b, mask, tck_file, nSeeds); 
-      otherwise
-        error('Input "%s" is not a valid tracking algorithm in mrTrix2', algo);
+        case {'SD_PROB', 'SD_STREAM'}
+            % Build a file name for the tracks that will be generated.
+            % THe file name will contain information regarding the files being used to
+            % track, mask, csd file etc.
+            [~, pathstr] = strip_ext(files.csd);
+            tck_file = fullfile(pathstr,strcat(strip_ext(files.csd), '_' , strip_ext(roi), '_',...
+                strip_ext(mask) , '_', algo, '-',num2str(nSeeds),'.tck'));
+            
+            % Generate the mrtrix-unix command
+            cmd_str = sprintf('%s %s %s -seed %s -mask %s %s -num %d', ...
+                funcName,algo, files.csd, roi, mask, tck_file, nSeeds);
+            
+        case {'DT_STREAM'}
+            % Build a file name for the tracks that will be generated.
+            % THe file name will contain information regarding the files being used to
+            % track, mask, csd file etc.
+            [~, pathstr] = strip_ext(files.dwi);
+            tck_file = fullfile(pathstr,strcat(strip_ext(files.dwi), '_' , strip_ext(roi), '_',...
+                strip_ext(mask) , '_', algo, '-',num2str(nSeeds),'.tck'));
+            
+            % Generate the mrtrix-unix command.
+            cmd_str = sprintf('%s %s %s -seed %s -grad %s -mask %s %s -num %d', ...
+                funcName,algo, files.dwi, roi, files.b, mask, tck_file, nSeeds);
+        otherwise
+            error('Input "%s" is not a valid tracking algorithm in mrTrix2', algo);
     end
 end
 
 if mrtrixVersion == 3
-    % Generate a UNIX command string.                          
+    % Generate a UNIX command string.
     switch algo
-      case {'iFOD2'}
-        % Build a file name for the tracks that will be generated.
-        % THe file name will contain information regarding the files being used to
-        % track, mask, csd file etc.
-        [~, pathstr] = strip_ext(files.csd);
-        tck_file = fullfile(pathstr,strcat(strip_ext(files.csd), '_' , strip_ext(roi), '_',...
-          strip_ext(mask) , '_', algo, '-',num2str(nSeeds),'.tck'));
+        case {'iFOD2'}
+            % Build a file name for the tracks that will be generated.
+            % THe file name will contain information regarding the files being used to
+            % track, mask, csd file etc.
+            [~, pathstr] = strip_ext(files.csd);
+            tck_file = fullfile(pathstr,strcat(strip_ext(files.csd), '_' , strip_ext(roi), '_',...
+                strip_ext(mask) , '_', algo, '-',num2str(nSeeds),'.tck'));
+            
+            % Generate the mrtrix-unix command
+            % See examples at the end of this file
+            if  ~multishell
+                cmd_str = ['tckgen ' files.csd ' ' ...
+                    '-algo ' algo ' ' ...
+                    '-seed_image ' roi ' ' ...
+                    '-mask ' mask ' ' ...
+                    '-num ' num2str(nSeeds) ' ' ...
+                    tck_file ' ' ...
+                    '-force'];
+            else
+                cmd_str = ['tckgen ' files.csd ' ' ...
+                    '-algo ' algo ' ' ...
+                    '-seed_image ' roi ' ' ...
+                    '-act ' files.tt5 ' ' ...
+                    '-num ' num2str(nSeeds) ' ' ...
+                    tck_file ' ' ...
+                    '-force'];
+            end
+            
+        case {'iFOD1'}
+            % Build a file name for the tracks that will be generated.
+            % THe file name will contain information regarding the files being used to
+            % track, mask, csd file etc.
+            [~, pathstr] = strip_ext(files.csd);
+            tck_file = fullfile(pathstr,strcat(strip_ext(files.csd), '_' , strip_ext(roi), '_',...
+                strip_ext(mask) , '_', algo, '-',num2str(nSeeds),'.tck'));
+            
+            % Generate the mrtrix-unix command
+            % See examples at the end of this file
+            if  ~multishell
+                cmd_str = ['tckgen ' files.csd ' ' ...
+                    '-algo ' algo ' ' ...
+                    '-seed_image ' roi ' ' ...
+                    '-mask ' mask ' ' ...
+                    '-num ' num2str(nSeeds) ' ' ...
+                    tck_file ' ' ...
+                    '-force'];
+            else
+                cmd_str = ['tckgen ' files.csd ' ' ...
+                    '-algo ' algo ' ' ...
+                    '-seed_image ' roi ' ' ...
+                    '-act ' files.tt5 ' ' ...
+                    '-num ' num2str(nSeeds) ' ' ...
+                    tck_file ' ' ...
+                    '-force'];
+            end
+            
+        case {'SD_Stream'}
+            % Build a file name for the tracks that will be generated.
+            % THe file name will contain information regarding the files being used to
+            % track, mask, csd file etc.
+            [~, pathstr] = strip_ext(files.csd);
+            tck_file = fullfile(pathstr,strcat(strip_ext(files.csd), '_' , strip_ext(roi), '_',...
+                strip_ext(mask) , '_', algo, '-',num2str(nSeeds),'.tck'));
+            
+            % Generate the mrtrix-unix command
+            % See examples at the end of this file
+            if  ~multishell
+                cmd_str = ['tckgen ' files.csd ' ' ...
+                    '-algo ' algo ' ' ...
+                    '-seed_image ' roi ' ' ...
+                    '-mask ' mask ' ' ...
+                    '-num ' num2str(nSeeds) ' ' ...
+                    tck_file ' ' ...
+                    '-force'];
+            else
+                cmd_str = ['tckgen ' files.csd ' ' ...
+                    '-algo ' algo ' ' ...
+                    '-seed_image ' roi ' ' ...
+                    '-act ' files.tt5 ' ' ...
+                    '-num ' num2str(nSeeds) ' ' ...
+                    tck_file ' ' ...
+                    '-force'];
+            end
 
-        % Generate the mrtrix-unix command
-        % See examples at the end of this file
-        if  ~multishell
-            cmd_str = ['tckgen ' files.csd ' ' ...
-                       '-algo ' algo ' ' ...
-                       '-seed_image ' roi ' ' ...
-                       '-mask ' mask ' ' ...
-                       '-num ' num2str(nSeeds) ' ' ...
-                       tck_file ' ' ...
-                       '-force'];
-        else 
-            cmd_str = ['tckgen ' files.csd ' ' ...
-                       '-algo ' algo ' ' ...
-                       '-seed_image ' roi ' ' ...
-                       '-act ' files.tt5 ' ' ...
-                       '-num ' num2str(nSeeds) ' ' ...
-                       tck_file ' ' ...
-                       '-force'];
-        end
-      case {'FACT', 'iFOD1', 'Nulldist1', 'Nulldist2', 'SD_Stream','Seedtest', 'Tensor_Det', 'Tensor_Prob'}
-        error('Wrapper for algo "%s" not implemented yet. Add the case here and remove it from this list. Use the examples below to build your algorithm.', algo);
-      otherwise
-        error('Input "%s" is not a valid tracking algo in mrTrix3', algo);
-    end 
+        case {'FACT', 'Nulldist1', 'Nulldist2', 'Seedtest', 'Tensor_Det', 'Tensor_Prob'}
+            error('Wrapper for algo "%s" not implemented yet. Add the case here and remove it from this list. Use the examples below to build your algorithm.', algo);
+        otherwise
+            error('Input "%s" is not a valid tracking algo in mrTrix3', algo);
+    end
 end
 
 
@@ -147,14 +203,14 @@ end
 if ~(exist(tck_file,'file') ==2)  || clobber == 1
     [status,results] = AFQ_mrtrix_cmd(cmd_str, bkgrnd, verbose,mrtrixVersion);
 else
-  fprintf('\nFound fiber tract file: %s.\n Loading it rather than retracking',tck_file)
+    fprintf('\nFound fiber tract file: %s.\n Loading it rather than retracking',tck_file)
 end
 
 % Convert the .tck fibers created by mrtrix to mrDiffusion/Quench format (pdb):
 pdb_file = fullfile(pathstr,strcat(strip_ext(tck_file), '.pdb'));
 fg = mrtrix_tck2pdb(tck_file, pdb_file);
 
-end 
+end
 
 
 % tcken options taken from https://github.com/MRtrix3/mrtrix3/blob/master/testing/tests/tckgen
