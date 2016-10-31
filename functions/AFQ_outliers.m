@@ -1,15 +1,16 @@
-function [outliers, afq] = AFQ_outliers(afq, properties, thresh, num, mexclude)
+function [outliers, afq] = AFQ_outliers(afq, properties, thresh, num, mexclude, dvols)
 % Detect outliers who have tracts with unexpected values
 %
 % outliers = AFQ_outliers(afq, properties, thresh, num, mexclude)
 %
 % Inputs
-%
+%cd 
 % afq        - afq structure. See AFQ_run
 % properties - properties upon which to detect outliers. Cell array
 % thresh     - distance (z-score) to consider outlier. Defaults to 4
 % num        - number of outliers a subject can have before being flagged
 % mexclude   - binary. exlude datasets with excessive motion (1) or not
+% dvols      - binary. exlude datasets with excessive # of dropped volumes
 %
 % Outputs
 %
@@ -34,6 +35,9 @@ end
 if ~exist('mexclude', 'var') || isempty(mexclude)
     mexclude = 0; % don't exclude based on motion by default
 end
+if ~exist('dvols', 'var') || isempty(mexclude)
+    dvols = 0; % don't exclude based on # of dropped volumes
+end
 
 %% Computation
 % First exclude subjects/sessions with values outside a
@@ -57,6 +61,15 @@ if mexclude == 1
     outliers(motion(1:length(outliers)) == 1) = 1;
 end
 
+% Optionally exclude subjects with > 10% dropped volumes per scan:
+if dvols == 1
+    totalvols = 111; % total number of volumes in our diffusion seq
+    dropped = discardedVolumes(afq.sub_names, afq.metadata.session);
+    outliers((dropped./totalvols) > 0.1) = 1;
+end
+
 if nargout == 2
     afq.metadata.outliers = outliers;
 end
+
+
