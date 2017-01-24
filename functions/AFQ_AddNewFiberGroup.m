@@ -96,7 +96,7 @@ elseif ~strcmp(roi2Name(end-3:end),'.mat')
     roi2Name = [roi2Name '.mat'];
 end
 if ~exist('cleanFibers','var') || isempty(cleanFibers)
-    cleanFibers = true;
+    cleanFibers = false;
 end
 if ~exist('computeVals','var') || isempty(computeVals)
     computeVals = true;
@@ -123,6 +123,7 @@ if notDefined('fgNumber') || fgNumber > AFQ_get(afq,'numfg');
     % groups since it is the last one to be added
     fgNumber = AFQ_get(afq,'numfg');
 end
+% afq = AFQ_set(afq, 'new roi', roi1Name, roi2Name);
 
 %% Make individual ROIs from a template ROI if a template was passed in
 if xformRois == 1
@@ -220,7 +221,7 @@ for ii = runsubs
             % on clipped group
             if afq.params.cleanClippedFibers == 1;
                 % load ROIs
-                [roi1, roi2] = AFQ_LoadROIs(jj,afq.sub_dirs{ii},afq);
+                [roi1, roi2] = AFQ_LoadROIs(fgNumber,afq.sub_dirs{ii},afq);
                 % clip fiber group
                 fg_clip      = dtiClipFiberGroupToROIs(fg_classified,roi1,roi2);
                 if length(fg_clip.fibers) > 20
@@ -306,6 +307,10 @@ for ii = runsubs
             for jj = 1:numimages
                 % Read the image file
                 image = readFileNifti(afq.files.images(jj).path{ii});
+                % Check image header
+                if ~all(image.qto_xyz(:) == image.sto_xyz(:))
+                    image = niftiCheckQto(image);
+                end
                 % Compute a Tract Profile for that image
                 imagevals = AFQ_ComputeTractProperties(fg_classified, image, afq.params.numberOfNodes, afq.params.clip2rois, afq.sub_dirs{ii}, fWeight, afq);
                 % Add values to the afq structure
@@ -329,9 +334,9 @@ for ii = runsubs
 end
 
 %% Recompute the norms with the new fiber group
-if AFQ_get(afq,'computenorms')
-    [norms, patient_data, control_data, afq] = AFQ_ComputeNorms(afq);
-end
-
+% if AFQ_get(afq,'computenorms')
+%     [norms, patient_data, control_data, afq] = AFQ_ComputeNorms(afq);
+% end
+% 
 
 
