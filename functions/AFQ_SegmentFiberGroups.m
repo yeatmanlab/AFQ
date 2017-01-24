@@ -156,12 +156,21 @@ if ischar(fg), fg = dtiLoadFiberGroup(fg); end
 % Set the directory where templates can be found
 tdir = fullfile(fileparts(which('mrDiffusion.m')), 'templates');
 % Initialize spm defualts for normalization
-spm_defaults; global defaults; params = defaults.normalise.estimate;
-% spm_get_defaults - For SPM8
+spm_get_defaults; global defaults; 
+% In my case it is not reading the estimate, just the .write, copied this values
+% from https://github.com/casperkaae/MATLAB/blob/master/spm8/spm_defaults.m
+defaults.normalise.estimate.smosrc  = 8;
+defaults.normalise.estimate.smoref  = 0;
+defaults.normalise.estimate.regtype = 'mni';
+defaults.normalise.estimate.weight  = '';
+defaults.normalise.estimate.cutoff  = 25;
+defaults.normalise.estimate.nits    = 16;
+defaults.normalise.estimate.reg     = 1;
+params = defaults.normalise.estimate;
 
 %% Spatially normalize diffusion data with the MNI (ICBM) template
 template = fullfile(tdir,'MNI_JHU_T2.nii.gz');
-% Rescale image valueds to get better gary/white/CSF contrast
+% Rescale image valueds to get better gray/white/CSF contrast
 alignIm = mrAnatHistogramClip(double(dt.b0),0.3,0.99);
 % Compute normalization
 [sn, Vtemplate, invDef] = mrAnatComputeSpmSpatialNorm(alignIm, dt.xformToAcpc, template, params);
@@ -187,9 +196,16 @@ moriTracts.data(:,:,:,16) = moriTracts.data(:,:,:,16)-moriTracts.data(:,:,:,20);
 % Load the fiber group labels
 %labels = readTab(fullfile(tdir,'MNI_JHU_tracts_prob.txt'),',',false);
 %labels = labels(1:20,2);
-labels = {'Left Thalamic Radiation','Right Thalamic Radiation','Left Corticospinal','Right Corticospinal', 'Left Cingulum Cingulate', 'Right Cingulum Cingulate'...
-    'Left Cingulum Hippocampus','Right Cingulum Hippocampus', 'Callosum Forceps Major', 'Callosum Forceps Minor'...
-    'Left IFOF','Right IFOF','Left ILF','Right ILF','Left SLF','Right SLF','Left Uncinate','Right Uncinate','Left Arcuate','Right Arcuate'};
+labels = {'Left Thalamic Radiation','Right Thalamic Radiation', ...
+          'Left Corticospinal','Right Corticospinal', ...
+          'Left Cingulum Cingulate', 'Right Cingulum Cingulate', ...
+          'Left Cingulum Hippocampus','Right Cingulum Hippocampus', ...
+          'Callosum Forceps Major', 'Callosum Forceps Minor', ...
+          'Left IFOF','Right IFOF', ...
+          'Left ILF','Right ILF', ...
+          'Left SLF','Right SLF', ...
+          'Left Uncinate','Right Uncinate', ...
+          'Left Arcuate','Right Arcuate'};
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 % If you wanted to inverse-normalize the maps to this subject's brain:
