@@ -1,4 +1,4 @@
-function [ph, eh] = errorbargraph(barheights, err, group, color, barwidth, ax, colorby)
+function [ph, eh] = errorbargraph(barheights, err, group, color, barwidth, colorby)
 % Bar plot with error bars and modifiable colors and grouping
 %
 % h = errorbargraph(barheights, err, group, color)
@@ -21,8 +21,16 @@ end
 if ~exist('group','var') || isempty(group)
     group = 1:length(barheights);
 end
-
+if ~exist('barwidth','var') ||isempty(barwidth)
+    barwidth = .4;
+end
+if ~exist('colorby','var') ||isempty(bolorby)
+    colorby = 'group'
+end
 groupNums = unique(group);
+if size(groupNums,1)>1
+    groupNums = groupNums';
+end
 ngroups = length(groupNums);
 barHwidth = barwidth*0.5;
 % Make errors a row vector
