@@ -41,7 +41,7 @@ function files = AFQ_mrtrixInit(dt6, ...
 
 
 if notDefined('mrtrix_folder'), mrtrix_folder = 'mrtrix'; end
-if notDefined('lmax'), lmax = 8; end
+if notDefined('lmax'), lmax = 4; end
 % Loading the dt file containing all the paths to the fiels we need.
 dt_info = load(dt6);
 
@@ -169,7 +169,7 @@ if (~computed.('response'))
                       [], ... %this is the threshold string, it was missing!
                       false, ... % this is show figure
                       [], ... %bckground
-                      8, ... %lmax
+                      lmax, ... %lmax
                       false, ... %verbose
                       mrtrixVersion) 
 end
