@@ -3,7 +3,7 @@ function afq = AFQ_Create(varargin)
 %
 %    afq = AFQ_Create(varargin)
 %
-% Creates anautomated fiber quantification (AFQ) structure.  The default
+% Creates an automated fiber quantification (AFQ) structure.  The default
 % fields are put in place and filled with default values.  The default
 % parameters can also be changed and this will affect later stages of the
 % AFQ pipeline.  The arguments to the function are in the form
@@ -48,8 +48,8 @@ vals.ad = {};
 vals.cl = {};
 afq.vals = vals;
 
-%% Attach a cell array of subject names to the afq structure
-afq.sub_names = {};
+%% Attach a cell array of subject ids to the afq structure
+afq.sub_ids = {};
 
 %% Attach a vector of subject groups to afq structure
 afq.sub_group = [];
@@ -71,10 +71,30 @@ afq.TractProfiles = AFQ_CreateTractProfile;
 %     afq.TractProfiles.(fgNames{ii}) = AFQ_CreateTractProfile('name',fgNames{ii});
 % end
 
+%% Attatch a field for spatial normalization
+afq.xform.sn = [];
+afq.xform.invDef = [];
+afq.xform.ants = [];
+afq.xform.antsinv = [];
+
 %% Check which software packages are installed
 afq.software.mrvista = check_mrvista;
-afq.software.mrtrix = check_mrTrix;
 afq.software.spm = check_spm;
+afq.software.mrtrixVersion = check_mrTrix_Version;
+if check_mrTrix_Version ~= 0
+    afq.software.mrtrix = check_mrTrix(afq.software.mrtrixVersion);
+else
+    afq.software.mrtrix = 0;
+end
+if afq.software.mrtrix == 1
+   fprintf('\nmrTrix is installed. To perform tracking based on CSD with mrTrix:')
+   fprintf('\nAFQ_Create(...,''computeCSD'',1)\n');
+end
+afq.software.ants = check_ants;
+if check_ants == 1
+   fprintf('\nANTs is installed. To perform alignment with ANTs:')
+   fprintf('\nAFQ_Create(...,''normalization'',''ants'')\n');
+end
 
 %% Set the afq.params structure with default parameters
 %  cutoff: The percentile cutoff to be used to determine what is "abnormal"
@@ -131,10 +151,17 @@ afq.params.showfigs = true;
 % Save figures? yes or no
 afq.params.savefigs = false;
 % Whether or not to compute constrained spherical deconvolution using
-% mrtrix
+% mrtrix. ) means don't use mrtrix. 1 means use mrtrix with the default
+% lmax (4). Otherwise you can set the lmax by following 'computeCSD' with a
+% scaler.
 afq.params.computeCSD = 0;
 % Whether or not to comput control group norms
 afq.params.computenorms = 1;
+% Which software package to use for normalization
+afq.params.normalization = 'spm';
+% For aditional images that are passed into afq you can set a resolution to
+% resample those images to before computing tract profiles (e.g., [2 2 2])
+afq.params.imresample = false;
 %% AFQ Fiber Tracking parameters
 % Do fiber tracking with mrdiffusion by default. The other option is
 % 'mrtrix' if it is installed and the data is HARDI
@@ -167,16 +194,48 @@ afq.params.track.seedVoxelOffsets = [0.25 0.75];
 % Mask from which to initialize tracking
 afq.params.track.faMaskThresh = 0.30;
 
-% TODO:
-%  Write a parameter translation routine based on mrvParamFormat()
-%  This will translate all of the parameters into the right format for the
-%  afq parameters structure.
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Modify default parameters based on user input                          %
 afq = afqVarargin(afq, varargin);                                         %
 afq.params = afqVarargin(afq.params, varargin);     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Set some mrtrix specific parameters (only computeCSD==1)
+% If mr trix is installed and CSD is to be computed then perform tracking 
+% on constrained spherical deconvolution
+if afq.software.mrtrix == 1 && afq.params.computeCSD > 0
+    afq.params.track.algorithm = 'mrtrix';
+    % Parameters relevant to mrTrix.
+    % Beware, the code is being maintained for both mrTrix2 and mrTrix3.
+    % Consider that mrTrix2 is called obsolete by the developers, with no updates
+    % http://community.mrtrix.org/t/mrtrix-tutorial-error/141
+    % Function names change, and there are many new options in mrTrix3.
+    % Number of fibers to track. This parameter is only relevant for mrTrix
+    afq.params.track.nfibers = 500000; 
+    % Choose algorithm for tracking with mrTrix
+    % Options if you have version 2:
+    %    'probabilistic tractography': 'SD_PROB'
+    %    'deterministic tractogrpahy based on spherical deconvolution': 'SD_STREAM'
+    %    'deterministic tractogrpahy based on a tensor model': 'DT_STREAM'
+    % Options if you have version 3:
+    %     FACT, iFOD1, iFOD2, Nulldist1, Nulldist2, SD_Stream,
+    %                         Seedtest, Tensor_Det, Tensor_Prob (default: iFOD2).
+    afq.params.track.mrTrixAlgo = 'iFOD2';
+    % Specify here if you want multishell true or false.
+    afq.params.track.multishell = true;
+    % In case you are using multishell, specify the tool to be used for 5ttgen
+    % script. If you use 'fsl', it will segment the T1 you provided in the
+    % beginning. If you use 'freesurfer', you should provide any 'aseg' file
+    % provided by the freesurfer pipeline, tested with aparc+aseg.mgz
+    afq.params.track.tool = 'freesurfer';  
+end
+
+% TODO:
+%  Write a parameter translation routine based on mrvParamFormat()
+%  This will translate all of the parameters into the right format for the
+%  afq parameters structure.
+
+
 
 %% Modify tracking parameters if the mode is test mode
 if strcmp(afq.params.run_mode,'test')
@@ -198,8 +257,11 @@ afq.files.fibers.clean      = cell(AFQ_get(afq,'num subs'),1);
 %% Add files from previous AFQ runs to afq structure
 
 % The name of the segmented fiber group depends on whether we are clipping
-% it to the ROIs or not
-if AFQ_get(afq,'clip2rois') == 0
+% it to the ROIs or not. Or it can be passed in by the user
+s = strcmp('segname',varargin) + strcmp('segName',varargin);
+if sum(s)>0
+    segName = varargin{find(s)+1};
+elseif AFQ_get(afq,'clip2rois') == 0
     segName = 'MoriGroups_Cortex.mat';
 else
     segName = 'MoriGroups.mat';
@@ -219,29 +281,60 @@ for ii = 1:AFQ_get(afq,'num subs')
         afq.files.fibers.clean{ii} = cleanFG;
     end
 end
+% Save the name  of the segmented fiber group
+afq.files.fibers.segName = segName;
+
 %% Allow previous analyses to be overwritten
 afq.overwrite.fibers.wholebrain = zeros(AFQ_get(afq,'num subs'),1);
 afq.overwrite.fibers.segmented = zeros(AFQ_get(afq,'num subs'),1);
 afq.overwrite.fibers.clean = zeros(AFQ_get(afq,'num subs'),1);
-afq.overwrite.vals = zeros(AFQ_get(afq,'num subs',1));
+afq.overwrite.vals = zeros(AFQ_get(afq,'num subs'),1);
 
-%% If desired compute constrained spherical deconvolution with mr trix
-
-% If mr trix is installed and CSD is computed then perform tracking on
-% constrained spherical deconvolution
-if afq.software.mrtrix == 1 && afq.params.computeCSD == 1
-    afq.params.track.algorithm = 'mrtrix';
-end
-
+%% If desired compute constrained spherical deconvolution with mrtrix
+% If we want to use mrtrix for tractography that we will compute CSD right
+% here
 if AFQ_get(afq,'use mrtrix')
     for ii = 1:AFQ_get(afq,'num subs')
-        files = AFQ_mrtrixInit(AFQ_get(afq, 'dt6 path',ii));
-        afq.files.mrtrix.csd{ii} = files.csd;
-        afq.files.mrtrix.wm{ii} = files.wm;
+        mrtrixdir = fullfile(afq.sub_dirs{ii},'mrtrix');
+        if ~exist(mrtrixdir,'dir'),mkdir(mrtrixdir);end
+        % Get the lmax from the afq structure
+        lmax = AFQ_get(afq,'lmax');
+        
+        files = AFQ_mrtrixInit(AFQ_get(afq, 'dt6path',ii), ...
+                               lmax,...
+                               mrtrixdir,...
+                               afq.software.mrtrixVersion, ...
+                               afq.params.track.multishell, ... % true/false
+                               afq.params.track.tool); % 'fsl', 'freesurfer'
+        % In order to not modify much the previous code, I created new
+        % files types. 
+        % In mrTrix2 and mrTrix3 not-multishell, files.wm was the wm mask,
+        % so I changed the name to files.wmMask.
+        % In multishell, in files.tt5 you have the wm, gm, csf masks in one
+        % file. We create it only if it is multishell, but wmMask is always
+        % created because we will need it downstream in tractography.
+        % files.csd is created  only in  ~multishell and passed here to
+        % tractography, but in the case of msmt 3 different files are
+        % created, one for each tissue type. We only pass the csd of the 
+        % wm = wmMask for tractography, wmMask as seed_image
+        % and tt5 for -act (instead of -mask)
+
+        if ~afq.params.track.multishell
+            afq.files.mrtrix.csd{ii} = files.csd;
+            afq.files.mrtrix.wm{ii} = files.wmMask;
+        else
+            afq.files.mrtrix.csd{ii} = files.wmCsd;
+            afq.files.mrtrix.wm{ii} = files.wmMask;
+            afq.files.mrtrix.tt5{ii} = files.tt5;
+        end
     end
 end
+         
 
 %% Set the current subject field to subject 1
 afq.currentsub = 1;
+
+%% Add a field for meta data (eg. age, sex etc.)
+afq.metadata = [];
 
 return

@@ -1,7 +1,7 @@
-function [alphaFWE, statFWE, clusterFWE, stats] = AFQ_MultiCompCorrection(data,y,alpha, method)
+function [alphaFWE, statFWE, clusterFWE, stats] = AFQ_MultiCompCorrection(data,y,alpha,method,cThresh)
 % Compute a multiple comparison correction for Tract Profile data
 %
-%   [alphaFWE, statFWE, clusterFWE, stats] = AFQ_MultiCompCorrection(data,y,alpha, method)
+%   [alphaFWE, statFWE, clusterFWE, stats] = AFQ_MultiCompCorrection(data,y,alpha, method,cThresh)
 %
 % There are 2 multiple comparison corrections implemented. Both account for
 % the correlation structure in the data but in different ways.
@@ -40,6 +40,10 @@ function [alphaFWE, statFWE, clusterFWE, stats] = AFQ_MultiCompCorrection(data,y
 %            is a binary vector then T-tests will be computed.
 % alpha    = The desired alpha (pvalue) to adjust
 % method   = 'permutation' or 'chevrud'. We strongly recomend 'permutation'
+% cThresh  = For clusterwise corrections the threshold for computing a
+%            cluster can be different than the desired alpha. For example
+%            you can set a cluster threshold of 0.01 and then find clusters
+%            that a large enough to pass FWE at a threshold of 0.05.
 %
 % Outputs:
 % alphaFWE   = This is the alpha (p value) that corresponds after adjustment 
@@ -66,7 +70,10 @@ end
 if ~exist('alpha','var') || isempty(alpha)
     alpha = 0.05;
 end
-
+% By default the cluster threshold is the same as alpha
+if ~exist('cThresh') || isempty(cThresh)
+    cThresh = alpha;
+end
 % If y is continues perform a correlation if binary perform a ttest
 if ~exist('y','var') || isempty(y)
     y = randn(size(data,1),1);
@@ -75,6 +82,8 @@ if ~exist('y','var') || isempty(y)
 elseif length(y)==sum(y==0 | y==1) || length(y)==sum(y==1 | y==2)
     y = logical(y);
     stattest = 'ttest';
+else
+    stattest = 'corr';
 end
 
 switch(method)
@@ -110,11 +119,16 @@ switch(method)
         % cluster size at the specified alpha value
         
         % Threshold the pvalue
-        pThresh = p < alpha;
+        pThresh = p < cThresh;
         % Compute cluster size for each permutation
         for ii = 1:nperm
-            % Find indices where significant clusters end
-            clusEnd = find(pThresh(ii,:) == 0);
+            % Find indices where significant clusters end.
+            % The method used requires significant p-values to be included
+            % between non-significant p-values. 0 are therefore added at 
+            % both ends of the thresholded p-value vector 
+            %(for cases when significant p-values are located at its ends)
+            pThresh_ii=[0 pThresh(ii,:) 0];
+            clusEnd = find(pThresh_ii == 0);
             % Compute the size of each cluster
             clusSiz = diff(clusEnd);
             % Find the maximum cluster size for permutation ii
@@ -123,7 +137,7 @@ switch(method)
         % Sort the clusters in descending order of significance
         stats.clusMax = sort(clusMax,'descend');
         % Find the corrected cluster size corresponding to alpha
-        clusterFWE = stats.clusMax(round(alpha.*nperm))
+        clusterFWE = stats.clusMax(round(alpha.*nperm));
         
     case 'chevrud'
         %% PCA method (Chevrud et al.)

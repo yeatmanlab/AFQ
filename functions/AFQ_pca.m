@@ -1,4 +1,4 @@
-function [coeff, score, subMeans, latent] = AFQ_pca(afq, valname, group, demean)
+function [coeff, score, subMeans, latent, tsquared, R2] = AFQ_pca(afq, valname, group, demean, fgnums)
 % Perform principal components analysis on AFQ Tract Profiles
 %
 % [coeff, score, latent] = AFQ_pca(afq, valname, group)
@@ -11,6 +11,7 @@ function [coeff, score, subMeans, latent] = AFQ_pca(afq, valname, group, demean)
 % group   - Compute PCA on values from either 'patients' or 'controls'. If
 %           group is empty then PCA will be computed on all the values
 % demean  - Whether or not to remove subject means before PCA
+% fgnums  - Which tracts to analyze
 % Output:
 % coeff    - principal component coefficients, also known as loadings.Rows
 %            of X correspond to observations, columns to variables.
@@ -44,7 +45,9 @@ end
 if ~exist('demean','var') || isempty(demean)
     demean = 0;
 end
-
+if ~exist('fgnums', 'var') || isempty(fgnums)
+    fgnums = 1:length(AFQ_get(afq, 'fgnames'));
+end
 % Concatinate all the data into an MxN matrix where each row is a
 % subject and each column is a point on a tract profile. If there are 10
 % subjects with 20 tracts and 100 points per tract than data will be a
@@ -54,12 +57,26 @@ if ~exist('group','var') || isempty(group)
 else
     data = AFQ_get(afq, 'vals', valname, group);
 end
-
+% remove unwanted tracts
+fgnodes = [];
+for ii = 1:length(fgnums)
+    fgnodes = horzcat(fgnodes,fgnums(ii)*100-99:fgnums(ii)*100);
+end
+data = data(:,fgnodes);
 % Compute each subjects mean value
 subMeans = nanmean(data,2);
 % Remove each subjects mean
 if demean == 1
     data = bsxfun(@minus,data,subMeans);
+end
+
+% Compute tract means
+fgnames = AFQ_get(afq, 'fgnames');
+fgnames = fgnames(fgnums)
+nodes = 21:80;
+for ii = 1:length(fgnames)
+    vals = AFQ_get(afq, fgnames{ii}, valname);
+    tmeans(:,ii) = nanmean(vals(:,nodes),2);
 end
 
 % Perform PCA
@@ -70,7 +87,8 @@ if sum(isnan(data(:))) > 0
     fprintf('\nremoving %.0f columns  because they contain nans\n',sum(nancol));
     dataNoNan = data(:,~nancol);
     % PCA on all columns with no nans
-    [coeff, score, latent] = princomp(dataNoNan);
+    [coeff, score, latent, tsquared, R2] = pca(dataNoNan);
 else
-    [coeff, score, latent] = princomp(data);
+    [coeff, score, latent, tsquared, R2] = pca(data);
+    [tcoeff, tscore, tlatent, ttsquared, tR2] = pca(tmeans);
 end

@@ -117,6 +117,15 @@ else
     property = 'fa';
 end
 
+% Check if there is a defined output directory
+p = strcmpi('outdir', varargin);
+if sum(p) > 0
+    outdir = varargin{find(p)+1};
+else
+    % default property to plot
+    outdir = [];
+end
+
 % Check if there are defined subjects to plot otherwise plot all subjects
 s = strcmpi('subjects', varargin);
 if sum(s) > 0
@@ -232,8 +241,26 @@ if sum(strcmpi('individual',arg)) == 1
         case 'md'
             Meanvals = norms.meanMD;
             SDvals   = norms.sdMD;
-            axisScale = [1 nnodes .6 1.3];
+            axisScale = 'auto';
             label = 'Mead Diffusivity';
+        otherwise
+            % look for the value in the structure and change the case if
+            % needed
+            if isfield(norms, ['mean' property]);
+                fprintf('\nPlotting %s\n',property);
+            elseif isfield(norms, ['mean' upper(property)]);
+                property = upper(property);
+                fprintf('\nPlotting %s\n',property);
+            elseif isfield(norms, ['mean' lower(property)]);
+                property = lower(property);
+                fprintf('\nPlotting %s\n',property);
+            else
+                error('Property %s could not be found',property);
+            end
+            Meanvals = norms.(['mean' property]);
+            SDvals = norms.(['sd' property]);
+            axisScale = 'auto';
+            label = property;
     end
     % make a legend if desired
     if sum(strcmpi('legend',varargin)) > 0
@@ -261,7 +288,7 @@ if sum(strcmpi('individual',arg)) == 1
         fill(x,y, [.6 .6 .6]);
         clear y
         % plot the 25 and 75 percentile bands
-        y = vertcat(Meanvals(:,jj)+max(cutZ2)*SDvals(:,jj), flipud(Meanvals(:,jj)+min(cutZ2)*norms.sdFA(:,jj)));
+        y = vertcat(Meanvals(:,jj)+max(cutZ2)*SDvals(:,jj), flipud(Meanvals(:,jj)+min(cutZ2)*SDvals(:,jj)));
         fill(x,y, [.3 .3 .3]);
         clear y
         % plot the mean
@@ -277,7 +304,7 @@ if sum(strcmpi('individual',arg)) == 1
     % the second set of data will be individual subjects
     subData = data{2};
     % define the colors to be used for each individual
-    c = hsv(length(subData(1).FA(:,1))).*0.6;
+    c = hsv(length(subjects)).*0.6;
     % Loop over all the tracts
     for jj = tracts
         figure(fignums(jj));
@@ -292,17 +319,31 @@ if sum(strcmpi('individual',arg)) == 1
                 subVals = subData(jj).AD;
             case 'md'
                 subVals = subData(jj).MD;
+            otherwise
+                subVals = subData(jj).(property);
         end
         % For each tract loop over the number of subjects and plot each
         % on the same plot with the norms
+        cnum = 0;
         for ii = subjects
-            h(ii) = plot(subVals(ii,:)','--','Color',c(ii,:),'linewidth',2);
+            cnum = cnum+1;
+            h(ii) = plot(subVals(ii,:)','-','Color',c(cnum,:),'linewidth',2);
         end
         % add a legend to the plot if desired
         if ~isempty(L)
             legend(h(subjects),L);
         end
-    end   
+    end 
+    
+    % Save the figures if desired
+    if ~isempty(outdir)
+        cd(outdir);
+         for jj = tracts
+            figure(fignums(jj));
+            fname = [fgNames{jj} property];
+            print(gcf, '-depsc',fname)
+         end
+    end
 end
 
 %% Colormap plots
@@ -331,28 +372,31 @@ if sum(strcmpi('colormap',arg)) == 1
         % collect the property of interest for tract jj
         switch(property)
             case 'fa'
-                subVals = subData(tracts(jj)).FA;
+                subVals(:,:,tracts(jj)) = subData(tracts(jj)).FA;
                 axisScale = [1 nnodes .2 .9];
                 label = 'Fractional Anisotropy';
             case 'rd'
-                subVals = subData(tracts(jj)).RD;
+                subVals(:,:,tracts(jj)) = subData(tracts(jj)).RD;
                 axisScale = [1 nnodes .2 .9];
                 label = 'Radial Diffusivity';
             case 'ad'
-                subVals = subData(tracts(jj)).AD;
+                subVals(:,:,tracts(jj)) = subData(tracts(jj)).AD;
                 axisScale = [1 nnodes 1 2.1];
                 label = 'Axial Diffusivity';
             case 'md'
-                subVals = subData(tracts(jj)).MD;
+                subVals(:,:,tracts(jj)) = subData(tracts(jj)).MD;
                 axisScale = [1 nnodes .6 1.3];
                 label = 'Mean Diffusivity';
+            otherwise
+                subVals(:,:,tracts(jj)) = AFQ_get(afq, fgNames{tracts(jj)},property);
+                label = property;
         end
         
         figure(fignums(jj)); hold on;
         % For each tract loop over the number of subjects and plot each
         % on the same axis
         for ii = 1 : length(subVals(:,1))
-            h(ii) = plot(subVals(ii,:)','-','Color',[.5 .5 .5],'linewidth',1);
+            h(ii) = plot(subVals(ii,:,tracts(jj))','-','Color',[.5 .5 .5],'linewidth',1);
         end
         % add a legend to the plot if desired
         if ~isempty(L)
@@ -365,7 +409,7 @@ if sum(strcmpi('colormap',arg)) == 1
     for jj=1:length(tracts)
         figure(fignums(jj));hold on;
         % compute the mean tract profile
-        meanTP = nanmean(subData(tracts(jj)).FA);
+        meanTP = nanmean(subVals(:,:,tracts(jj)));
         % Interpolate the mean profile so the heatmap transitions smoothly
         meanTPinterp = interp1(1:100,meanTP,linspace(1,100,1000));
         % Set the colormap
@@ -385,7 +429,11 @@ if sum(strcmpi('colormap',arg)) == 1
             plot(k./10,meanTPinterp(k),'.','Color',c(mcolor(k),:),'markersize',40);
         end
         % scale the axes and name them
-        axis(axisScale);
+        if exist('axisScale') && ~isempty(axisScale)
+            axis(axisScale);
+        else
+            axis('normal');
+        end
         xlabel('Location','fontName','Times','fontSize',12);
         ylabel(label,'fontName','Times','fontSize',12)
         title(fgNames{tracts(jj)},'fontName','Times','fontSize',12)

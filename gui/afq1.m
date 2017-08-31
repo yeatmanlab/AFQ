@@ -22,7 +22,7 @@ function varargout = afq1(varargin)
 
 % Edit the above text to modify the response to help afq1
 
-% Last Modified by GUIDE v2.5 22-Feb-2012 15:27:02
+% Last Modified by GUIDE v2.5 22-Oct-2013 07:39:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -55,15 +55,21 @@ function afq1_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for afq1
 handles.output = hObject;
 
+% Add AFQ structure to gui
+[afqFilename, afqPath] = uigetfile('*.mat','Load AFQ structure');
+handles.afqPath = fullfile(afqPath, afqFilename);
+load(handles.afqPath);
+handles.afq = afq;
+
 % Update handles structure
 guidata(hObject, handles);
 
 % UIWAIT makes afq1 wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
-% Clear the labels from the axes1.
-set(handles.axes1,'xtickLabel',[])
-set(handles.axes1,'ytickLabel',[])
+% Clear the labels from the TractProfile_plot.
+set(handles.TractProfile_plot,'xtickLabel',[])
+set(handles.TractProfile_plot,'ytickLabel',[])
 
 
 return;
@@ -113,3 +119,26 @@ img = rand(128,128);
 imagesc(img);
 
 return
+
+
+% --- Executes on selection change in choose_FG.
+function choose_FG_Callback(hObject, eventdata, handles)
+% hObject    handle to choose_FG (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+contents(AFQ_get(handles.afq,'fgnames'));
+% Hints: contents = cellstr(get(hObject,'String')) returns choose_FG contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from choose_FG
+
+
+% --- Executes during object creation, after setting all properties.
+function choose_FG_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to choose_FG (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

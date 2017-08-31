@@ -39,7 +39,13 @@ function val = AFQ_get(afq, param, varargin)
 % 'tractname'             - 'valname', 'group'
 % 'left arcuate'          - 'fa'     , 'controls'
 %
+% To get values that are saved within the tract profiles rather than in the
+% vals field:
+% 'TractProfile vals'      - 'tract name', 'valname'
+% 'TractProfile vals'      - 'Left Arcuate', 'fa'
+%
 % 'use mrtrix'
+% 'lmax'
 % 'dt6path'               - [subject number]
 % 'tracking parameters'
 % 'mrtrixpaths'           - [subject number]
@@ -49,6 +55,14 @@ function val = AFQ_get(afq, param, varargin)
 % 'current subject'
 % 'seg fg name'           - [subject number]
 % 'clean fg name'         - [subject number]
+% 'segfilename'           - 
+% 'spatial normalization' - [subject number]
+% 'inverse deformation'   - [subject number]
+% 'use ANTS'
+% 'ants inverse warp'     - [subject number]
+% 'meta data'             - 'field name'
+% 'imresample2dwi'
+%
 % To get any of the parameters save in the afq structure (see AFQ_Create),
 % enter the name of the parameter. Some have not been implimented yet, but
 % will be soon.
@@ -124,11 +138,42 @@ switch(param)
         else
             % get the name (because we formated the parameter)
             name = afq.fgnames{n};
-            try
+            % check if a cleaned version of the fiber group exists
+            if isfield(afq.files.fibers,[name 'clean']) && ...
+                    length(afq.files.fibers.([name 'clean'])) >= varargin{1}
                 val = afq.files.fibers.([name 'clean']){varargin{1}};
-            catch
+            elseif isfield(afq.files.fibers,[name '_clean'])&& ...
+                length(afq.files.fibers.([name '_clean'])) >= varargin{1}
+                val = afq.files.fibers.([name '_clean']){varargin{1}};
+            else
                 val = afq.files.fibers.(name){varargin{1}};
             end
+        end
+    case horzcat(strcat(fgnames,'fg'))
+        % find the fiber group number (get rid of the 'fg' at the end
+        n = find(strcmpi(param(1:end-2),fgnames));
+        if n <= 20
+            % If it is one of the mori groups than get the path to that
+            % fiber group (preferably cleaned)
+            try
+                path = afq.files.fibers.clean{varargin{1}};
+            catch
+                path = afq.files.fibers.segmented{varargin{1}};
+            end
+            % Load the fiber group
+            fg = dtiReadFibers(path);
+            % Pull out the desired fiber group number
+            val = fg(n);
+        else
+            % get the name (because we formated the parameter)
+            name = afq.fgnames{n};
+            try
+                path = afq.files.fibers.([name 'clean']){varargin{1}};
+            catch
+                path = afq.files.fibers.(name){varargin{1}};
+            end
+            % Load the fiber group
+            val = dtiLoadFiberGroup(path);
         end
     case{'docleaning'}
         % Check if user wants to overwrite cleaned fibers for this subject or
@@ -136,7 +181,7 @@ switch(param)
         val = logical(afq.overwrite.fibers.clean(varargin{1})) || ...
             isempty(afq.files.fibers.clean{varargin{1}}) || ...
             ~ischar(afq.files.fibers.clean{varargin{1}});
-    case{'cleanfibers' 'cleanedfibers' 'cleanfg'}
+    case{'cleanfibers' 'cleanedfibers' 'cleanfg' 'fgclean'}
         val = dtiReadFibers(afq.files.fibers.clean{varargin{1}});
     case{'segname' 'segmentedfibersname' 'segfgname'}
         [~, val] = fileparts(afq.files.fibers.segmented{varargin{1}});
@@ -227,13 +272,33 @@ switch(param)
                     error('Do you want vals for patients or controls?')
             end
         end
+    case {'tractprofilevals' 'valstractprofile'}
+        % Get the number of the tract. This is the first input argumet
+        tnum = find(strcmp(varargin{1},AFQ_get(afq,'fgnames')));
+        if isempty(tnum)
+            fprintf('\n please provide valid tract name\n')
+            fprintf('correct call AFQ_get(afq,''tractprofilevals'',''Left Arcuate'',''fa'')\n')
+        end
+        % Loop over each subject's tract profile and get the requested
+        % values
+        valname = varargin{2};
+        for ii = 1:AFQ_get(afq, 'numsubs')
+           val(ii,:) = afq.TractProfiles(ii,tnum).vals.(valname);
+        end
     case{'usemrtrix'}
         if afq.software.mrtrix == 1 && ...
                 strcmp('mrtrix',afq.params.track.algorithm)...
-                && afq.params.computeCSD == 1;
+                && afq.params.computeCSD > 0;
             val = true;
         else
             val = false;
+        end
+    case{'lmax'}
+        val = afq.params.computeCSD;
+        % lmax=4 is the default. computeCSD=1 means that the user wanted to
+        % use csd but did not set an lmax.
+        if val == 1
+            val = 4;
         end
     case{'dt6path'}
         % If a subject number was input then get the dt6path for that
@@ -249,6 +314,9 @@ switch(param)
     case{'mrtrixpath' 'mrtrixpaths'}
         val.csd = afq.files.mrtrix.csd{varargin{1}};
         val.wm  = afq.files.mrtrix.wm{varargin{1}};
+        if afq.params.track.multishell
+            val.tt5  = afq.files.mrtrix.tt5{varargin{1}};
+        end
     case{'showfigures' 'showfigs'}
         val = logical(afq.params.showfigs);
     case{'fiberweighting'}
@@ -289,6 +357,51 @@ switch(param)
         if size(val,1) > size(val,2)
             val = val';
         end
+    case 'segfilename'
+        if isfield(afq.files.fibers,'segName')
+            val = afq.files.fibers.segName;
+        elseif AFQ_get(afq,'clip2rois') == 1
+            val = 'MoriGroups.mat';
+        elseif AFQ_get(afq,'clip2rois') == 0
+            val = 'MoriGroups_Cortex.mat';
+        end
+    case {'spatialnormalization' 'sn'}
+        try
+            val = afq.xform.sn(varargin{1});
+        catch
+            val = [];
+        end
+    case {'inversedeformation' 'invdef'}
+        try
+            val = afq.xform.invDef(varargin{1});
+        catch
+            val = [];
+        end
+    case {'useants'}
+        if isfield(afq.params,'normalization') && ...
+                isfield(afq.software,'ants') && ...
+                strcmp(afq.params.normalization,'ants') && ...
+                afq.software.ants == 1;
+            val = true;
+        else
+            val = false;
+        end
+    case {'antsinvwarp' 'antsinv' 'antsinversewarp'}
+        try 
+            val = afq.xform.antsinv{varargin{1}}
+        catch
+            val = [];
+        end
+    case {'metadata'}
+        val = afq.metadata.(varargin{1});
+    case{'imageresample' 'imresample2dwi' 'imresample2dti' 'imresample'}
+        if isfield(afq.params,'imresample')
+            val = afq.params.imresample;
+        else
+            val = false;
+        end
+    case {'mrtrixversion'}
+        val = afq.software.mrtrixVersion;    
         
     otherwise
         error('Uknown afq parameter');

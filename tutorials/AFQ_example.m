@@ -24,7 +24,7 @@ wholebrainFG = AFQ_WholebrainTractography(dt,'test');
 
 % Visualize the wholebrain fiber group.  Because there are a few hundred
 % thousand fibers we will use the 'numfibers' input to AFQ_RenderFibers to
-% randomely select 1,000 fibers to render. The 'color' input is used to set
+% randomly select 1,000 fibers to render. The 'color' input is used to set
 % the rgb values that specify the desired color of the fibers.
 AFQ_RenderFibers(wholebrainFG, 'numfibers',1000, 'color', [1 .6 .2]);
 

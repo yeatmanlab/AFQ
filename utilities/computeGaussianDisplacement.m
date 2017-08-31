@@ -1,4 +1,4 @@
-function [Cnew v] = computeGaussianDisplacement(Q, C)
+function [Cnew, v] = computeGaussianDisplacement(Q, C)
 % Compute the displacements of N particles givent a tensor
 %
 % v = computeGaussianDisplacement(Q, C)
@@ -64,7 +64,7 @@ N = size(C,1);
 rvecs = [x(:), y(:), z(:)];
 n = size(rvecs,1); %number of vectors
 % randomly sample n vectors on the sphere
-u = rvecs(round(rand(N,1).*n),:);
+u = rvecs(ceil(rand(N,1).*n),:);
 
 sphAdc = zeros(size(u,1),1);
 for ii=1:size(u,1)

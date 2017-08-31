@@ -26,14 +26,26 @@ function rgb = vals2colormap(vals, colormap, crange)
 if ~exist('colormap','var') || isempty(colormap)
     colormap = 'jet';
 end
-
+% Generate the colormap
+if ischar(colormap)
+    cmap = eval([colormap '(256)']);
+else
+    % If the colors were provided calculate the number of unique colors
+    ncolors = size(colormap,1);
+    rp = floor(256./ncolors);
+    rm = 256 - rp.*ncolors;
+    cmap = [];
+    % Repeat each color an equal number of times
+    for ii = 1:ncolors
+       cmap = vertcat(cmap,repmat(colormap(ii,:),rp,1));
+    end
+    cmap = vertcat(repmat(colormap(1,:),round(rm./2),1),cmap,repmat(colormap(end,:),round(rm./2),1));
+end
 %
 if ~iscell(vals)
     if ~exist('crange','var') || isempty(crange)
         crange = [min(vals) max(vals)];
     end
-    % Generate the colormap
-    cmap = eval([colormap '(256)']);
     % Normalize the values to be between 1 and 256
     vals(vals < crange(1)) = crange(1);
     vals(vals > crange(2)) = crange(2);
@@ -44,10 +56,12 @@ if ~iscell(vals)
     rgb = cmap(valsN, :);
 elseif iscell(vals)
     if ~exist('crange','var') || isempty(crange)
-        crange = [min(vertcat(vals{:})) max(vertcat(vals{:}))];
+        if size(vals{1},1) > size(vals{1},2)
+            crange = [min(vertcat(vals{:})) max(vertcat(vals{:}))];
+        else
+            crange = [min(horzcat(vals{:})) max(horzcat(vals{:}))];
+        end
     end
-    % Generate the colormap
-    cmap = eval([colormap '(256)']);
     for ii = 1:length(vals)
         % Normalize the values to be between 1 and 256 for cell ii
         valsN = vals{ii};

@@ -1,12 +1,12 @@
 function [fg_classified,fg_unclassified,classification,fg] = ...
     AFQ_SegmentFiberGroups(dt6File, fg, Atlas, ...
-    useRoiBasedApproach, useInterhemisphericSplit)
+    useRoiBasedApproach, useInterhemisphericSplit, antsInvWarp)
 % Categorizes each fiber in a group into one of the 20 tracts defined in
 % the Mori white matter atlas. 
 %
 %  [fg_classified, fg_unclassified, classification, fg] = ...
 %      AFQ_SegmentFiberGroups(dt6File, fg, [Atlas='MNI_JHU_tracts_prob.nii.gz'], ...
-%      [useRoiBasedApproach=true], [useInterhemisphericSplit=true]);
+%      [useRoiBasedApproach=true], [useInterhemisphericSplit=true], [antsInvWarp]);
 %
 %  Fibers are segmented in two steps. Fibers become candidates for a fiber
 %  group if the pass through the 2 waypoint ROIs that define the
@@ -67,6 +67,10 @@ function [fg_classified,fg_unclassified,classification,fg] = ...
 %                           you do not need to recompute ROIs.  E.g., to
 %                           avoid recomputing  ROIs and use minDist of 4mm
 %                           one would pass [useRoiBasedApproach=[4 0]];
+%  antsInvWarp              - Spatial normalization computed with ANTS. If
+%                           a path to a precomputed ANTS warp is passed in
+%                           then it will be used to transform the MNI ROIs
+%                           to native space
 %
 % Output parameters:
 % fg_ classified  - fibers structure containing all fibers assigned to
@@ -152,12 +156,21 @@ if ischar(fg), fg = dtiLoadFiberGroup(fg); end
 % Set the directory where templates can be found
 tdir = fullfile(fileparts(which('mrDiffusion.m')), 'templates');
 % Initialize spm defualts for normalization
-spm_defaults; global defaults; params = defaults.normalise.estimate;
-% spm_get_defaults - For SPM8
+spm_get_defaults; global defaults; 
+% In my case it is not reading the estimate, just the .write, copied this values
+% from https://github.com/casperkaae/MATLAB/blob/master/spm8/spm_defaults.m
+defaults.normalise.estimate.smosrc  = 8;
+defaults.normalise.estimate.smoref  = 0;
+defaults.normalise.estimate.regtype = 'mni';
+defaults.normalise.estimate.weight  = '';
+defaults.normalise.estimate.cutoff  = 25;
+defaults.normalise.estimate.nits    = 16;
+defaults.normalise.estimate.reg     = 1;
+params = defaults.normalise.estimate;
 
 %% Spatially normalize diffusion data with the MNI (ICBM) template
 template = fullfile(tdir,'MNI_JHU_T2.nii.gz');
-% Rescale image valueds to get better gary/white/CSF contrast
+% Rescale image valueds to get better gray/white/CSF contrast
 alignIm = mrAnatHistogramClip(double(dt.b0),0.3,0.99);
 % Compute normalization
 [sn, Vtemplate, invDef] = mrAnatComputeSpmSpatialNorm(alignIm, dt.xformToAcpc, template, params);
@@ -183,9 +196,16 @@ moriTracts.data(:,:,:,16) = moriTracts.data(:,:,:,16)-moriTracts.data(:,:,:,20);
 % Load the fiber group labels
 %labels = readTab(fullfile(tdir,'MNI_JHU_tracts_prob.txt'),',',false);
 %labels = labels(1:20,2);
-labels = {'Left Thalamic Radiation','Right Thalamic Radiation','Left Corticospinal','Right Corticospinal', 'Left Cingulum Cingulate', 'Right Cingulum Cingulate'...
-    'Left Cingulum Hippocampus','Right Cingulum Hippocampus', 'Callosum Forceps Major', 'Callosum Forceps Minor'...
-    'Left IFOF','Right IFOF','Left ILF','Right ILF','Left SLF','Right SLF','Left Uncinate','Right Uncinate','Left Arcuate','Right Arcuate'};
+labels = {'Left Thalamic Radiation','Right Thalamic Radiation', ...
+          'Left Corticospinal','Right Corticospinal', ...
+          'Left Cingulum Cingulate', 'Right Cingulum Cingulate', ...
+          'Left Cingulum Hippocampus','Right Cingulum Hippocampus', ...
+          'Callosum Forceps Major', 'Callosum Forceps Minor', ...
+          'Left IFOF','Right IFOF', ...
+          'Left ILF','Right ILF', ...
+          'Left SLF','Right SLF', ...
+          'Left Uncinate','Right Uncinate', ...
+          'Left Arcuate','Right Arcuate'};
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 % If you wanted to inverse-normalize the maps to this subject's brain:
@@ -271,7 +291,7 @@ if useRoiBasedApproach
         'HCC_roi1_L.nii.gz', 'HCC_roi2_L.nii.gz'; 'HCC_roi1_R.nii.gz', 'HCC_roi2_R.nii.gz';...
         'FP_R.nii.gz', 'FP_L.nii.gz'; ...
         'FA_L.nii.gz', 'FA_R.nii.gz'; ...
-        'IFO_roi1_L.nii.gz', 'IFO_roi2_L.nii.gz'; 'IFO_roi2_R.nii.gz', 'IFO_roi1_R.nii.gz'; ...
+        'IFO_roi1_L.nii.gz', 'IFO_roi2_L.nii.gz'; 'IFO_roi1_R.nii.gz', 'IFO_roi2_R.nii.gz'; ...
         'ILF_roi1_L.nii.gz', 'ILF_roi2_L.nii.gz'; 'ILF_roi1_R.nii.gz', 'ILF_roi2_R.nii.gz'; ...
         'SLF_roi1_L.nii.gz', 'SLF_roi2_L.nii.gz'; 'SLF_roi1_R.nii.gz', 'SLF_roi2_R.nii.gz'; ...
         'UNC_roi1_L.nii.gz', 'UNC_roi2_L.nii.gz'; 'UNC_roi1_R.nii.gz', 'UNC_roi2_R.nii.gz'; ...
@@ -290,27 +310,42 @@ if useRoiBasedApproach
         ROI_img_file=fullfile(tdir, 'MNI_JHU_tracts_ROIs',  [moriRois{roiID, 1}]);
         % Transform ROI-1 to an individuals native space
         if recomputeROIs
-            [RoiFileName, invDef, roi]=dtiCreateRoiFromMniNifti(dt6File, ROI_img_file, invDef, true);
+            % Default is to use the spm normalization unless a superior
+            % ANTS normalization was passed in
+            if exist('antsInvWarp','var') && ~isempty(antsInvWarp)
+                outfile = fullfile(fileparts(dt6File),'ROIs',moriRois{roiID, 1});
+                roi1(roiID) = ANTS_CreateRoiFromMniNifti(ROI_img_file, antsInvWarp, [], outfile);
+            else
+                [RoiFileName, invDef, roi1(roiID)]=dtiCreateRoiFromMniNifti(dt6File, ROI_img_file, invDef, true);
+            end
         else
             RoiFileName=fullfile(fileparts(dt6File), 'ROIs',  [prefix(prefix(ROI_img_file, 'short'), 'short') '.mat']);
-            load(RoiFileName);  
+            roi1(roiID) = dtiReadRoi(RoiFileName);  
         end
         % Find fibers that intersect the ROI
-        [fgOut,contentiousFibers, keep1(:, roiID)] = dtiIntersectFibersWithRoi([], 'and', minDist, roi, fg);
+        [fgOut,contentiousFibers, keep1(:, roiID)] = dtiIntersectFibersWithRoi([], 'and', minDist, roi1(roiID), fg);
         keepID1=find(keep1(:, roiID));
         % Load the nifit image containing ROI-2 in MNI space
         ROI_img_file=fullfile(tdir, 'MNI_JHU_tracts_ROIs',  [moriRois{roiID, 2}]);
         % Transform ROI-2 to an individuals native space
         if recomputeROIs
             [RoiFileName, invDef, roi]=dtiCreateRoiFromMniNifti(dt6File, ROI_img_file, invDef, true);
+            % Default is to use the spm normalization unless a superior
+            % ANTS normalization was passed in
+            if exist('antsInvWarp','var') && ~isempty(antsInvWarp)
+                outfile = fullfile(fileparts(dt6File),'ROIs',moriRois{roiID, 2});
+                roi2(roiID) = ANTS_CreateRoiFromMniNifti(ROI_img_file, antsInvWarp, [], outfile);
+            else
+                [RoiFileName, invDef, roi2(roiID)]=dtiCreateRoiFromMniNifti(dt6File, ROI_img_file, invDef, true);
+            end   
         else
             RoiFileName=fullfile(fileparts(dt6File), 'ROIs',  [prefix(prefix(ROI_img_file, 'short'), 'short') '.mat']);
-            load(RoiFileName);
+            roi2(roiID) = dtiReadRoi(RoiFileName);
         end
         %To speed up the function, we intersect with the second ROI not all the
         %fibers, but only those that passed first ROI.
         fgCopy.fibers=fg.fibers(keepID1(keepID1>0));
-        [a,b, keep2given1] = dtiIntersectFibersWithRoi([], 'and', minDist, roi, fgCopy);
+        [a,b, keep2given1] = dtiIntersectFibersWithRoi([], 'and', minDist, roi2(roiID), fgCopy);
         keep2(keepID1(keep2given1), roiID)=true; 
     end
     clear fgOut contentiousFibers keepID
@@ -397,10 +432,14 @@ end
 classification.index = fiberIndex;
 classification.names = names;
 
-% % Flip fibers so that each fiber in a fiber group has the same start and
-% % endponts
-% 
-% fg_classified = AFQ_DefineFgEndpoints(fg_classified,[],[],dt,[],invDef);
+% Convert the fiber group into an array of fiber groups
+fg_classified = fg2Array(fg_classified);
+
+% Flip fibers so that each fiber in a fiber group passes through roi1
+% before roi2
+for ii = 1:size(moriRois, 1)
+    fg_classified(ii) = AFQ_ReorientFibers(fg_classified(ii),roi1(ii),roi2(ii));
+end
 
 return;
 

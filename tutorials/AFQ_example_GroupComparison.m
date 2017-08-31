@@ -15,7 +15,7 @@ sub_group = [1, 1, 1, 0, 0, 0];
 afq = AFQ_Create('run_mode','test', 'sub_dirs', sub_dirs, 'sub_group',...
     sub_group, 'showfigs',false);
 % Run AFQ to generate the fiber tracts
-[afq patient_data control_data norms abn abnTracts] = AFQ_run(sub_dirs, sub_group, afq);
+[afq, patient_data, control_data, norms, abn, abnTracts] = AFQ_run(sub_dirs, sub_group, afq);
 
 %% Run a t-test to compare FA along each fiber tract for patients vs. controls
 
@@ -34,7 +34,7 @@ fg = dtiReadFibers(fullfile(sub_dirs{3},'fibers','MoriGroups_clean_D5_L4.mat'));
 dt = dtiLoadDt6(fullfile(sub_dirs{3},'dt6.mat'));
 % Compute Tract Profiles with 100 nodes
 numNodes = 100;
-[fa md rd ad cl TractProfile] = AFQ_ComputeTractProperties(fg,dt,numNodes);
+[fa, md, rd, ad, cl, volume, TractProfile] = AFQ_ComputeTractProperties(fg,dt,numNodes);
 % Add the pvalues and T statistics from the group comparison to the tract
 % profile. This same code could be used to add correlation coeficients or
 % other statistics

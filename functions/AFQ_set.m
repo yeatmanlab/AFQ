@@ -69,6 +69,22 @@ function afq = AFQ_set(afq,param,varargin)
 %                    varargin = 'afq name'
 % 'computenorms'   - Set whether or not to compute norms
 %                    varargin = logical
+% 'spatial normalization' - Save a subject's spatial normalization
+%                           parameters (sn). These are computed with
+%                           mrAnatComputeSpmSpatialNorm
+%                           varargin = sn, subject number
+% 'inverse deformation'   - Save a subject's inverse spatial normalization
+%                           parameters (invDef).   
+%                           varargin = invDef, subject number
+% 'ants warp'             - Save the path to a subject's spatial 
+%                           normalization computed with ANTS
+%                           varargin = 'path to warp.nii.gz', subject number
+% 'ants inverse warp'     - Save the path to a subject's inverse spatial 
+%                           normalization computed with ANTS
+%                           varargin = 'path to InverseWarp.nii.gz', subject number
+% 'meta data'             - Save fields of meta data (eg. age, sex etc.)
+%                           into the afq structure.
+%                           varargin = 'field name', vals
 % Example:
 %
 % afq = AFQ_set(afq, 'segemented fg path','subnum',10,'/data/sub10/fibers/'Morigroups.mat')
@@ -303,7 +319,16 @@ switch(param)
         afq.params.outdir = varargin{1};
     case {'outname' 'outputname'}
         afq.params.outname = varargin{1};
-
+    case {'spatialnormalization' 'sn'}
+        afq.xform.sn(varargin{2}) = varargin{1};
+    case {'inversedeformation' 'invdef'}
+        afq.xform.invDef{varargin{2}} = varargin{1};
+    case {'antswarp' 'ants'}
+        afq.xform.ants{varargin{2}} = varargin{1};
+    case {'antsinvwarp' 'antsinversewarp' 'antsinv'}
+        afq.xform.antsinv{varargin{2}} = varargin{1};
+    case {'metadata'}
+        afq.metadata.(varargin{1}) = varargin{2};
     otherwise
         error('Uknown afq parameter');
 end
