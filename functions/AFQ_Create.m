@@ -136,6 +136,8 @@ afq.params.clip2rois = 1;
 % core. Values greater than 1 mean that the core of the tract is weighted
 % more heavily and fibers futher from the core are weighted less heavily
 % (faster fall off than a gaussian).  See AFQ_ComputeTractProperties
+% 'median' and 'mean' are other options here. Denoting that rather than an
+% weighted average we compute a simple median or mean accross nodes
 afq.params.fiberWeighting = 1;
 % If params.cleanFibers==1, then this will indicate whether to perform the
 % cleaning on just the clipped portion of the tract or on the full tract.
