@@ -63,6 +63,36 @@ afq.sub_dirs = {};
 %% Attach a vector to define each subject's group
 afq.sub_group = [];
 
+%% Structured array of scan parameters for data acquisition
+
+% string for vendor. (e.g., 'GE' or 'Siemens')
+afq.scanparams.vendor = [];
+% string for scanner model (e.g., 'MR750')
+afq.scanparams.model = [];
+% Field strength if Tesla. Defaults to 3
+afq.scanparams.fieldstrength = 3;
+% Spatial resolution in mm [x, y, z]. (e.g., [2 2 2])
+afq.scanparams.resolution = [];
+% List the b-values used for each volume or, at least, the different
+% b-values that were used (e.g., 0, 1000, 2000)
+afq.scanparams.bvals = [];
+% Number of volumes collected at each b-value
+afq.nvols = [];
+% Attatch the full gradient table (e.g., bvecs file)
+afq.scanparams.gradtable = [];
+% TR for scan
+afq.scanparams.TR = [];
+% TE for scan
+afq.scanparams.TE = [];
+% Number of receive coils. (e.g., 8)
+afq.scanparams.coils = [];
+% If parallel imaging was used (e.g., SENSE) the provide the acceleartion factor
+afq.scanparams.acceleration = []; 
+% If multiband was used, then provide SMS factor
+afq.scanparams.multiband = [];
+% If known, provide the diffusion time (or times) associated with each bval
+afq.diffusiontime = [];
+
 %% Attach the tract profile structure to the afq structure
 
 afq.TractProfiles = AFQ_CreateTractProfile;
