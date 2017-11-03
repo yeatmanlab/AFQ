@@ -77,7 +77,7 @@ afq.scanparams.resolution = [];
 % b-values that were used (e.g., 0, 1000, 2000)
 afq.scanparams.bvals = [];
 % Number of volumes collected at each b-value
-afq.nvols = [];
+afq.scanparams.nvols = [];
 % Attatch the full gradient table (e.g., bvecs file)
 afq.scanparams.gradtable = [];
 % TR for scan
@@ -91,7 +91,7 @@ afq.scanparams.acceleration = [];
 % If multiband was used, then provide SMS factor
 afq.scanparams.multiband = [];
 % If known, provide the diffusion time (or times) associated with each bval
-afq.diffusiontime = [];
+afq.scanparams.diffusiontime = [];
 
 %% Attach the tract profile structure to the afq structure
 
