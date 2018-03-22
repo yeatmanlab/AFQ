@@ -466,9 +466,9 @@ if newfig ==1
     mx(1) = min(coordsAll(1,:));
     my(1) = min(coordsAll(2,:));
     mz(1) = min(coordsAll(3,:));
-    mx(2) = min(coordsAll(1,:));
-    my(2) = min(coordsAll(2,:));
-    mz(2) = min(coordsAll(3,:));    
+    mx(2) = max(coordsAll(1,:));
+    my(2) = max(coordsAll(2,:));
+    mz(2) = max(coordsAll(3,:));    
     axis([mx(1)-3 mx(2)+3 my(1)-3 my(2)+3 mz(1)-3 mz(2)+3],'equal');
     xlabel('X mm','fontname','times','fontsize',14);
     ylabel('Y mm','fontname','times','fontsize',14);
