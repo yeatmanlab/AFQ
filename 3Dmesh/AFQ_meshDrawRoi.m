@@ -18,12 +18,15 @@ datacursormode on
 dcmObj = datacursormode(fh);
 set(dcmObj,'SnapToDataVertex','on','Enable','on');
 keypress = 0; ii = 0;
+hold('on');
 while keypress==0
     ii = ii+1;
     [keypress] = waitforbuttonpress;
     point = getCursorInfo(dcmObj);
     coords(ii,:) = point.Position
+    plot3(coords(ii,1),coords(ii,2),coords(ii,3),'ko','markerfacecolor','k');
 end
+hold('off');
 
 % get index of the coords
 [~,indices] =   ismember(coords, msh.tr.vertices, 'rows');
