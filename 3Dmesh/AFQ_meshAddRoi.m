@@ -1,6 +1,34 @@
-function msh = AFQ_meshAddRoi(msh, roiPath, color, dilate, alpha)
-% Color mesh vertices based on a region of interest
+function msh = AFQ_meshAddRoi(msh, roiPath, color, dilate, alpha, useDistThresh)
+% Color mesh vertices based on a region of interest and add to msh obj
+%
+% msh = AFQ_meshAddRoi(msh, roiPath, color, dilate, alpha, useDistThresh)
+%
+% This function maps an roi to a mesh. See AFQ_meshCreate. ROI should be a
+% binary nifti image that coregistered to the mesh. This is done by either
+% finding the nearest mesh vertex to each ROI coordinate or by searching
+% for mesh vertices that are within a defined distance of the roi.
+%
+% Inputs:
+%
+% msh           - AFQ msh structure. See AFQ_meshCreate
+% roiPath       - Path to the roi.nii.gz file. A binary image of the roi
+% color         - [r g b] value to color the mesh
+% dilate        - scaler denoting how many adjacent vertices to expand the roi to
+% alpha         - transparency of roi on mesh
+% useDistThresh - default to 0. This means we map each roi coord to the
+%                 neares mesh vertex. If a scaler is provided then, 
+%                 instead, we map the roi to every vertex that is less 
+%                 than useDistThresh mm from the roi
+%
+% Outputs:
+%
+% msh - msh struct file
+%
+% Copyright Jason D. Yeatman
 
+if notDefined('useDistThresh')
+    useDistThresh = 0;
+end
 if notDefined('dilate')
     dilate = 0;
 end
@@ -29,8 +57,17 @@ for ch = 1:length(rmchar)
 end
 valname(strfind(valname,' ')) = '_';
 valname(strfind(valname,'-')) = '_';
-% Find the closes mesh vertex to each coordinate
-msh_indices = nearpoints(roi.coords', msh.vertex.origin');
+
+% Map the ROI to the mesh
+if useDistThresh == 0
+    % Find the closes mesh vertex to each coordinate
+    msh_indices = nearpoints(roi.coords', msh.vertex.origin');
+else
+    % Or find mesh vertices that are closer than useDistThresh to any roi
+    % coordinate.
+    [roi_indices, bestSqDist] = nearpoints(msh.vertex.origin', roi.coords');
+    msh_indices = find(bestSqDist<(useDistThresh^2));
+end
 % Dilate the roi to neighboring vertices
 if dilate > 0
     for ii = 1:dilate
