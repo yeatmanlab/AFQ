@@ -1,7 +1,7 @@
-function msh = AFQ_meshAddRoi(msh, roiPath, color, dilate, alpha, useDistThresh)
+function msh = AFQ_meshAddRoi(msh, roiPath, color, dilate, alpha, useDistThresh, useNormals)
 % Color mesh vertices based on a region of interest and add to msh obj
 %
-% msh = AFQ_meshAddRoi(msh, roiPath, color, dilate, alpha, useDistThresh)
+% msh = AFQ_meshAddRoi(msh, roiPath, color, dilate, alpha, useDistThresh, useNormals)
 %
 % This function maps an roi to a mesh. See AFQ_meshCreate. ROI should be a
 % binary nifti image that coregistered to the mesh. This is done by either
@@ -19,6 +19,9 @@ function msh = AFQ_meshAddRoi(msh, roiPath, color, dilate, alpha, useDistThresh)
 %                 neares mesh vertex. If a scaler is provided then, 
 %                 instead, we map the roi to every vertex that is less 
 %                 than useDistThresh mm from the roi
+% useNormals    - If a distance thresh is supplied than use normals
+%                 indicates whether distance should be euclidean or
+%                 distance along the normal. binary. default true (1)
 %
 % Outputs:
 %
@@ -28,6 +31,9 @@ function msh = AFQ_meshAddRoi(msh, roiPath, color, dilate, alpha, useDistThresh)
 
 if notDefined('useDistThresh')
     useDistThresh = 0;
+end
+if notDefined('useNormals')
+    useNormals = 1;
 end
 if notDefined('dilate')
     dilate = 0;
@@ -67,7 +73,25 @@ else
     % coordinate.
     [roi_indices, bestSqDist] = nearpoints(msh.vertex.origin', roi.coords');
     msh_indices = find(bestSqDist<(useDistThresh^2));
+    
+    % For vertices within the threshold check if the ROI point lies
+    % along the normal or not
+    if useNormals == 1
+        % Get vertices and normals
+        vlist = msh.vertex.origin(msh_indices,:);
+        nlist = real(msh.normals.smooth20(bestSqDist<(useDistThresh^2),:));
+        % Stack up vertices expanded along the normals
+        for dd = 1:useDistThresh
+            [~, vlist_sqd(dd,:)] = nearpoints(vlist'+ dd.*nlist', roi.coords');
+        end
+        % Now check if these normals intersect the roi coords with a
+        % distance of less than 1mm
+        norm_indices = any(vlist_sqd <= 1);
+        % Remove msh_indices that do not meet this criterion
+        msh_indices = msh_indices(norm_indices);
+    end
 end
+
 % Dilate the roi to neighboring vertices
 if dilate > 0
     for ii = 1:dilate

@@ -60,6 +60,8 @@ msh.tr.FaceVertexCData  = [.8 .7 .6];
 msh.vertex.current   = 'origin';
 msh.vertex.origin    = [];
 msh.vertex.smooth20  = [];
+% msh.normals saves the surface normals for each set of vertices
+msh.normals.origin = [];
 % msh.face saves the faces corresponding to each set of vertices. These are
 % generally the same
 msh.face.current     = 'origin';
@@ -111,6 +113,9 @@ if exist('im','var') && ~isempty(im)
     % Build the mesh
     tr = isosurface(data,.1);
     
+    % Calculate vertex normals
+    n = patchnormals(tr);
+    
     % Transform the vertices of the mesh to acpc space. 
     tr.vertices = mrAnatXformCoords(im.qto_xyz,tr.vertices);
     
@@ -122,6 +127,7 @@ if exist('im','var') && ~isempty(im)
     % original vertices and will be used in the future to referece
     % coordinates of overlay images
     msh = AFQ_meshSet(msh,'vertex','origin',tr.vertices,tr.faces);
+    msh = AFQ_meshSet(msh, 'normals', 'origin', n);
     msh = AFQ_meshSet(msh, 'vertices','origin');
     
     %% Smooth the mesh
@@ -147,6 +153,7 @@ if exist('im','var') && ~isempty(im)
         % Add these data to the mesh structure in a properly named field
         name = sprintf('smooth%d', ii);
         msh = AFQ_meshSet(msh, 'vertex', name, tmp.vertices);
+        msh = AFQ_meshSet(msh, 'normals', name, patchnormals(tmp));
     end
     
     %% Create a mesh from a smoothed version of the segmentation image
