@@ -118,3 +118,18 @@ if params.newfig == 1
     view([270 0])
     lightH = camlight('right');
 end
+
+% Add normals to rendering if desired
+if isfield(params,'normals')
+    hold('on'); L=params.normals(1);
+    if length(params.normals>1), nn=params.normals(2); else nn=10; end
+    for ii=1:nn:size(tr.vertices,1)
+        p1 = tr.vertices(ii,:);
+        pp = p1 + L.*msh.normals.smooth20(ii,:);
+        pn = p1 - L.*msh.normals.smooth20(ii,:);
+        plot3(p1(1),p1(2),p1(3),'k.','markersize',8);
+        plot3([p1(1) pp(1)],[p1(2) pp(2)],[p1(3) pp(3)],'-r','linewidth',1);
+        plot3([p1(1) pn(1)],[p1(2) pn(2)],[p1(3) pn(3)],'-b','linewidth',1);
+    end
+    hold('off')
+end
