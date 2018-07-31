@@ -81,8 +81,10 @@ else
         vlist = msh.vertex.origin(msh_indices,:);
         nlist = real(msh.normals.smooth20(bestSqDist<(useDistThresh^2),:));
         % Stack up vertices expanded along the normals
+        c=0;
         for dd = 1:useDistThresh
-            [~, vlist_sqd(dd,:)] = nearpoints(vlist'+ dd.*nlist', roi.coords');
+            c = c+1;
+            [~, vlist_sqd(c,:)] = nearpoints(vlist'+ dd.*nlist', roi.coords');
         end
         % Now check if these normals intersect the roi coords with a
         % distance of less than 1mm
