@@ -49,7 +49,8 @@ lightH=camlight('right');
 axis('off');
 
 %% Make a video showing the cortex and underlying tracts
-
+vidObj = VideoWriter('Arcuate_ILF_Rotation.avi','Uncompressed AVI','FrameRate',15);
+open(vidObj);
 % Adjust the transparence of the cortex so that the underlying fiber tracts
 % begin to appear.
 
@@ -60,6 +61,7 @@ for ii = 1:10
     alpha(p,a);
     % Caputure the frame
     mov(ii)=getframe(gcf);
+    writeVideo(vidObj,mov(ii));
 end
 
 % Continue making the cortex slowly fade and rotate the white matter tracts
@@ -74,6 +76,7 @@ for ii = 11:191
     camlight(lightH,'right');
     set(gca,'cameraviewangle',8);
     mov(ii)=getframe(gcf);
+    writeVideo(vidObj,mov(ii));
 end
 
 % Now that we are back to our starting point bring the cortex back
@@ -84,12 +87,14 @@ for ii = 192:226
     end
     alpha(p,a);
     mov(ii)=getframe(gcf);
+    writeVideo(vidObj,mov(ii));
 end
 
 %% Save the movie as a .avi file to be played by any movie program
 
-movie2avi(mov,'Arcuate_ILF_Rotation.avi','compression','none','fps',15)
-
+%movie2avi(mov,'Arcuate_ILF_Rotation.avi','compression','none','fps',15)
+% Close the file.
+close(vidObj);
 
 return
 
