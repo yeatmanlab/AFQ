@@ -1,4 +1,4 @@
-function [coords, indices, bin, msh] = AFQ_meshDrawRoi(fh, msh, dilate)
+function [coords, indices, bin, msh, points] = AFQ_meshDrawRoi(fh, msh, dilate)
 %
 %
 % msh = AFQ_meshCreate;
@@ -9,23 +9,56 @@ function [coords, indices, bin, msh] = AFQ_meshDrawRoi(fh, msh, dilate)
 % [coords, indices, bin, msh] = AFQ_meshDrawRoi([],msh, 7)
 % AFQ_RenderCorticalSurface(msh);
 if ~exist('fh', 'var') || isempty(fh)
-    [~,~,l]=AFQ_RenderCorticalSurface(msh);
-    view(180,-90); camlight(l,'infinite');
+    [~,~,lh]=AFQ_RenderCorticalSurface(msh);
+    title('Press RETURN to exit')
+    view(180,-90); camlight(lh,'infinite');
     fh = gcf;
     fh = fh.Number;
 end
 datacursormode on
 dcmObj = datacursormode(fh);
-set(dcmObj,'SnapToDataVertex','on','Enable','on');
-keypress = 0; ii = 0;
+set(dcmObj,'SnapToDataVertex','on','Enable','on','DisplayStyle','window');
+ii = 0; sp = []; currkey= 0;
 hold('on');
-while keypress==0
-    ii = ii+1;
-    [keypress] = waitforbuttonpress;
-    point = getCursorInfo(dcmObj);
-    coords(ii,:) = point.Position
-    plot3(coords(ii,1),coords(ii,2),coords(ii,3),'ko','markerfacecolor','k');
+while currkey==0
+    press = waitforbuttonpress;
+    
+    % Get points off mesh
+    if press == 0
+        ii = ii+1;
+        point = getCursorInfo(dcmObj);
+        coords(ii,:) = point.Position
+        plot3(coords(ii,1),coords(ii,2),coords(ii,3),'ko','markerfacecolor','k');
+        % Fit a spline to the points
+        if ii >1
+            cs = cscvn(coords'); points = fnplt(cs)';
+            delete(sp);
+            sp = plot3(points(:,1),points(:,2),points(:,3),'-b','linewidth',4);
+        end
+        
+        % Check for button presses and either rotate camera or exit loop
+    elseif press == 1
+        keypress=get(gcf,'CurrentKey');
+        if strcmp(keypress, 'return') || strcmp(keypress, 'escape')
+            currkey=1;
+        else
+            currkey=0;
+        end
+        % Rotate camera
+        [az, el] = view;
+        if strcmp(keypress, 'rightarrow')
+            view(az-5, el); camlight(lh,'infinite');
+        elseif strcmp(keypress, 'leftarrow')
+            view(az+5, el); camlight(lh,'infinite');
+        elseif strcmp(keypress, 'uparrow')
+            view(az, el+5); camlight(lh,'infinite');
+        elseif strcmp(keypress, 'downarrow')
+            view(az, el-5); camlight(lh,'infinite');
+        end
+    end
+    
 end
+
 hold('off');
 
 % get index of the coords
