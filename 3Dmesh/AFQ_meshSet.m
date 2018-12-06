@@ -44,6 +44,8 @@ switch(param)
             tmp = smoothpatch(AFQ_meshGet(msh,'tr'), [], sIter);
             % Add them to the corresponding vertex field
             msh.vertex.(vName) = tmp.vertices;
+            % And note that the coresponding faces are the same as origin
+            msh.face.(vName) = 'origin';
             % Set these new vertices to the ones that will be rendered
             msh = AFQ_meshSet(msh,'vertices',vName);
         end
