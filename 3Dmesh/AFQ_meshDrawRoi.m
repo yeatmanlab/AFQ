@@ -1,6 +1,6 @@
-function [coords, indices, bin, msh, spline_points, spline_meshpoints] = AFQ_meshDrawRoi(fh, msh, dilate)
+function [coords, indices, bin, msh, spline_points, spline_meshpoints, spline_meshindices] = AFQ_meshDrawRoi(fh, msh, dilate)
 %
-% [coords, indices, bin, msh, spline_points, spline_meshpoints] = AFQ_meshDrawRoi(fh, msh, dilate)
+% [coords, indices, bin, msh, spline_points, spline_meshpoints, spline_meshindices] = AFQ_meshDrawRoi(fh, msh, dilate)
 %
 %
 % Inputs:
@@ -20,6 +20,8 @@ function [coords, indices, bin, msh, spline_points, spline_meshpoints] = AFQ_mes
 % msh               - A mesh is returned with the ROI drawn on it
 % spline_points     - Points from a spline fit to the points
 % spline_meshpoints - Those spline points projected onto the mesh surface
+% spline_meshindices- Indices into msh.tr.vertices that correspond to
+%                     spline_meshpoints.
 %
 % Example:
 %
@@ -31,16 +33,19 @@ function [coords, indices, bin, msh, spline_points, spline_meshpoints] = AFQ_mes
 % [coords, indices, bin, msh] = AFQ_meshDrawRoi([],msh, 7)
 % AFQ_RenderCorticalSurface(msh);
 if ~exist('fh', 'var') || isempty(fh)
-    [~,~,lh]=AFQ_RenderCorticalSurface(msh);
-    title('Press RETURN to exit')
+    [p,~,lh]=AFQ_RenderCorticalSurface(msh);
+    title(sprintf('Press RETURN to exit\nArrows to rotate; < > to zoom'))
     view(180,-90); camlight(lh,'infinite');
     fh = gcf;
     fh = fh.Number;
+    ax = gca;
+    % get current vertices
+    curver = msh.vertex.current;
 end
 datacursormode on
 dcmObj = datacursormode(fh);
 set(dcmObj,'SnapToDataVertex','on','Enable','on','DisplayStyle','window');
-ii = 0; sp = []; currkey= 0;
+ii = 0; sp = []; spline_meshpoints = []; currkey= 0;
 hold('on');
 while currkey==0
     press = waitforbuttonpress;
@@ -51,6 +56,8 @@ while currkey==0
         point = getCursorInfo(dcmObj);
         coords(ii,:) = point.Position
         plot3(coords(ii,1),coords(ii,2),coords(ii,3),'ko','markerfacecolor','k');
+        % get index of the coords
+        [~,indices(ii)] = ismember(coords(ii,:), msh.tr.vertices, 'rows');
         % Fit a spline to the points
         if ii >1
             cs = cscvn(coords'); spline_points = fnplt(cs)';
@@ -60,6 +67,8 @@ while currkey==0
             delete(sp);
             sp = plot3(spline_meshpoints(:,1), spline_meshpoints(:,2), spline_meshpoints(:,3),...
                 '-b','linewidth',4);
+            % get index of the coords
+            [~,spline_meshindices(ii)] =   ismember(spline_meshpoints(ii,:), msh.tr.vertices, 'rows');
         end
         
         % Check for button presses and either rotate camera or exit loop
@@ -71,24 +80,35 @@ while currkey==0
             currkey=0;
         end
         % Rotate camera
-        [az, el] = view;
+        % [az, el] = view;
         if strcmp(keypress, 'rightarrow')
-            view(az-5, el); camlight(lh,'infinite');
+            camorbit(-5, 0); camlight(lh,'infinite');
         elseif strcmp(keypress, 'leftarrow')
-            view(az+5, el); camlight(lh,'infinite');
+            camorbit(5, 0); camlight(lh,'infinite');
         elseif strcmp(keypress, 'uparrow')
-            view(az, el+5); camlight(lh,'infinite');
+            camorbit(0, 5); camlight(lh,'infinite');
         elseif strcmp(keypress, 'downarrow')
-            view(az, el-5); camlight(lh,'infinite');
+            camorbit(0, -5); camlight(lh,'infinite');
+        elseif strcmp(keypress, 'period')
+            camzoom(ax,1.1);
+        elseif strcmp(keypress, 'comma')
+            camzoom(ax,0.9);
+        elseif strcmp(keypress, 's')
+            prompt = 'How much to smooth mesh?';
+            sm = input(prompt);fprintf('\nSmoothing %d iterations',sm);
+            % Smooth the mesh by the desired number of iterations
+            msh = AFQ_meshSet(msh,'vertices',sprintf('smooth%d',sm))
+            % delete the old rendering and update
+            [az, el] = view; [p, lh, fh, ax, dcmObj, sp] = ...
+                rerender(msh, az, el, ii, spline_meshpoints);
+
         end
     end
     
 end
 
+msh = AFQ_meshSet(msh,'vertices',curver);
 hold('off');
-
-% get index of the coords
-[~,indices] =   ismember(coords, msh.tr.vertices, 'rows');
 
 if exist('dilate' ,'var') && ~isempty(dilate) && dilate>0
     for d = 1:dilate
@@ -110,4 +130,19 @@ bin(indices) = 1;
 
 return
 
-
+function [p, lh, fh, ax, dcmObj, sp] = rerender(msh, az, el, ii, spline_meshpoints)
+% Rerender mesh
+[p,~,lh]=AFQ_RenderCorticalSurface(msh);
+title(sprintf('Press RETURN to exit\nArrows to rotate; < > to zoom'))
+view(az, el); camlight(lh,'infinite');
+fh = gcf;
+fh = fh.Number;
+ax = gca;
+datacursormode on
+dcmObj = datacursormode(fh);
+set(dcmObj,'SnapToDataVertex','on','Enable','on','DisplayStyle','window');
+hold('on');
+if ii >1
+    sp = plot3(spline_meshpoints(:,1), spline_meshpoints(:,2), spline_meshpoints(:,3),...
+        '-b','linewidth',4);
+end
