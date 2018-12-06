@@ -1,5 +1,27 @@
-function [coords, indices, bin, msh, points] = AFQ_meshDrawRoi(fh, msh, dilate)
+function [coords, indices, bin, msh, spline_points, spline_meshpoints] = AFQ_meshDrawRoi(fh, msh, dilate)
 %
+% [coords, indices, bin, msh, spline_points, spline_meshpoints] = AFQ_meshDrawRoi(fh, msh, dilate)
+%
+%
+% Inputs:
+%
+% fh     - figure handle if you already have a mesh window open. Default: open
+%          a new figure window
+% msh    - AFQ mesh structure. See AFQ_meshCreate.m
+% dilate - How much to dilate each point. Default is 0 which means no
+%          dilation
+%
+% Outputs:
+%
+% coords            - The coordinates of each point drawn on the mesh
+% indices           - Indices for the vertices within msh.tr.vertices
+% bin               - A binary vector denoting which vertices in
+%                     msh.tr.vertices are within in ROI
+% msh               - A mesh is returned with the ROI drawn on it
+% spline_points     - Points from a spline fit to the points
+% spline_meshpoints - Those spline points projected onto the mesh surface
+%
+% Example:
 %
 % msh = AFQ_meshCreate;
 % [msh.tr.vertices, msh.tr.faces] = read_surf('/mnt/diskArray/projects/freesurfer/fsaverage/surf/lh.white');
@@ -31,9 +53,13 @@ while currkey==0
         plot3(coords(ii,1),coords(ii,2),coords(ii,3),'ko','markerfacecolor','k');
         % Fit a spline to the points
         if ii >1
-            cs = cscvn(coords'); points = fnplt(cs)';
+            cs = cscvn(coords'); spline_points = fnplt(cs)';
+            % Map spline points onto mesh
+            [spIndices, spbestSqDist] = nearpoints(spline_points',msh.tr.vertices');
+            spline_meshpoints = msh.tr.vertices(spIndices,:,:);
             delete(sp);
-            sp = plot3(points(:,1),points(:,2),points(:,3),'-b','linewidth',4);
+            sp = plot3(spline_meshpoints(:,1), spline_meshpoints(:,2), spline_meshpoints(:,3),...
+                '-b','linewidth',4);
         end
         
         % Check for button presses and either rotate camera or exit loop
@@ -81,3 +107,7 @@ msh.tr.FaceVertexCData(indices,:) = repmat([1 0 0],length(indices),1);
 % Make a logical vector out of the indices
 bin = zeros(size(msh.tr.vertices,1),1);
 bin(indices) = 1;
+
+return
+
+
