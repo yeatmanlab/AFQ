@@ -1,6 +1,6 @@
 function [mshRoi, vRoi, msh] = AFQ_meshDrawRoi(msh, dilate, voldata, fill_range, fh, outname)
 %
-% [mshRoi, vRoi, msh] = AFQ_meshDrawRoi(msh, dilate, voldata, fill_range, fh)
+% [mshRoi, vRoi, msh] = AFQ_meshDrawRoi(msh, dilate, voldata, fill_range, fh, outname)
 %
 %
 % Inputs:
