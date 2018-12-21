@@ -12,7 +12,8 @@ function [mshRoi, vRoi, msh] = AFQ_meshDrawRoi(msh, dilate, voldata, fill_range,
 % fill_range- Range of values to fill in the volume
 % fh        - figure handle if you already have a mesh window open. Default: open
 %             a new figure window
-% outname   - If defined, will save ROIs with this name and path
+% outname   - If defined, will save ROIs with this name and path. if
+%             outname is supplied as a blank [] then a file gui will open.
 %
 % Outputs:
 %
@@ -195,6 +196,12 @@ if exist('outname', 'var') && ~isempty(outname)
     vRoi.fname = [outname '.nii.gz'];
     niftiWrite(vRoi);
     save(outname, 'mshRoi');
+elseif exist('outname', 'var') && isempty(outname)
+    [outname,path] = uiputfile('*.nii.gz','File Selection','volRoi.nii.gz');
+    vRoi.fname = fullfile(path, outname);
+    niftiWrite(vRoi);
+    pp = strfind(outname,'.');
+    save(fullfile(path, outname(1:pp(1)-1)), 'mshRoi');
 end
 
 return
