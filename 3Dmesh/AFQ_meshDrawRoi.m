@@ -1,15 +1,15 @@
-function [coords, indices, bin, msh, spline_points, spline_meshpoints, spline_meshindices] = AFQ_meshDrawRoi(fh, msh, dilate)
+function [coords, indices, bin, msh, spline_points, spline_meshpoints, spline_meshindices] = AFQ_meshDrawRoi(msh, dilate, fh)
 %
-% [coords, indices, bin, msh, spline_points, spline_meshpoints, spline_meshindices] = AFQ_meshDrawRoi(fh, msh, dilate)
+% [coords, indices, bin, msh, spline_points, spline_meshpoints, spline_meshindices] = AFQ_meshDrawRoi(msh, dilate, fh)
 %
 %
 % Inputs:
 %
-% fh     - figure handle if you already have a mesh window open. Default: open
-%          a new figure window
 % msh    - AFQ mesh structure. See AFQ_meshCreate.m
 % dilate - How much to dilate each point. Default is 0 which means no
 %          dilation
+% fh     - figure handle if you already have a mesh window open. Default: open
+%          a new figure window
 %
 % Outputs:
 %
