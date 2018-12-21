@@ -27,7 +27,7 @@ function h = AFQ_RenderRoi(roi, color, method, render, varargin)
 %% Check arguments
 if ~exist('roi','var') || isempty(roi)
     error('You must supply an ROI')
-elseif isstruct(roi)
+elseif isstruct(roi) && isfield(roi,'coords')
     coords = roi.coords;
 end
 if ~exist('color','var') || isempty(color)
