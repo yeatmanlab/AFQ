@@ -15,11 +15,6 @@ if ~exist('fh', 'var')
     fh = [];
 end
 
-voldata = niftiRead(voldata); voldata.fname = 'voldata.nii.gz';
-msh = AFQ_meshColor(msh,'overlay',voldata, 'thresh',fill_range);
-[coords, indices, bin] = AFQ_meshDrawRoi(msh, 0, fh);
-imcoords = ceil(mrAnatXformCoords(voldata.qto_ijk, coords));
-v = voldata.data > fill_range(1) & voldata.data<fill_range(2);
-volRoi = imfill(v,imcoords');
+
 
 
