@@ -1,4 +1,4 @@
-function [mshRoi, vRoi, msh] = AFQ_meshDrawRoi(msh, dilate, voldata, fill_range, fh, outname)
+function [mshRoi, vRoi, msh] = AFQ_meshDrawRoi(msh, dilate, voldata, fill_range, volanat, fh, outname)
 %
 % [mshRoi, vRoi, msh] = AFQ_meshDrawRoi(msh, dilate, voldata, fill_range, fh, outname)
 %
@@ -57,6 +57,10 @@ else
     drawtype = 'volfill';
 end
 
+% If paths were given then load files
+if exist('volanat','var') && ~isempty(volanat) && ischar(volanat)
+    volanat = niftiRead(volanat);
+end
 % Check if we should work with an open figure window
 if ~exist('fh', 'var') || isempty(fh)
     if strcmp('volfill',drawtype)
@@ -68,7 +72,7 @@ if ~exist('fh', 'var') || isempty(fh)
         vRoi = voldata; vRoi.data = zeros(size(v));
     end
     [p,~,lh]=AFQ_RenderCorticalSurface(msh);
-    title(sprintf('Press RETURN to exit\nArrows to rotate; < > to zoom'))
+    title(sprintf('Press RETURN to exit\nArrows to rotate; < > to zoom; s to smooth'))
     view(180,-90); camlight(lh,'infinite');
     fh = gcf;
     fh = fh.Number;
@@ -95,6 +99,14 @@ while currkey==0
         plot3(coords(ii,1),coords(ii,2),coords(ii,3),'ko','markerfacecolor','k');
         % get index of the coords
         [~,indices(ii)] = ismember(coords(ii,:), msh.tr.vertices, 'rows');
+        % Fit a spline to the points
+        if ii >1
+            cs = cscvn(coords'); spline_points = fnplt(cs)';
+            % Map spline points onto mesh
+            [spline_meshindices, spbestSqDist] = nearpoints(spline_points',msh.tr.vertices');
+            spline_meshpoints = msh.tr.vertices(spline_meshindices,:,:);
+        end
+        
         switch(drawtype)
             case 'volfill'
                 imcoords = ceil(mrAnatXformCoords(voldata.qto_ijk, coords(ii,:)));
@@ -104,16 +116,38 @@ while currkey==0
                 else
                     roiMsh = AFQ_meshCreate(vRoi,'color',[0 1 0],'smooth',1); patch(roiMsh.tr); shading('interp'); lighting('gouraud');
                 end
-                % Fit a spline to the points
-                if ii >1
-                    cs = cscvn(coords'); spline_points = fnplt(cs)';
-                    % Map spline points onto mesh
-                    [spIndices, spbestSqDist] = nearpoints(spline_points',msh.tr.vertices');
-                    spline_meshpoints = msh.tr.vertices(spIndices,:,:);
-                    % get index of the coords
-                    [~,spline_meshindices(ii)] = ismember(spline_meshpoints(ii,:), msh.tr.vertices, 'rows');
+                % Display on volume anatomy if it exists
+                if exist('volanat', 'var') && ~isempty(volanat)
+                    if exist('fhanat','var') && isvalid(fhanat), close(fhanat);end
+                    fhanat = figure;
+                    % Z plane
+                    subplot(1,3,1); hold on;
+                    if exist('roiMsh','var'),patch(roiMsh.tr); shading('interp'); lighting('gouraud');end
+                    AFQ_AddImageTo3dPlot(volanat,[0, 0, coords(ii,3)],[],[],[],[],'overlay',voldata,fill_range(1));hold on
+                    view(0,90);axis image; title(sprintf('Z = %.1f',coords(ii,3)));
+                    % Plot cursor
+                    plot3(coords(:,1),coords(:,2),coords(:,3),'rx','markersize',7);
+                    plot3(coords(end,1),coords(end,2),coords(end,3),'rx','markersize',15);
+                    
+                    % Y plane
+                    subplot(1,3,2); hold on;
+                    if exist('roiMsh','var'),patch(roiMsh.tr);shading('interp'); lighting('gouraud');end
+                    AFQ_AddImageTo3dPlot(volanat,[0, coords(ii,2), 0],[],[],[],[],'overlay',voldata,fill_range(1));
+                    view(0,0);axis image; title(sprintf('Y = %.1f',coords(ii,2)));
+                    plot3(coords(:,1),coords(:,2),coords(:,3),'rx','markersize',7);
+                    plot3(coords(ii,1),coords(ii,2),coords(ii,3),'rx','markersize',15);
+
+                    % X plane
+                    subplot(1,3,3); hold on;
+                    if exist('roiMsh','var'),patch(roiMsh.tr); shading('interp'); lighting('gouraud');end
+                    AFQ_AddImageTo3dPlot(volanat,[coords(ii,1), 0, 0],[],[],[],[],'overlay',voldata,fill_range(1));
+                    view(90,0);axis image; title(sprintf('X = %.1f',coords(ii,1)));
+                    plot3(coords(:,1),coords(:,2),coords(:,3),'rx','markersize',7);
+                    plot3(coords(end,1),coords(end,2),coords(end,3),'rx','markersize',15);
+                    % Turn on 3d rotation and move figure window
+                    rotate3d; set(fhanat,'position',get(fh,'position')+[-200 -420 500 0])
+                    figure(fh);
                 end
-                
             case 'line'
                 % Draw on the cortical surface if a line ROI
                 if ii >1
@@ -137,9 +171,9 @@ while currkey==0
         elseif strcmp(keypress, 'leftarrow')
             camorbit(5, 0); camlight(lh,'infinite');
         elseif strcmp(keypress, 'uparrow')
-            camorbit(0, 5); camlight(lh,'infinite');
-        elseif strcmp(keypress, 'downarrow')
             camorbit(0, -5); camlight(lh,'infinite');
+        elseif strcmp(keypress, 'downarrow')
+            camorbit(0, 5); camlight(lh,'infinite');
         elseif strcmp(keypress, 'period')
             camzoom(ax,1.1);
         elseif strcmp(keypress, 'comma')
@@ -158,7 +192,9 @@ while currkey==0
     
 end
 
-vRoi.data = uint8(vRoi.data);
+if exist('vRoi', 'var')
+    vRoi.data = uint8(vRoi.data);
+end
 msh = AFQ_meshSet(msh,'vertices',curver);
 hold('off');
 
