@@ -1,6 +1,6 @@
 function [mshRoi, vRoi, msh] = AFQ_meshDrawRoi(msh, dilate, voldata, fill_range, volanat, fh, outname)
 %
-% [mshRoi, vRoi, msh] = AFQ_meshDrawRoi(msh, dilate, voldata, fill_range, fh, outname)
+% [mshRoi, vRoi, msh] = AFQ_meshDrawRoi(msh, dilate, voldata, fill_range, volanat, fh, outname)
 %
 %
 % Inputs:
@@ -10,6 +10,8 @@ function [mshRoi, vRoi, msh] = AFQ_meshDrawRoi(msh, dilate, voldata, fill_range,
 %             dilation
 % voldata   - Nifti with fMRI data (contrast map or p-values)
 % fill_range- Range of values to fill in the volume
+% volanat   - A volume anatomy. If provided voldata will also be shown on
+%             anatomy
 % fh        - figure handle if you already have a mesh window open. Default: open
 %             a new figure window
 % outname   - If defined, will save ROIs with this name and path. if
@@ -38,7 +40,7 @@ function [mshRoi, vRoi, msh] = AFQ_meshDrawRoi(msh, dilate, voldata, fill_range,
 % msh.tr.faces = msh.tr.faces + 1;
 % msh.tr.FaceVertexCData = repmat([.8 .7 .6],size(msh.tr.vertices,1),1);
 % msh.tr = smoothpatch(msh.tr,[],20);
-% [mshRoi,[], msh] = AFQ_meshDrawRoi([],msh, 7)
+% [mshRoi,[], msh] = AFQ_meshDrawRoi(msh, 7)
 % AFQ_RenderCorticalSurface(msh);
 %
 % % Example 2 - Create fMRI based ROI and save as nifti image:
@@ -48,7 +50,7 @@ function [mshRoi, vRoi, msh] = AFQ_meshDrawRoi(msh, dilate, voldata, fill_range,
 % im = niftiRead(t1class);
 % msh = AFQ_meshCreate(t1class);
 % fill_range = [2 inf];
-% [~,vRoi] = AFQ_meshDrawRoi(msh, [], voldata, fill_range,[], '/Users/jyeatman/Documents/vwfa_roi');
+% [~,vRoi] = AFQ_meshDrawRoi(msh, [], voldata, fill_range,'t1_acpc.nii.gz',[], '/Users/jyeatman/Documents/vwfa_roi');
 
 % Check if ROI should be filled in a volume or not
 if ~exist('voldata', 'var') || isempty(voldata)
