@@ -184,7 +184,7 @@ while currkey==0
             prompt = 'How much to smooth mesh?';
             sm = input(prompt);fprintf('\nSmoothing %d iterations',sm);
             % Smooth the mesh by the desired number of iterations
-            msh = AFQ_meshSet(msh,'vertices',sprintf('smooth%d',sm))
+            msh = AFQ_meshSet(msh,'vertices',sprintf('smooth%d',sm));
             % delete the old rendering and update
             [az, el] = view; [p, lh, fh, ax, dcmObj, sp] = ...
                 rerender(msh, az, el, ii, spline_meshpoints);
@@ -256,7 +256,9 @@ datacursormode on
 dcmObj = datacursormode(fh);
 set(dcmObj,'SnapToDataVertex','on','Enable','on','DisplayStyle','window');
 hold('on');
-if ii >1
+if ii > 1
     sp = plot3(spline_meshpoints(:,1), spline_meshpoints(:,2), spline_meshpoints(:,3),...
         '-b','linewidth',4);
+else
+    sp = [];
 end
