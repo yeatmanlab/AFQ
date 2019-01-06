@@ -48,7 +48,7 @@ afq.TractProfiles = afq.TractProfiles(keep,:);
 % Remove unwanted subject directories
 afq.sub_dirs = afq.sub_dirs(keep);
 afq.sub_group = afq.sub_group(keep);
-if length(afq.sub_names) > max(keep)
+if length(afq.sub_names) > length(keep)
     afq.sub_names = afq.sub_names(keep);
 end
 
