@@ -101,6 +101,8 @@ while currkey==0
         plot3(coords(ii,1),coords(ii,2),coords(ii,3),'ko','markerfacecolor','k');
         % get index of the coords
         [~,indices(ii)] = ismember(coords(ii,:), msh.tr.vertices, 'rows');
+        % Find the coords on the unsmoothed mesh
+        origcoords(ii,:) = msh.vertex.origin(indices(ii),:);
         % Fit a spline to the points
         if ii >1
             cs = cscvn(coords'); spline_points = fnplt(cs)';
@@ -111,7 +113,7 @@ while currkey==0
         
         switch(drawtype)
             case 'volfill'
-                imcoords = ceil(mrAnatXformCoords(voldata.qto_ijk, coords(ii,:)));
+                imcoords = ceil(mrAnatXformCoords(voldata.qto_ijk, origcoords(ii,:)));
                 vRoi.data = bwselect3(v,imcoords(2),imcoords(1),imcoords(3)) | vRoi.data>0;
                 if sum(vRoi.data(:)) == 0
                     fprintf('\nNO VOLUME DATA AT SELECTED VERTEX.\nTRY ANOTHER SPOT\n');
@@ -125,27 +127,27 @@ while currkey==0
                     % Z plane
                     subplot(1,3,1); hold on;
                     if exist('roiMsh','var'),patch(roiMsh.tr); shading('interp'); lighting('gouraud');end
-                    AFQ_AddImageTo3dPlot(volanat,[0, 0, coords(ii,3)],[],[],[],[],'overlay',voldata,fill_range(1));hold on
-                    view(0,90);axis image; title(sprintf('Z = %.1f',coords(ii,3)));
+                    AFQ_AddImageTo3dPlot(volanat,[0, 0, origcoords(ii,3)],[],[],[],[],'overlay',voldata,fill_range(1));hold on
+                    view(0,90);axis image; title(sprintf('Z = %.1f',origcoords(ii,3)));
                     % Plot cursor
-                    plot3(coords(:,1),coords(:,2),coords(:,3),'rx','markersize',7);
-                    plot3(coords(end,1),coords(end,2),coords(end,3),'rx','markersize',15);
+                    plot3(origcoords(:,1),origcoords(:,2),origcoords(:,3),'rx','markersize',7);
+                    plot3(origcoords(end,1),origcoords(end,2),origcoords(end,3),'rx','markersize',15);
                     
                     % Y plane
                     subplot(1,3,2); hold on;
                     if exist('roiMsh','var'),patch(roiMsh.tr);shading('interp'); lighting('gouraud');end
-                    AFQ_AddImageTo3dPlot(volanat,[0, coords(ii,2), 0],[],[],[],[],'overlay',voldata,fill_range(1));
-                    view(0,0);axis image; title(sprintf('Y = %.1f',coords(ii,2)));
-                    plot3(coords(:,1),coords(:,2),coords(:,3),'rx','markersize',7);
-                    plot3(coords(ii,1),coords(ii,2),coords(ii,3),'rx','markersize',15);
+                    AFQ_AddImageTo3dPlot(volanat,[0, origcoords(ii,2), 0],[],[],[],[],'overlay',voldata,fill_range(1));
+                    view(0,0);axis image; title(sprintf('Y = %.1f',origcoords(ii,2)));
+                    plot3(origcoords(:,1),origcoords(:,2),origcoords(:,3),'rx','markersize',7);
+                    plot3(origcoords(ii,1),origcoords(ii,2),origcoords(ii,3),'rx','markersize',15);
 
                     % X plane
                     subplot(1,3,3); hold on;
                     if exist('roiMsh','var'),patch(roiMsh.tr); shading('interp'); lighting('gouraud');end
-                    AFQ_AddImageTo3dPlot(volanat,[coords(ii,1), 0, 0],[],[],[],[],'overlay',voldata,fill_range(1));
+                    AFQ_AddImageTo3dPlot(volanat,[origcoords(ii,1), 0, 0],[],[],[],[],'overlay',voldata,fill_range(1));
                     view(90,0);axis image; title(sprintf('X = %.1f',coords(ii,1)));
-                    plot3(coords(:,1),coords(:,2),coords(:,3),'rx','markersize',7);
-                    plot3(coords(end,1),coords(end,2),coords(end,3),'rx','markersize',15);
+                    plot3(origcoords(:,1),origcoords(:,2),origcoords(:,3),'rx','markersize',7);
+                    plot3(origcoords(end,1),origcoords(end,2),origcoords(end,3),'rx','markersize',15);
                     % Turn on 3d rotation and move figure window
                     rotate3d; set(fhanat,'position',get(fh,'position')+[-200 -420 500 0])
                     figure(fh);
@@ -225,7 +227,7 @@ if size(coords,1) == 1
     spline_meshindices = indices;
 end
 % Put all the variables into a struct
-mshRoi = struct('coords', coords, 'indices', indices, 'bin', bin, ...
+mshRoi = struct('coords', coords,'origcoords',origcoords, 'indices', indices, 'bin', bin, ...
  'spline_points',spline_points, 'spline_meshpoints', spline_meshpoints, ...
  'spline_meshindices', spline_meshindices);
 
