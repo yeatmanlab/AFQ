@@ -21,7 +21,7 @@ function afq = AFQ_CombineSgeRuns(afq, afq_sge, subnum, subnum_sge)
 % afq - combined structure
 
 if ~exist('subnum_sge' ,'var') || isempty(subnum_sge)
-    subnum_sge = sugnum;
+    subnum_sge = subnum;
 end
 
 % Get the names of the values in the afq_sge structure
