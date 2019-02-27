@@ -9,7 +9,8 @@ function [status,results] = AFQ_mrtrix_response(mask_file, ...
                                                  bkgrnd,  ...
                                                  lmax, ...
                                                  verbose, ...
-                                                 mrtrixVersion)
+                                                 mrtrixVersion, ...
+                                             response)
 % Calculate the fiber response function utilized by MRtrix for the spherical
 % deconvolution analysis.
 %
@@ -47,6 +48,7 @@ if notDefined('verbose'), verbose = true;end
 if notDefined('bkgrnd'),   bkgrnd = false;end
 if notDefined('lmax'),       lmax = 6;end
 if notDefined('threshold'),  threshold = '-abs 0.8';end
+if notDefined('response'), response = 'fa'; end
 
 if mrtrixVersion == 2
     func1Name = 'estimate_response';
@@ -58,7 +60,7 @@ if mrtrixVersion == 2
     func5Name = 'threshold';
 end
 if mrtrixVersion == 3
-    func1Name = 'dwi2response fa';
+    func1Name = sprintf('dwi2response %s', response);
     func2Name = 'shview';
     func3Name = 'maskfilter';
     func3NameOpt = 'erode';

@@ -244,6 +244,7 @@ if afq.software.mrtrix == 1 && afq.params.computeCSD > 0
     % Function names change, and there are many new options in mrTrix3.
     % Number of fibers to track. This parameter is only relevant for mrTrix
     afq.params.track.nfibers = 500000; 
+    afq.params.track.cutoff = 0.1; 
     % Choose algorithm for tracking with mrTrix
     % Options if you have version 2:
     %    'probabilistic tractography': 'SD_PROB'
@@ -253,8 +254,9 @@ if afq.software.mrtrix == 1 && afq.params.computeCSD > 0
     %     FACT, iFOD1, iFOD2, Nulldist1, Nulldist2, SD_Stream,
     %                         Seedtest, Tensor_Det, Tensor_Prob (default: iFOD2).
     afq.params.track.mrTrixAlgo = 'iFOD2';
+    afq.params.track.response = 'fa'; % Default for legacy compatibility
     % Specify here if you want multishell true or false.
-    afq.params.track.multishell = true;
+    afq.params.track.multishell = false;
     % In case you are using multishell, specify the tool to be used for 5ttgen
     % script. If you use 'fsl', it will segment the T1 you provided in the
     % beginning. If you use 'freesurfer', you should provide any 'aseg' file
@@ -337,7 +339,8 @@ if AFQ_get(afq,'use mrtrix')
                                mrtrixdir,...
                                afq.software.mrtrixVersion, ...
                                afq.params.track.multishell, ... % true/false
-                               afq.params.track.tool); % 'fsl', 'freesurfer'
+                               afq.params.track.tool, ...
+                               afq.params.track.response); % 'fsl', 'freesurfer'
         % In order to not modify much the previous code, I created new
         % files types. 
         % In mrTrix2 and mrTrix3 not-multishell, files.wm was the wm mask,
