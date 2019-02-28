@@ -46,7 +46,7 @@ function [status,results] = AFQ_mrtrix_response(mask_file, ...
 % Franco Pestilli, Bob Dougherty and Ariel Rokem, Stanford University
 if notDefined('verbose'), verbose = true;end
 if notDefined('bkgrnd'),   bkgrnd = false;end
-if notDefined('lmax'),       lmax = 6;end
+if notDefined('lmax'),       lmax = 4;end
 if notDefined('threshold'),  threshold = '-abs 0.8';end
 if notDefined('response'), response = 'fa'; end
 

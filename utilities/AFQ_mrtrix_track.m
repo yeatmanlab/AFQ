@@ -42,7 +42,7 @@ if notDefined('bkgrnd'),    bkgrnd = false;end
 if notDefined('clobber'),  clobber = false;end
 if notDefined('mrtrixVersion'),    mrtrixVersion = 3;end
 if notDefined('multishell'),  multishell = false;end
-if notDefined('cutoff'),  cutoff = 0.05;end % for compatibility with mrtrix defaults
+if notDefined('cutoff'),  cutoff = 0.1;end 
 
 % REMOVE THIS IN THE REVIEW
 % See AFQ_Create, as indicated by Jason I included the algo in the creation
