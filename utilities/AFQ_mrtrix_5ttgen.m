@@ -44,3 +44,9 @@ end
                                   bkgrnd, ...
                                   verbose, ...
                                   mrtrixVersion); 
+                              
+                              
+tt5_basename = strsplit(tt5_filename,'.');
+seed_gmwmi=strcat(tt5_basename{1},'_seed_gmwmi.mif');
+cmd_str   = ['5tt2gmwmi -force ' tt5_filename  ' ' seed_gmwmi ];
+[status,results] = AFQ_mrtrix_cmd(cmd_str, bkgrnd, verbose, mrtrixVersion)
