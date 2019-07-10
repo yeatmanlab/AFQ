@@ -1,4 +1,4 @@
-function files = mrtrix_build_files(fname_trunk,lmax,multishell)
+function files = AFQ_mrtrix_build_files(fname_trunk,lmax,compute5tt, multishell)
 % Builds a structure with the names of the files that the MRtrix commands
 % will generate and need.
 %
@@ -36,10 +36,14 @@ files.wmMask    = strcat(fname_trunk, '_wmMask.mif');
 % Compute the CSD estimates: 
 files.csd = strcat(fname_trunk, sprintf('_csd_lmax%i.mif',lmax)); 
 
+% Create tissue type segmentation to be used in multishell or ACT
 
-if multishell
-    % Create tissue type segmentation to be used in multishell: 
-    files.tt5 = strcat(fname_trunk, '_5tt.mif');
+if compute5tt>0 || mulitshell>0
+files.tt5 = strcat(fname_trunk, '_5tt.mif');
+files.gmwmi = strcat(fname_trunk, '_5tt_gmwmi.mif');
+end
+
+if multishell>0
     % Create per tissue type response file
     files.wmResponse = strcat(fname_trunk, '_wmResponse.txt');
     files.gmResponse = strcat(fname_trunk, '_gmResponse.txt');
