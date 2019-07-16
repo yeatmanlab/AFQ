@@ -57,6 +57,7 @@ end
 if isfield(afq,'sub_nums') && length(afq.sub_nums) > length(keep)
     afq.sub_nums = afq.sub_nums(keep);
 end
+
 % And metadata
 mdata = fieldnames(afq.metadata);
 for ii = 1:length(mdata)
