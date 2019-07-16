@@ -80,9 +80,11 @@ dt_info = load(dt6);
 
 
 % Strip the file names out of the dt6 strings.
-% dwRawFile = dt_info.files.alignedDwRaw;
-dwRawFile = fullfile(dt_info.params.rawDataDir, strcat(dt_info.params.rawDataFile,'.gz'));
-
+if isfield(dt_info, 'files') && isfield(dt_info.files, 'alignedDwRaw') && exist(dt_info.files.alignedDwRaw,'file')
+    dwRawFile = dt_info.files.alignedDwRaw;
+else
+    dwRawFile = fullfile(dt_info.params.rawDataDir, strcat(dt_info.params.rawDataFile,'.gz'));
+end
 
 % This line removes the extension of the file (.nii.gz) and mainaints de path
 fname_trunk = dwRawFile(1:strfind(dwRawFile,'.')-1);
@@ -192,8 +194,7 @@ if (~computed.('wmMask'))
 end
 
 % Create the 5tt file from the same ac-pc-ed T1 nii we used in the other steps:
-if (~computed.('tt5')) && (mrtrixVersion > 2)
-    if compute5tt>0 || multishell>0
+if (compute5tt>0 || multishell>0) && (~computed.('tt5')) && (mrtrixVersion > 2)
         inputFile = [];
         if strcmp(tool, 'fsl')
             inputFile = fullfile(session, dt_info.files.t1);
@@ -219,7 +220,6 @@ if (~computed.('tt5')) && (mrtrixVersion > 2)
             0, ...
             mrtrixVersion,...
             tool);
-    end
 end
 
 if multishell==0
