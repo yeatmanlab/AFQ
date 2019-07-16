@@ -254,7 +254,7 @@ if afq.software.mrtrix == 1 && afq.params.computeCSD > 0
     %                         Seedtest, Tensor_Det, Tensor_Prob (default: iFOD2).
     afq.params.track.mrTrixAlgo = 'iFOD2';
     % Specify here if you want multishell true or false.
-    afq.params.track.multishell = true;
+    afq.params.track.multishell = false;
     % In case you are using multishell, specify the tool to be used for 5ttgen
     % script. If you use 'fsl', it will segment the T1 you provided in the
     % beginning. If you use 'freesurfer', you should provide any 'aseg' file
