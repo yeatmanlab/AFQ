@@ -226,12 +226,6 @@ afq.params.track.seedVoxelOffsets = [0.25 0.75];
 % Mask from which to initialize tracking
 afq.params.track.faMaskThresh = 0.30;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Modify default parameters based on user input                          %
-afq = afqVarargin(afq, varargin);                                         %
-afq.params = afqVarargin(afq.params, varargin);     
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 %% Set some mrtrix specific parameters (only computeCSD==1)
 % If mr trix is installed and CSD is to be computed then perform tracking 
 % on constrained spherical deconvolution
@@ -244,6 +238,7 @@ if afq.software.mrtrix == 1 && afq.params.computeCSD > 0
     % Function names change, and there are many new options in mrTrix3.
     % Number of fibers to track. This parameter is only relevant for mrTrix
     afq.params.track.nfibers = 500000; 
+    afq.params.track.cutoff = 0.1; 
     % Choose algorithm for tracking with mrTrix
     % Options if you have version 2:
     %    'probabilistic tractography': 'SD_PROB'
@@ -253,8 +248,9 @@ if afq.software.mrtrix == 1 && afq.params.computeCSD > 0
     %     FACT, iFOD1, iFOD2, Nulldist1, Nulldist2, SD_Stream,
     %                         Seedtest, Tensor_Det, Tensor_Prob (default: iFOD2).
     afq.params.track.mrTrixAlgo = 'iFOD2';
+    afq.params.track.response = 'fa'; % Default for legacy compatibility
     % Specify here if you want multishell true or false.
-    afq.params.track.multishell = true;
+    afq.params.track.multishell = false;
     % In case you are using multishell, specify the tool to be used for 5ttgen
     % script. If you use 'fsl', it will segment the T1 you provided in the
     % beginning. If you use 'freesurfer', you should provide any 'aseg' file
@@ -267,7 +263,11 @@ end
 %  This will translate all of the parameters into the right format for the
 %  afq parameters structure.
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Modify default parameters based on user input                          %
+afq = afqVarargin(afq, varargin);                                         %
+afq.params = afqVarargin(afq.params, varargin);     
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Modify tracking parameters if the mode is test mode
 if strcmp(afq.params.run_mode,'test')
@@ -337,7 +337,8 @@ if AFQ_get(afq,'use mrtrix')
                                mrtrixdir,...
                                afq.software.mrtrixVersion, ...
                                afq.params.track.multishell, ... % true/false
-                               afq.params.track.tool); % 'fsl', 'freesurfer'
+                               afq.params.track.tool, ...
+                               afq.params.track.response); % 'fsl', 'freesurfer'
         % In order to not modify much the previous code, I created new
         % files types. 
         % In mrTrix2 and mrTrix3 not-multishell, files.wm was the wm mask,

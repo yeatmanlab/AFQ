@@ -3,7 +3,8 @@ function files = AFQ_mrtrixInit(dt6, ...
                                 mrtrix_folder, ...
                                 mrtrixVersion, ...
                                 multishell, ...
-                                tool)
+                                tool, ...
+                                response)
 % function files = AFQ_mrtrixInit(dt6, lmax, mrtrix_folder)
 % 
 % Initialize an mrtrix CSD analysis
@@ -42,6 +43,8 @@ function files = AFQ_mrtrixInit(dt6, ...
 
 if notDefined('mrtrix_folder'), mrtrix_folder = 'mrtrix'; end
 if notDefined('lmax'), lmax = 4; end
+if notDefined('response'), response = 'fa'; end
+
 % Loading the dt file containing all the paths to the fiels we need.
 dt_info = load(dt6);
 
@@ -171,7 +174,8 @@ if (~computed.('response'))
                       [], ... %bckground
                       lmax, ... %lmax
                       false, ... %verbose
-                      mrtrixVersion) 
+                      mrtrixVersion, ...
+                      response) 
 end
 
 % Create a white-matter mask, tracktography will act only in here.
