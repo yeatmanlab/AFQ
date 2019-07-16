@@ -38,9 +38,9 @@ files.csd = strcat(fname_trunk, sprintf('_csd_lmax%i.mif',lmax));
 
 % Create tissue type segmentation to be used in multishell or ACT
 
-if compute5tt>0 || mulitshell>0
-files.tt5 = strcat(fname_trunk, '_5tt.mif');
-files.gmwmi = strcat(fname_trunk, '_5tt_gmwmi.mif');
+if compute5tt>0 || multishell>0
+    files.tt5 = strcat(fname_trunk, '_5tt.mif');
+    files.gmwmi = strcat(fname_trunk, '_5tt_gmwmi.mif');
 end
 
 if multishell>0
