@@ -226,6 +226,12 @@ afq.params.track.seedVoxelOffsets = [0.25 0.75];
 % Mask from which to initialize tracking
 afq.params.track.faMaskThresh = 0.30;
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Modify default parameters based on user input                          %
+afq = afqVarargin(afq, varargin);                                         %
+afq.params = afqVarargin(afq.params, varargin);     
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %% Set some mrtrix specific parameters (only computeCSD==1)
 % If mr trix is installed and CSD is to be computed then perform tracking 
 % on constrained spherical deconvolution
@@ -257,17 +263,6 @@ if afq.software.mrtrix == 1 && afq.params.computeCSD > 0
     % provided by the freesurfer pipeline, tested with aparc+aseg.mgz
     afq.params.track.tool = 'freesurfer';  
 end
-
-% TODO:
-%  Write a parameter translation routine based on mrvParamFormat()
-%  This will translate all of the parameters into the right format for the
-%  afq parameters structure.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Modify default parameters based on user input                          %
-afq = afqVarargin(afq, varargin);                                         %
-afq.params = afqVarargin(afq.params, varargin);     
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Modify tracking parameters if the mode is test mode
 if strcmp(afq.params.run_mode,'test')
