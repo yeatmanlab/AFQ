@@ -244,7 +244,7 @@ if afq.software.mrtrix == 1 && afq.params.computeCSD > 0
     % Function names change, and there are many new options in mrTrix3.
     % Number of fibers to track. This parameter is only relevant for mrTrix
     afq.params.track.nfibers = 500000; 
-    afq.params.track.cutoff = 0.1; 
+    afq.params.track.mrtcutoff = 0.1;  % Cutoff for mrtrix tractography (used in AFQ_WholebrainTractography.m and AFQ_mrtrix_track)
     % Choose algorithm for tracking with mrTrix
     % Options if you have version 2:
     %    'probabilistic tractography': 'SD_PROB'
@@ -269,6 +269,10 @@ if strcmp(afq.params.run_mode,'test')
     afq.params.track.seedVoxelOffsets = [0.5];
     afq.params.track.faMaskThresh = 0.35;
 end
+
+%% Check if other tracking parameters should be modified
+afq.params.track = afqVarargin(afq.params.track, varargin);     
+
 %% Attach a structure pointing to each subjects data files
 for ii = 1: AFQ_get(afq,'num subs')
     afq.files.dt6{ii} = fullfile(afq.sub_dirs{ii},'dt6.mat');

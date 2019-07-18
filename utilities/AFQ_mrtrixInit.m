@@ -1,20 +1,23 @@
 function files = AFQ_mrtrixInit(dt6, ...
-                                lmax, ...
-                                mrtrix_folder, ...
-                                mrtrixVersion, ...
-                                multishell, ...
-                                tool, ...
-                                response)
+    lmax, ...
+    mrtrix_folder, ...
+    mrtrixVersion, ...
+    multishell, ...
+    tool, ...
+    response, ...
+    compute5tt, ...
+    anatFolder)
+
 % function files = AFQ_mrtrixInit(dt6, lmax, mrtrix_folder)
-% 
+%
 % Initialize an mrtrix CSD analysis
 %
-% This fucntion computes all the files needed to use mrtrix_track. 
+% This fucntion computes all the files needed to use mrtrix_track.
 %
 % Parameters
 % ----------
 % dt6: string, full-path to an mrInit-generated dt6 file.
-% T1nii: path to the acpc-ed T1w nii used at the beginning. 
+% T1nii: path to the acpc-ed T1w nii used at the beginning.
 % lmax: The maximal harmonic order to fit in the spherical deconvolution (d
 %       model. Must be an even integer. This input determines the
 %       flexibility  of the resulting model fit (higher values correspond
@@ -29,29 +32,30 @@ function files = AFQ_mrtrixInit(dt6, ...
 %
 % 1. Convert the raw dwi file into .mif format
 % 2. Convert the bvecs, bvals into .b format
-% 3. Convert the brain-mask to .mif format 
+% 3. Convert the brain-mask to .mif format
 % 4. Fit DTI and calculate FA and EV images
 % 5. Estimate the response function for single fibers, based on voxels with
 %    FA > 0.7
-% 6. Fit the CSD model. 
-% 7. Convert the white-matter mask to .mif format. 
-% 
-% For details: 
+% 6. Fit the CSD model.
+% 7. Convert the white-matter mask to .mif format.
+%
+% For details:
 % http://www.brain.org.au/software/mrtrix/tractography/preprocess.html
-% 
+%
 
 
 if notDefined('mrtrix_folder'), mrtrix_folder = 'mrtrix'; end
 if notDefined('lmax'), lmax = 4; end
+if notDefined('compute5tt'), compute5tt = 0; end
 if notDefined('response'), response = 'fa'; end
 
 % Loading the dt file containing all the paths to the fiels we need.
 dt_info = load(dt6);
 
 % Check if this is correct, dt_info.files has some relative and absolute
-% paths, it doesn't make sense. 
+% paths, it doesn't make sense.
 % I cannot recover the position of my original t1 from this information, so I
-% copied it to the 'session' folder, in SubName/dmri 
+% copied it to the 'session' folder, in SubName/dmri
 %                 b0: 'dti90trilin/bin/b0.nii.gz'
 %          brainMask: 'dti90trilin/bin/brainMask.nii.gz'
 %             wmMask: 'dti90trilin/bin/wmMask.nii.gz'
@@ -68,7 +72,7 @@ dt_info = load(dt6);
 % is, but only with the original .nii-s converted from dicoms and the bvecs
 % and bvals. The t1-s are in other path with the rest of the anat files.
 % Furthermore, the assumption that the 'raw' file is above the dt6 filename
-% breaks the code as it is duplicating the whole pathnames. 
+% breaks the code as it is duplicating the whole pathnames.
 % Example: mrtrix_dir = /bcbl/home/public/Gari/MINI/ANALYSIS/DWI/S002//bcbl/home/public/Gari/MINI/ANALYSIS/DWI/S002/dmri/dti90trilin/mrtrixi/
 % I fixed this (anf the initial part of the name issue as well)
 % I still don't understand the use case. I understand that the mrtrix
@@ -78,10 +82,12 @@ dt_info = load(dt6);
 % be saved is the 'data_aligned_trilin_noMEC' part.
 
 
-% Strip the file names out of the dt6 strings. 
-% dwRawFile = dt_info.files.alignedDwRaw;
-dwRawFile = fullfile(dt_info.params.rawDataDir, strcat(dt_info.params.rawDataFile,'.gz'));
-
+% Strip the file names out of the dt6 strings.
+if isfield(dt_info, 'files') && isfield(dt_info.files, 'alignedDwRaw') && exist(dt_info.files.alignedDwRaw,'file')
+    dwRawFile = dt_info.files.alignedDwRaw;
+else
+    dwRawFile = fullfile(dt_info.params.rawDataDir, strcat(dt_info.params.rawDataFile,'.gz'));
+end
 
 % This line removes the extension of the file (.nii.gz) and mainaints de path
 fname_trunk = dwRawFile(1:strfind(dwRawFile,'.')-1);
@@ -95,74 +101,78 @@ mrtrix_dir = mrtrix_folder;
 % Assuming in 'session' we want the subject_name/dmri64 or whatever
 % session = pathDwRawFile;
 session = dt_info.params.rawDataDir;
+if notDefined('anatFolder'), anatFolder = session; end
+
+
 % And in fname_trunk we want the whole path and the beginning of the
 % filename
-fname_trunk = [mrtrix_folder filesep fnameDwRawFile]; 
+fname_trunk = [mrtrix_folder filesep fnameDwRawFile];
 
 if ~exist(mrtrix_dir, 'dir')
     mkdir(mrtrix_dir)
 end
 
 % Build the mrtrix file names.
-files = AFQ_mrtrix_build_files(fname_trunk, lmax, multishell);
+files = AFQ_mrtrix_build_files(fname_trunk, lmax, compute5tt, multishell);
 
 % Check wich processes were already computed and which ons need to be doen.
 computed = mrtrix_check_processes(files);
 
-% Convert the raw dwi data to the mrtrix format: 
+% Convert the raw dwi data to the mrtrix format:
 if (~computed.('dwi'))
     AFQ_mrtrix_mrconvert(dwRawFile, ...
-                         files.dwi, ...
-                         0, ...
-                         0, ...
-                         mrtrixVersion); 
+        files.dwi, ...
+        0, ...
+        0, ...
+        mrtrixVersion);
 end
 
 
 % This file contains both bvecs and bvals, as per convention of mrtrix
 % if (~computed.('b'))
-    bvecs = fullfile(dt_info.params.rawDataDir, strcat(fnameDwRawFile, '.bvecs'));
-    bvals = fullfile(dt_info.params.rawDataDir, strcat(fnameDwRawFile, '.bvals'));
+bvecs = fullfile(dt_info.params.rawDataDir, strcat(fnameDwRawFile, '.bvecs'));
+bvals = fullfile(dt_info.params.rawDataDir, strcat(fnameDwRawFile, '.bvals'));
 %   bvecs = dt_info.files.alignedDwBvecs;
 %   bvals = dt_info.files.alignedDwBvals;
-    mrtrix_bfileFromBvecs(bvecs, bvals, files.b);
+mrtrix_bfileFromBvecs(bvecs, bvals, files.b);
 % end
 
-% Convert the brain mask from mrDiffusion into a .mif file: 
+% Convert the brain mask from mrDiffusion into a .mif file:
 if (~computed.('brainmask'))
-  brainMaskFile = fullfile(session, dt_info.files.brainMask); 
-  AFQ_mrtrix_mrconvert(brainMaskFile, ...
-                       files.brainmask, ...
-                       false, ...
-                       false, ...
-                       mrtrixVersion); 
+    brainMaskFile = fullfile(session, dt_info.files.brainMask);
+    AFQ_mrtrix_mrconvert(brainMaskFile, ...
+        files.brainmask, ...
+        false, ...
+        false, ...
+        mrtrixVersion);
 end
 
 % Generate diffusion tensors:
 if (~computed.('dt'))
-  AFQ_mrtrix_dwi2tensor(files.dwi, ...
-                        files.dt, ...
-                        files.b,...
-                        0, ...
-                        mrtrixVersion);
+    AFQ_mrtrix_dwi2tensor(files.dwi, ...
+        files.dt, ...
+        files.b,...
+        0, ...
+        mrtrixVersion);
 end
 
-% Get the FA from the diffusion tensor estimates: 
+% Get the FA from the diffusion tensor estimates:
 if (~computed.('fa'))
-  AFQ_mrtrix_tensor2FA(files.dt, ...
-                       files.fa, ...
-                       files.brainmask, ...
-                       0, ...
-                       mrtrixVersion);
+    AFQ_mrtrix_tensor2FA(files.dt, ...
+        files.fa, ...
+        files.brainmask, ...
+        0, ...
+        mrtrixVersion);
 end
 
-% Generate the eigenvectors, weighted by FA: 
+% Generate the eigenvectors, weighted by FA:
 if  (~computed.('ev'))
-  AFQ_mrtrix_tensor2vector(files.dt, files.ev, files.fa,0,mrtrixVersion);
+    AFQ_mrtrix_tensor2vector(files.dt, files.ev, files.fa,0,mrtrixVersion);
 end
 
-% Estimate the response function of single fibers: 
+% Estimate the response function of single fibers:
 if (~computed.('response'))
+
   AFQ_mrtrix_response(files.brainmask, ...
                       files.fa, ...
                       files.sf, ...
@@ -176,107 +186,99 @@ if (~computed.('response'))
                       false, ... %verbose
                       mrtrixVersion, ...
                       response) 
+
 end
 
 % Create a white-matter mask, tracktography will act only in here.
 if (~computed.('wmMask'))
-  wmMaskFile = fullfile(session, dt_info.files.wmMask);
-  AFQ_mrtrix_mrconvert(wmMaskFile, ...
-                       files.wmMask, ...
-                       [], ...
-                       0, ...
-                       mrtrixVersion)
+    wmMaskFile = fullfile(session, dt_info.files.wmMask);
+    AFQ_mrtrix_mrconvert(wmMaskFile, ...
+        files.wmMask, ...
+        [], ...
+        0, ...
+        mrtrixVersion)
 end
 
-
-
-if ~multishell
-    % Compute the CSD estimates: 
-    if (~computed.('csd'))  
-      disp('The following step takes a while (a few hours)');                                  
-      AFQ_mrtrix_csdeconv(files.dwi, ...
-                          files.response, ...
-                          lmax, ...
-                          files.csd, ... %out
-                          files.b, ... %grad
-                          files.brainmask,... %mask
-                          false,... % Verbose
-                          mrtrixVersion)
-    end
-
-else
-    % Create the 5tt file from the same ac-pc-ed T1 nii we used in the other steps: 
-    if (~computed.('tt5')) && (mrtrixVersion > 2)
+% Create the 5tt file from the same ac-pc-ed T1 nii we used in the other steps:
+if (compute5tt>0 || multishell>0) && (~computed.('tt5')) && (mrtrixVersion > 2)
         inputFile = [];
         if strcmp(tool, 'fsl')
             inputFile = fullfile(session, dt_info.files.t1);
             if ~(exist(inputFile, 'file') == 2)
                 error(['Cannot find T1, please copy it to ' session]);
-            end    
-        % Find and aseg file and better if it is an aparc+aseg one. 
-        % Select the first aparc if there are several *aseg* files.
-        % It can take mgz or nii or mif
+            end
+            % Find and aseg file and better if it is an aparc+aseg one.
+            % Select the first aparc if there are several *aseg* files.
+            % It can take mgz or nii or mif
         else
-           asegFiles = dir(fullfile(session,'*aseg*'));
-           for ii = 1:length(asegFiles)
-               if length(strfind(asegFiles(ii).name, 'aseg')) > 0
-                   inputFile = fullfile(session, asegFiles(ii).name);
-               end
-               if length(strfind(asegFiles(ii).name, 'aparc')) > 0
-                   inputFile = fullfile(session, asegFiles(ii).name);
-               end
-           end
+            inputFile = fullfile(anatFolder,'aparc+aseg.mgz');
             if ~(exist(inputFile, 'file') == 2)
-                disp(['inputFile = ' inputFile]); 
-                error(['Cannot find aseg file, please copy it to ' session]);
-            end     
-        end        
-
+                disp(['inputFile = ' inputFile]);
+                error(['Cannot find aseg file, please copy it to ' anatFolder]);
+            end
+        end
+        
         % TODO: update directory structure to point to FS files.
-
+        
         AFQ_mrtrix_5ttgen(inputFile, ...
-                          files.tt5, ...
-                          0, ...
-                          0, ...
-                          mrtrixVersion,...
-                          tool);
+            files.tt5, ...
+            0, ...
+            0, ...
+            mrtrixVersion,...
+            tool);
+end
+
+if multishell==0
+    % Compute the CSD estimates:
+    if (~computed.('csd'))
+        disp('The following step takes a while (a few hours)');
+        AFQ_mrtrix_csdeconv(files.dwi, ...
+            files.response, ...
+            lmax, ...
+            files.csd, ... %out
+            files.b, ... %grad
+            files.brainmask,... %mask
+            false,... % Verbose
+            mrtrixVersion)
     end
+    
+else
     
     % Create per tissue response function estimation
     % Not using the other response function, we already have the masks
     if (~computed.('wmResponse')) && (mrtrixVersion > 2)
         cmd_str = ['dwi2response msmt_5tt ' ...
-                    files.dwi ' ' files.tt5 ' ' ...
-                    files.wmResponse ' ' files.gmResponse ' ' files.csfResponse ' ' ...
-                    '-grad ' files.b];
-                    
+            files.dwi ' ' files.tt5 ' ' ...
+            files.wmResponse ' ' files.gmResponse ' ' files.csfResponse ' ' ...
+            '-grad ' files.b];
+        
         AFQ_mrtrix_cmd(cmd_str, 0, 0,mrtrixVersion);
     end
     
     
-    % Compute the CSD estimates: 
+    % Compute the CSD estimates:
     if (~computed.('csd'))   && (mrtrixVersion > 2)
-      disp('The following step takes a while (a few hours)');                                  
-      AFQ_mrtrix_csdeconv_msmt(files.dwi, ...
-                              files.wmResponse, ...
-                              files.gmResponse, ...
-                              files.csfResponse, ...
-                              lmax, ...
-                              files.wmCsd, ...
-                              files.gmCsd, ...
-                              files.csfCsd, ...
-                              files.b, ...
-                              files.brainmask, ...
-                              0, ...
-                              0, ...
-                              mrtrixVersion)
+        disp('The following step takes a while (a few hours)');
+        AFQ_mrtrix_csdeconv_msmt(files.dwi, ...
+            files.wmResponse, ...
+            files.gmResponse, ...
+            files.csfResponse, ...
+            lmax, ...
+            files.wmCsd, ...
+            files.gmCsd, ...
+            files.csfCsd, ...
+            files.b, ...
+            files.brainmask, ...
+            0, ...
+            0, ...
+            mrtrixVersion)
     end
     
     % RGB tissue signal contribution maps
     if (~computed.('vf'))  && (mrtrixVersion > 2)
-         % mrconvert -coord 3 0 wm.mif - | mrcat csf.mif gm.mif - vf.mif
+        % mrconvert -coord 3 0 wm.mif - | mrcat csf.mif gm.mif - vf.mif
         cmd_str = ['mrconvert -coord 3 0 ' files.wmCsd ' - | ' ...
-                   'mrcat ' files.gmCsd ' ' files.csfCsd ' - ' files.vf];           
+            'mrcat ' files.gmCsd ' ' files.csfCsd ' - ' files.vf];
         AFQ_mrtrix_cmd(cmd_str, 0, 0,mrtrixVersion);
     end
     
