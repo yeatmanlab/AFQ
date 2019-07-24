@@ -15,6 +15,14 @@ function msh = AFQ_meshColor(msh, varargin)
 %'parameter', [value] - where the parameter is defined and then the
 % arguments or inputs follow the parameter name. (2) As a parameters
 % structure - see CreateParamsStruct.
+%
+% 'normals' - a vector denoting how many mm along the normals to map
+%             data. Each entry denotes a distance along the normal. For
+%             example AFQ_meshColor(msh,...'normal',[0 .5 1 1.5 2]) would
+%             compute the max of values at 0 .5 1 1.5 and 2mm along the
+%             normal from the cortical surface. The default is to compute 
+%             at 0mm. Note that this is the max not the mean
+%
 
 % Put all the arguments into a params structure
 if length(varargin) == 1 && isparams(varargin{1})
@@ -49,7 +57,19 @@ if isfield(params,'overlay') && ~isempty(params.overlay)
     else
         interpMethod = params.interp;
     end
-    cvals = dtiGetValFromImage(overlayIm.data, AFQ_meshGet(msh, 'vertexorigin'), overlayIm.qto_ijk, interpMethod);
+    
+    % average along the normals if desired
+    if isfield(params, 'normals')
+        c=0; % initialize counter
+        for nn = params.normals
+            coords_normals = AFQ_meshGet(msh, 'vertexorigin') + nn.* real(msh.normals.smooth20); c= c+1;
+            cvals_normals(:,c) = dtiGetValFromImage(overlayIm.data, coords_normals, overlayIm.qto_ijk, interpMethod);
+        end
+        cvals = nanmax(cvals_normals,[],2);
+    else
+        cvals = dtiGetValFromImage(overlayIm.data, AFQ_meshGet(msh, 'vertexorigin'), overlayIm.qto_ijk, interpMethod);
+    end
+    
     % Remove file extension and path to get the name of the image
     [~,valname] = fileparts(overlayIm.fname);
     % Remove a secondary extension if there is one
