@@ -1,4 +1,4 @@
-function [mshRoi, vRoi, msh] = AFQ_meshDrawRoi(msh, dilate, voldata, fill_range, volanat, fh, outname)
+function [mshRoi, vRoi, msh] = AFQ_meshDrawRoi(msh, dilate, voldata, fill_range, volanat, fh, outname, max_norm)
 %
 % [mshRoi, vRoi, msh] = AFQ_meshDrawRoi(msh, dilate, voldata, fill_range, volanat, fh, outname)
 %
@@ -16,6 +16,12 @@ function [mshRoi, vRoi, msh] = AFQ_meshDrawRoi(msh, dilate, voldata, fill_range,
 %             a new figure window
 % outname   - If defined, will save ROIs with this name and path. if
 %             outname is supplied as a blank [] then a file gui will open.
+% max_norm  - This variable controls how voldata is mapped to the
+%             cortical surface. If not defined, then we use the defaults
+%             and just interpolate at every vertex. If a vector is defined
+%             then we compute max at those locations along the normal. For
+%             example [0 1 2 3] would compute the max of data sampled 
+%             at 1mm incriments along the normal up to 3mm.
 %
 % Outputs:
 %
@@ -63,12 +69,18 @@ end
 if exist('volanat','var') && ~isempty(volanat) && ischar(volanat)
     volanat = niftiRead(volanat);
 end
+
 % Check if we should work with an open figure window
 if ~exist('fh', 'var') || isempty(fh)
     if strcmp('volfill',drawtype)
         if ischar(voldata), voldata = niftiRead(voldata); end
         voldata.fname = 'voldata.nii.gz';
-        msh = AFQ_meshColor(msh,'overlay',voldata, 'thresh',fill_range);
+        % Check to see how data should be averaged on the surface
+        if exist('max_norm','var') && ~isempty(max_norm)
+            msh = AFQ_meshColor(msh,'overlay',voldata, 'thresh',fill_range, 'normals', max_norm);
+        else
+            msh = AFQ_meshColor(msh,'overlay',voldata, 'thresh',fill_range);
+        end
         % Create a binarized volume
         v = voldata.data > fill_range(1) & voldata.data<fill_range(2);
         vRoi = voldata; vRoi.data = zeros(size(v));
