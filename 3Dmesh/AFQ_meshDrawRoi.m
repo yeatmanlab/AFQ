@@ -125,8 +125,18 @@ while currkey==0
         
         switch(drawtype)
             case 'volfill'
-                imcoords = ceil(mrAnatXformCoords(voldata.qto_ijk, origcoords(ii,:)));
-                vRoi.data = bwselect3(v,imcoords(2),imcoords(1),imcoords(3)) | vRoi.data>0;
+                clickcoords = origcoords(ii,:);
+                % If we are summing along the normals we need to add clicks
+                % going out along the normal
+                if exist('max_norm','var') && ~isempty(max_norm)
+                    c= 1;
+                    for nn = max_norm
+                        c=c+1;
+                        clickcoords(c,:) = clickcoords(1,:) + nn.* real(msh.normals.smooth20(indices(ii),:));
+                    end
+                end
+                imcoords = ceil(mrAnatXformCoords(voldata.qto_ijk, clickcoords));
+                vRoi.data = bwselect3(v,imcoords(:,2),imcoords(:,1),imcoords(:,3)) | vRoi.data>0;
                 if sum(vRoi.data(:)) == 0
                     fprintf('\nNO VOLUME DATA AT SELECTED VERTEX.\nTRY ANOTHER SPOT\n');
                 else
