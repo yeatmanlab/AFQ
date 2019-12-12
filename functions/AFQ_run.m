@@ -182,7 +182,7 @@ for ii = runsubs
             % Save keep as json to designate which fibers were kept
             jsonkeep = jsonencode(keep);
             fid = fopen(sprintf('%skeepCortex.json',fullfile(fibDir,segName)), 'w');
-            fwrite(fid, jsonkeep, 'char'); fclose(fid);
+            fwrite(fid, jsonkeep, 'char'); fclose(fid); clear keep jsonkeep;
         end
         % Set the path to the fibers in the afq structure
         afq = AFQ_set(afq, 'segmented fg path', 'subnum', ii, fullfile(fibDir,segName));
