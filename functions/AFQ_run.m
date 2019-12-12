@@ -166,9 +166,11 @@ for ii = runsubs
             fg = AFQ_get(afq,'wholebrain fiber group',ii);
         end
         % Segment fiber group
-        fg_classified = AFQ_SegmentFiberGroups(dtFile, fg, [], [],[], antsInvWarp);
+        [fg_classified, ~, classification] = AFQ_SegmentFiberGroups(dtFile, fg, [], [],[], antsInvWarp);
         % Save segmented fiber group
         dtiWriteFiberGroup(fg_classified, fullfile(fibDir,segName));
+        % Save a text file noting which fibers went to which group
+        dlmwrite(fullfile(fibDir, sprintf('WholeBrainFGTo%s.txt',segName)), classification.index)
         % If the full trajectory of each fiber group will be analyzed (eg.
         % from cortical start to endpoint) then all fibers that terminate
         % before cortex will be removed and each fiber within a group will
