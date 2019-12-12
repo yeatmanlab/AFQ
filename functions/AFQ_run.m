@@ -177,8 +177,12 @@ for ii = runsubs
         % be flipped so that startpoints and endpoints are consistent
         % within the group
         if AFQ_get(afq,'clip2rois') == 0
-            fg_classified = AFQ_DefineFgEndpoints(fg_classified, [], [], dt);
+            [fg_classified, keep] = AFQ_DefineFgEndpoints(fg_classified, [], [], dt);
             dtiWriteFiberGroup(fg_classified, fullfile(fibDir,segName));
+            % Save keep as json to designate which fibers were kept
+            jsonkeep = jsonencode(keep);
+            fid = fopen(sprintf('%skeepCortex.json',fullfile(fibDir,segName)), 'w');
+            fwrite(fid, jsonkeep, 'char'); fclose(fid);
         end
         % Set the path to the fibers in the afq structure
         afq = AFQ_set(afq, 'segmented fg path', 'subnum', ii, fullfile(fibDir,segName));
