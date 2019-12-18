@@ -194,6 +194,8 @@ afq.params.normalization = 'spm';
 % For aditional images that are passed into afq you can set a resolution to
 % resample those images to before computing tract profiles (e.g., [2 2 2])
 afq.params.imresample = false;
+% Should files be saved to document what occured at each segmentation step?
+afq.params.saveSegSteps = false;
 %% AFQ Fiber Tracking parameters
 % Do fiber tracking with mrdiffusion by default. The other option is
 % 'mrtrix' if it is installed and the data is HARDI
