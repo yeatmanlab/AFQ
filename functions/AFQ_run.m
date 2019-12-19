@@ -166,17 +166,31 @@ for ii = runsubs
             fg = AFQ_get(afq,'wholebrain fiber group',ii);
         end
         % Segment fiber group
-        fg_classified = AFQ_SegmentFiberGroups(dtFile, fg, [], [],[], antsInvWarp);
+        [fg_classified, ~, classification, fg_split] = AFQ_SegmentFiberGroups(dtFile, fg, [], [],[], antsInvWarp);
         % Save segmented fiber group
         dtiWriteFiberGroup(fg_classified, fullfile(fibDir,segName));
+        if AFQ_get(afq, 'saveSegSteps') == 1
+            % Save a text file noting which fibers went to which group
+            dlmwrite(fullfile(fibDir, sprintf('WholeBrainFGTo%s.txt',segName)), classification.index);
+            % Save the wholebrainFG with fibers split and cleaned
+            dtiWriteFiberGroup(fg_split, fullfile(fibDir,'WholeBrainFG_split'));
+        else
+            clear fg_split
+        end
         % If the full trajectory of each fiber group will be analyzed (eg.
         % from cortical start to endpoint) then all fibers that terminate
         % before cortex will be removed and each fiber within a group will
         % be flipped so that startpoints and endpoints are consistent
         % within the group
         if AFQ_get(afq,'clip2rois') == 0
-            fg_classified = AFQ_DefineFgEndpoints(fg_classified, [], [], dt);
+            [fg_classified, keep] = AFQ_DefineFgEndpoints(fg_classified, [], [], dt);
             dtiWriteFiberGroup(fg_classified, fullfile(fibDir,segName));
+            % Save keep as json to designate which fibers were kept
+            if AFQ_get(afq, 'saveSegSteps') == 1
+                jsonkeep = jsonencode(keep);
+                fid = fopen(sprintf('%skeepCortex.json',fullfile(fibDir,segName)), 'w');
+                fwrite(fid, jsonkeep, 'char'); fclose(fid); clear keep jsonkeep;
+            end
         end
         % Set the path to the fibers in the afq structure
         afq = AFQ_set(afq, 'segmented fg path', 'subnum', ii, fullfile(fibDir,segName));

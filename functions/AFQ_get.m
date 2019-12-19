@@ -62,6 +62,7 @@ function val = AFQ_get(afq, param, varargin)
 % 'ants inverse warp'     - [subject number]
 % 'meta data'             - 'field name'
 % 'imresample2dwi'
+% 'saveSegSteps'
 %
 % To get any of the parameters save in the afq structure (see AFQ_Create),
 % enter the name of the parameter. Some have not been implimented yet, but
@@ -401,7 +402,9 @@ switch(param)
             val = false;
         end
     case {'mrtrixversion'}
-        val = afq.software.mrtrixVersion;    
+        val = afq.software.mrtrixVersion; 
+    case {'savesegsteps'}
+        val = afq.params.saveSegSteps;
         
     otherwise
         error('Uknown afq parameter');
