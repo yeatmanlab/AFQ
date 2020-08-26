@@ -1,0 +1,9 @@
+In babyAFQ tracts are genrally defined as in 
+Wakana S, Caprihan A, Panzenboeck MM, et al. Reproducibility of quantitative tractography methods applied to cerebral white matter. Neuroimage. 2007;36(3):630‐644. doi:10.1016/j.neuroimage.2007.02.049
+
+
+A few changes had to be made to account for the smaller size of baby brains:
+- A third ROI has been introduced for curvey tracts: ATR, IFO, AF and UCI
+- ILF posterior ROI has been split into two to separate ILF and mdLF
+- pAF and VOF ROIs are included here
+- SLF ROIs are restricted to parietal cortex
