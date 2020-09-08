@@ -203,7 +203,7 @@ template = fullfile(tdir,'UNCNeo-withCerebellum-for-babyAFQ.nii.gz');
 if ~exist('anatFile','var') || isempty(anatFile)
 anat=niftiRead('b0.nii.gz');
 else
-niftiRead(anatFile)
+anat=niftiRead(anatFile);
 end
 
 alignIm = mrAnatHistogramClip(double(anat.data),0.01,0.99);
@@ -330,7 +330,7 @@ if useRoiBasedApproach
     % of 22 fiber groups
     moriRois={'ATR_roi1_L.nii.gz',  'ATR_roi2_L.nii.gz',  'ATR_roi3_L.nii.gz'; 'ATR_roi1_R.nii.gz', 'ATR_roi2_R.nii.gz', 'ATR_roi3_R.nii.gz'; ...
         'CST_roi1_L.nii.gz', 'CST_roi2_L.nii.gz', ' '; 'CST_roi1_R.nii.gz',  'CST_roi2_R.nii.gz', ' '; ...
-        'CGC_roi1_L.nii.gz', 'CGC_roi2_L.nii.gz', ' '; 'CGC_roi1_R.nii.gz', 'CGC_roi2_R.nii.gz', ' '; ...
+        'CGC_roi1_L.nii.gz', 'CGC_roi2_L.nii.gz', 'CGC_roi3_L.nii.gz'; 'CGC_roi1_R.nii.gz', 'CGC_roi2_R.nii.gz', 'CGC_roi3_R.nii.gz'; ...
         'HCC_roi1_L.nii.gz', 'HCC_roi2_L.nii.gz', ' '; 'HCC_roi1_R.nii.gz', 'HCC_roi2_R.nii.gz', ' ';...
         'FP_R.nii.gz', 'FP_L.nii.gz', ' '; ...
         'FA_L.nii.gz', 'FA_R.nii.gz', ' '; ...
@@ -391,7 +391,7 @@ if useRoiBasedApproach
         [a,b, keep2given1] = dtiIntersectFibersWithRoi([], 'and', minDist, roi2(roiID), fgCopy);
         keep2(keepID1(keep2given1), roiID)=true;
         
-        if roiID <3 || roiID==11 || roiID==12 || roiID==17 || roiID==18 || roiID==19 || roiID==20
+        if roiID <3 || roiID==5 || roiID==6 || roiID==11 || roiID==12 || roiID==17 || roiID==18 || roiID==19 || roiID==20
             %an extra cleaning step for the UCI developed in babyAFQ
             % Transform ROI-2 to an individuals native space
             if recomputeROIs

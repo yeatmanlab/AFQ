@@ -56,8 +56,10 @@ switch(method)
         for jj = 1:length(fg)
             FGnotempty(jj) = ~isempty(fg(jj).fibers);
             numNodes(jj) = size(fg(jj).fibers{1},2);
+            if size(fg(jj).fibers)>1
             if numNodes(jj) ~= size(fg(jj).fibers{2},2);
                 error('\nfiber group must be resampled to consistend number of nodes');
+            end
             end
         end
         FGnotempty = find(FGnotempty)';
