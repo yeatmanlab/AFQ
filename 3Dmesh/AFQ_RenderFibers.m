@@ -71,6 +71,11 @@ function [lightH, fiberMesh, h] = AFQ_RenderFibers(fg,varargin)
 % vals = dtiGetValFromFibers(im.data,fg,im.qto_ijk)
 % rgb = vals2colormap(vals);
 % AFQ_RenderFibers(fg,'color',rgb)
+% To color each node the same color on each fiber in the group
+% fg = dtiResampleFiberGroup(fg,100);
+% for ii = 1:length(fg.fibers), vals{ii} = [1:50 fliplr(1:50)]'; end
+% rgb = vals2colormap(vals);
+% AFQ_RenderFibers(fg,'color',rgb)
 %
 % AFQ_RenderFibers(fg,'camera', view) - Render the fiber group and view
 % from a specific plane.  The options for view are 'sagittal', 'coronal' or
