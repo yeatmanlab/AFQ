@@ -10,6 +10,24 @@ function [L_VOF, R_VOF, L_pArc, R_pArc, L_pArc_vot, R_pArc_vot] = ...
                                             savefiles, ...
                                             arcThresh, ...
                                             parcThresh)
+
+                                        
+%%%%%%%%%%%%%%%%%%%%
+% This is an infant implementation of AFQ_FindVOF
+% The documentation for the original function in enclosed below
+
+% In brief, the implemented infant-specfic changes are:
+% 1) pAF and VOF ROIs are already warped to individual subject space in
+% babyAFQ_SegmentFiberGroup and just loaded here
+% 2) posterior AF ROIs are taken from babyAFQROIs folder
+% 3) VOF ROIs are taken form babyAFQROIs folder
+% 4) VOF ROIs are in volume space, as cortical surfaces were hard to create
+% for infants when this function was written
+
+% babyAFQ was written by Mareike Grotheer in 2020
+
+%%%%%%%%%%%%%%%%%%%%%
+% Original documentation:                                        
 % Segment the VOF from a wholebrain connectome
 %
 % [L_VOF, R_VOF, L_pArc, R_pArc, L_pArc_vot, R_pArc_vot] = AFQ_FindVOF(wholebrainfgPath,L_arcuate,R_arcuate,fsROIdir,outdir,thresh,v_crit, dt, savefiles, arcThresh, parcThresh)
@@ -94,7 +112,7 @@ end
 % From the wholebrain fiber group find all the vertical fibers that
 % terminate in ventral occipitotemporal cortex (VOT).
 
-[L_fg_vert, R_fg_vert] = babyFAT_AFQ_FindVerticalFibers(wholebrainfgPath,fsROIdir,outdir,thresh,v_crit);
+[L_fg_vert, R_fg_vert] = babyAFQ_FindVerticalFibers(wholebrainfgPath,fsROIdir,outdir,thresh,v_crit);
 
 %% Find the posterior arcuate
 [L_pArc, R_pArc] = babyAFQ_Segment_PostArcuate(dt, wholebrainfgPath);
