@@ -38,6 +38,7 @@ for i=2:(N-1)
   end
 end
 
+try
 t(1,:)=p(2,:)-p(1,:);
 t(1,:)=t(1,:)/norm(t(1,:));
 
@@ -64,5 +65,9 @@ for i=1:N
   b(i,:)=cross(t(i,:),n(i,:));
   b(i,:)=b(i,:)/norm(b(i,:));
 end
+catch
+end
+
+
 
 
