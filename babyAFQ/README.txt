@@ -3,14 +3,16 @@
 Baby Automated Fiber Quantification
 ==============================
 
-babyAFQ was designed to generate Tract Profiles of tissue properties for major fiber tracts in healthy and diseased infant brains. 
+babyAFQ was designed to generate Tract Profiles of tissue properties for major fiber tracts in healthy and diseased infant brains. For a demonstation of how to use babyAFQ on an exaple data set see: https://figshare.com/s/456282406044bbb490ee 
 
 babyAFQ has been tested for MATLAB r2015a. It requires functions from the main AFQ distribution, MATLAB stats toolbox, vistasoft and SPM.
 
+
 If you use this software please cite the relevant manuscripts describing the work:
 
+babyAFQ — Grotheer, M., Rosenke, M., Wu, H., Kular, H., Querdasi, F.R., Natu, V., Yeatman, J., & Grill-Spector, K. (2021). Catch me if you can: Least myelinated white matter develops fastest during early infancy. bioRxiv. https://doi.org/10.1101/2021.03.29.437583 
 
-babyAFQ — Grotheer, M., Rosenke, M., Wu, H., Kular, H., Querdasi, F.R., Natu, V., Yeatman, J., & Grill-Spector, K. (in preparation). Catch me if you can: Least myelinated white matter develops fastest during early infancy.
+As well as:
 
 UNC Neo Template - Feng Shi, Pew-Thian Yap, Guorong Wu, Hongjun Jia, John H. Gilmore, Weili Lin, Dinggang Shen,”Infant Brain Atlases from Neonates to 1- and 2-year-olds“, PLoS ONE, 6(4): e18746, 2011.
 
