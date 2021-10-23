@@ -21,7 +21,7 @@ If you use this software please cite the relevant manuscripts describing the wor
 (v1.2)  —  Yeatman J.D., Weiner K.S., Pestilli F., Rokem A., Mezer A., Wandell B.A. (2014). The Vertical Occipital Fasciculus: A Century of Controversy Resolved By In Vivo Measurements. PNAS.
 
 pyAFQ is described in:
-[Kruper J., Yeatman J.D., Richie-Halford A., Bloom D., Grotheer M., Caffarra S., Kiar G., Karipidis I.I., Roy, E., Chandio B.Q., Garyfallidis E., Rokem A. (2021). Evaluating the reliability of human brain white matter tractometry. Aperture](https://www.humanbrainmapping.org/files/Aperture/Accepted%20Works%20PDF/Kruper_Evaluating_the_Reliability_of_Human.pdf)
+Kruper J., Yeatman J.D., Richie-Halford A., Bloom D., Grotheer M., Caffarra S., Kiar G., Karipidis I.I., Roy, E., Chandio B.Q., Garyfallidis E., Rokem A. (2021). Evaluating the reliability of human brain white matter tractometry. Aperture]https://www.humanbrainmapping.org/files/Aperture/Accepted%20Works%20PDF/Kruper_Evaluating_the_Reliability_of_Human.pdf
 
     Copyright (C) 2012   Jason D. Yeatman   jyeatman@stanford.edu
 
