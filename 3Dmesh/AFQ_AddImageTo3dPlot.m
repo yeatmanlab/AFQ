@@ -217,6 +217,7 @@ scale = diag(nifti.qto_xyz); scale = scale(1:3);
 % factors for the plane
 oldDim = size(image);
 newDim = oldDim .* scale(find(plane == 0))';
+newDim = abs(newDim); % dimensions can only be positive
 % Resize the image
 image = double(imresize(image,newDim));
 
